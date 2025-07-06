@@ -27,10 +27,40 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/admin-dashboard": [
+    "/about": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/admin-dashboard.js"
+      "static/chunks/pages/about.js"
+    ],
+    "/blog": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/blog.js"
+    ],
+    "/community": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/community.js"
+    ],
+    "/leaderboard": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/leaderboard.js"
+    ],
+    "/notes-download": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/notes-download.js"
+    ],
+    "/notes-request": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/notes-request.js"
+    ],
+    "/notes-upload": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/notes-upload.js"
     ]
   },
   "ampFirstPages": []
