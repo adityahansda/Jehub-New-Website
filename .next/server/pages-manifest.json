@@ -3,11 +3,5 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/notes-upload": "pages/notes-upload.js",
-  "/leaderboard": "pages/leaderboard.js",
-  "/community": "pages/community.js",
-  "/blog": "pages/blog.js",
-  "/about": "pages/about.js",
-  "/notes-request": "pages/notes-request.js",
-  "/join-team": "pages/join-team.js"
+  "/admin-dashboard": "pages/admin-dashboard.js"
 }
