@@ -24,15 +24,35 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
+    "/about": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/about.js"
+    ],
+    "/blog": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/blog.js"
+    ],
+    "/community": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/community.js"
+    ],
     "/join-team": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/join-team.js"
     ],
-    "/notes-download": [
+    "/leaderboard": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/notes-download.js"
+      "static/chunks/pages/leaderboard.js"
+    ],
+    "/notes-request": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/notes-request.js"
     ],
     "/notes-upload": [
       "static/chunks/webpack.js",

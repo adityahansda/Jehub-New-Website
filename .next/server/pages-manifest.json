@@ -2,9 +2,12 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/admin-dashboard": "pages/admin-dashboard.js",
-  "/notes-upload": "pages/notes-upload.js",
   "/": "pages/index.js",
-  "/notes-download": "pages/notes-download.js",
+  "/notes-upload": "pages/notes-upload.js",
+  "/leaderboard": "pages/leaderboard.js",
+  "/community": "pages/community.js",
+  "/blog": "pages/blog.js",
+  "/about": "pages/about.js",
+  "/notes-request": "pages/notes-request.js",
   "/join-team": "pages/join-team.js"
 }
