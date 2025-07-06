@@ -1,0 +1,134 @@
+import React, { useState } from 'react';
+import { Globe, ToggleLeft, ToggleRight, AlertTriangle, Calendar, Settings } from 'lucide-react';
+
+const PageManagement = () => {
+  const [pages, setPages] = useState([
+    { id: 1, name: 'Notes Upload', path: '/notes-upload', enabled: true, maintenance: false },
+    { id: 2, name: 'Notes Download', path: '/notes-download', enabled: true, maintenance: false },
+    { id: 3, name: 'Community', path: '/community', enabled: false, maintenance: true },
+    { id: 4, name: 'Leaderboard', path: '/leaderboard', enabled: true, maintenance: false },
+  ]);
+
+  const [maintenanceSettings, setMaintenanceSettings] = useState({
+    scheduledMaintenance: false,
+    maintenanceStart: '',
+    maintenanceEnd: '',
+    message: 'We are currently performing scheduled maintenance. Please check back later.'
+  });
+
+  const togglePageStatus = (pageId: number) => {
+    setPages(prev => 
+      prev.map(page => 
+        page.id === pageId ? { ...page, enabled: !page.enabled } : page
+      )
+    );
+  };
+
+  const toggleMaintenance = (pageId: number) => {
+    setPages(prev => 
+      prev.map(page => 
+        page.id === pageId ? { ...page, maintenance: !page.maintenance } : page
+      )
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">Page Management</h2>
+        <p className="text-gray-600">Control page visibility and maintenance modes</p>
+      </div>
+
+      {/* Page Controls */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Page Controls</h3>
+        <div className="space-y-4">
+          {pages.map((page) => (
+            <div key={page.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-4">
+                <Globe className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">{page.name}</h4>
+                  <p className="text-sm text-gray-600">{page.path}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Enabled</span>
+                  <button 
+                    onClick={() => togglePageStatus(page.id)}
+                    className={`p-1 rounded ${page.enabled ? 'text-green-600' : 'text-gray-400'}`}
+                  >
+                    {page.enabled ? <ToggleRight className="h-6 w-6" /> : <ToggleLeft className="h-6 w-6" />}
+                  </button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Maintenance</span>
+                  <button 
+                    onClick={() => toggleMaintenance(page.id)}
+                    className={`p-1 rounded ${page.maintenance ? 'text-orange-600' : 'text-gray-400'}`}
+                  >
+                    {page.maintenance ? <ToggleRight className="h-6 w-6" /> : <ToggleLeft className="h-6 w-6" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Maintenance Settings */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Scheduled Maintenance</h3>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="scheduledMaintenance"
+              checked={maintenanceSettings.scheduledMaintenance}
+              onChange={(e) => setMaintenanceSettings(prev => ({ ...prev, scheduledMaintenance: e.target.checked }))}
+              className="h-4 w-4 text-blue-600 rounded border-gray-300"
+            />
+            <label htmlFor="scheduledMaintenance" className="text-sm font-medium text-gray-700">
+              Enable Scheduled Maintenance
+            </label>
+          </div>
+
+          {maintenanceSettings.scheduledMaintenance && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                <input
+                  type="datetime-local"
+                  value={maintenanceSettings.maintenanceStart}
+                  onChange={(e) => setMaintenanceSettings(prev => ({ ...prev, maintenanceStart: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                <input
+                  type="datetime-local"
+                  value={maintenanceSettings.maintenanceEnd}
+                  onChange={(e) => setMaintenanceSettings(prev => ({ ...prev, maintenanceEnd: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance Message</label>
+                <textarea
+                  value={maintenanceSettings.message}
+                  onChange={(e) => setMaintenanceSettings(prev => ({ ...prev, message: e.target.value }))}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PageManagement;
