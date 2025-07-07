@@ -91,7 +91,7 @@ const ResourcesLibrary = () => {
 
   const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+      resource.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || resource.category === filterType;
     return matchesSearch && matchesFilter;
   });
