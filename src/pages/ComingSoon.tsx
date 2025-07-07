@@ -147,7 +147,7 @@ const ComingSoon = () => {
                     <div className="bg-green-100 text-green-800 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
                       <Bell className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">You're In!</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">You&lsquo;re In!</h3>
                     <p className="text-gray-600">
                       We&apos;ll notify you as soon as JEHUB launches. Get ready for an amazing experience!
                     </p>
