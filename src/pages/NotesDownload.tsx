@@ -22,9 +22,9 @@ const NotesDownload = () => {
 
   const filteredNotes = mockNotes.filter(note => {
     const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         note.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         note.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      note.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      note.subject.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesBranch = !filters.branch || note.branch === filters.branch;
     const matchesSemester = !filters.semester || note.semester === filters.semester;
     const matchesSubject = !filters.subject || note.subject.toLowerCase().includes(filters.subject.toLowerCase());
@@ -46,7 +46,7 @@ const NotesDownload = () => {
     // Simulate download process
     setTimeout(() => {
       setDownloadPopup(prev => ({ ...prev, status: 'success' }));
-      
+
       // Auto-hide after 2 seconds
       setTimeout(() => {
         setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
@@ -230,7 +230,7 @@ const NotesDownload = () => {
               No notes found
             </h3>
             <p className="text-gray-600">
-              Try adjusting your search terms or filters to find what you're looking for.
+              Try adjusting your search terms or filters to find what you&quot;re looking for.
             </p>
           </div>
         )}
@@ -240,10 +240,11 @@ const NotesDownload = () => {
       {downloadPopup.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
           <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform animate-slideUp">
+            {/* Popup Content */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                {downloadPopup.status === 'downloading' ? 'Downloading...' : 
-                 downloadPopup.status === 'success' ? 'Download Complete!' : 'Download Failed'}
+                {downloadPopup.status === 'downloading' ? 'Downloading...' :
+                  downloadPopup.status === 'success' ? 'Download Complete!' : 'Download Failed'}
               </h3>
               <button
                 onClick={closePopup}
@@ -252,7 +253,7 @@ const NotesDownload = () => {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="flex items-center mb-4">
               {downloadPopup.status === 'downloading' && (
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
@@ -266,21 +267,21 @@ const NotesDownload = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">
                   {downloadPopup.status === 'downloading' ? 'Preparing your download...' :
-                   downloadPopup.status === 'success' ? 'Your file is ready!' :
-                   'Something went wrong. Please try again.'}
+                    downloadPopup.status === 'success' ? 'Your file is ready!' :
+                      'Something went wrong. Please try again.'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {downloadPopup.noteTitle}
                 </p>
               </div>
             </div>
-            
+
             {downloadPopup.status === 'downloading' && (
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '65%' }}></div>
               </div>
             )}
-            
+
             {downloadPopup.status === 'success' && (
               <div className="flex justify-end">
                 <button

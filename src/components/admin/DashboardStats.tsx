@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Users, 
-  FileText, 
-  Download, 
-  TrendingUp, 
-  AlertTriangle, 
+import {
+  Users,
+  FileText,
+  Download,
+  TrendingUp,
+  AlertTriangle,
   CheckCircle,
   Clock,
   Star,
@@ -14,35 +14,35 @@ import {
 
 const DashboardStats = () => {
   const stats = [
-    { 
-      title: 'Total Users', 
-      value: '2,847', 
-      change: '+12%', 
-      icon: Users, 
+    {
+      title: 'Total Users',
+      value: '2,847',
+      change: '+12%',
+      icon: Users,
       color: 'blue',
       trend: 'up'
     },
-    { 
-      title: 'Notes Uploaded', 
-      value: '1,523', 
-      change: '+8%', 
-      icon: FileText, 
+    {
+      title: 'Notes Uploaded',
+      value: '1,523',
+      change: '+8%',
+      icon: FileText,
       color: 'green',
       trend: 'up'
     },
-    { 
-      title: 'Total Downloads', 
-      value: '45,678', 
-      change: '+24%', 
-      icon: Download, 
+    {
+      title: 'Total Downloads',
+      value: '45,678',
+      change: '+24%',
+      icon: Download,
       color: 'purple',
       trend: 'up'
     },
-    { 
-      title: 'Team Members', 
-      value: '28', 
-      change: '+2', 
-      icon: Star, 
+    {
+      title: 'Team Members',
+      value: '28',
+      change: '+2',
+      icon: Star,
       color: 'orange',
       trend: 'up'
     },
@@ -93,7 +93,7 @@ const DashboardStats = () => {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Overview</h2>
-        <p className="text-gray-600">Monitor your platform's performance and activity</p>
+        <p className="text-gray-600">Monitor your platform&apos;s performance and activity</p>
       </div>
 
       {/* Stats Grid */}

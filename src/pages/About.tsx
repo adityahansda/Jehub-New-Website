@@ -55,7 +55,7 @@ const About = () => {
             About JEHUB
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're on a mission to democratize education by creating a platform where students can share knowledge, 
+            We&apos;re on a mission to democratize education by creating a platform where students can share knowledge,
             support each other, and build a stronger academic community together.
           </p>
         </div>
@@ -67,8 +67,8 @@ const About = () => {
               Our Mission
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              To empower students worldwide by providing a collaborative platform for sharing academic resources, 
-              fostering peer-to-peer learning, and building a supportive educational community that transcends 
+              To empower students worldwide by providing a collaborative platform for sharing academic resources,
+              fostering peer-to-peer learning, and building a supportive educational community that transcends
               geographical boundaries.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -148,19 +148,19 @@ const About = () => {
             </h2>
             <div className="prose prose-lg max-w-none text-gray-700">
               <p className="mb-6">
-                JEHUB was born from a simple observation: students are incredibly generous with their knowledge 
-                when given the right platform and incentives. Our founder, Sarah Johnson, noticed during her 
+                JEHUB was born from a simple observation: students are incredibly generous with their knowledge
+                when given the right platform and incentives. Our founder, Sarah Johnson, noticed during her
                 teaching career that the most effective learning happened when students taught each other.
               </p>
               <p className="mb-6">
-                In 2023, we launched JEHUB with a vision to create a global classroom where every student 
-                could be both a teacher and a learner. We started with a simple notes-sharing feature and 
-                quickly expanded to include community discussions, request systems, and gamification elements 
+                In 2023, we launched JEHUB with a vision to create a global classroom where every student
+                could be both a teacher and a learner. We started with a simple notes-sharing feature and
+                quickly expanded to include community discussions, request systems, and gamification elements
                 that make learning engaging and rewarding.
               </p>
               <p>
-                Today, JEHUB serves students from over 200 universities worldwide, facilitating the sharing 
-                of knowledge across disciplines, cultures, and continents. We're not just a platform—we're 
+                Today, JEHUB serves students from over 200 universities worldwide, facilitating the sharing
+                of knowledge across disciplines, cultures, and continents. We&apos;re not just a platform—we&apos;re
                 a movement towards collaborative, accessible education for all.
               </p>
             </div>

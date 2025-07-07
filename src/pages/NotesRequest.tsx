@@ -70,7 +70,7 @@ const NotesRequest = () => {
             Request Notes
           </h1>
           <p className="text-xl text-gray-600">
-            Can't find what you're looking for? Request it from the community
+            Can&quot;t find what you&quot;re looking for? Request it from the community
           </p>
         </div>
 
@@ -204,11 +204,10 @@ const NotesRequest = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                activeTab === tab.key
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeTab === tab.key
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
