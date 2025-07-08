@@ -5,17 +5,9 @@ const nextConfig = {
   eslint: {
     dirs: ['pages', 'components', 'lib', 'src'],
   },
-}
-
-module.exports = nextConfig
-
-
-const nextConfig = {
   experimental: {
-    legacyBrowsers: false, // ⛔ don't support legacy browsers like IE11
-  },
-  // optionally, if using Babel:
-  swcMinify: true, // ensure modern minification
+    legacyBrowsers: false, // ✅ Avoid transpiling for legacy browsers like IE11
+  }
 };
 
 module.exports = nextConfig;
