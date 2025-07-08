@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { Html, Head, Main, NextScript } from 'next/document';
+import Head from 'next/head';
+
 import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
 // If '../data/mockData' does not export 'stats', define a fallback here
 import { stats as importedStats } from '../data/mockData';
@@ -76,13 +77,9 @@ const Home = () => {
 
   return (
     <>
-      <Html lang="en"></Html>
+
       <Head>
-        <title>JEHUB – Centralized Academic Resources for Students</title>
-        <meta
-          name="description"
-          content="JEHUB is a student-focused ed-tech platform that centralizes notes, discussions, and tools for diploma and BTech students."
-        />
+        <title>JEHUB Centralized Academic Resources for Students</title>
       </Head>
 
       <div className="min-h-screen">
