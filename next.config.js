@@ -1,3 +1,7 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -5,9 +9,7 @@ const nextConfig = {
   eslint: {
     dirs: ['pages', 'components', 'lib', 'src'],
   },
-  experimental: {
-    legacyBrowsers: false, // ✅ Avoid transpiling for legacy browsers like IE11
-  }
+
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);
