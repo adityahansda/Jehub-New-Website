@@ -80,6 +80,10 @@ const Home = () => {
 
       <Head>
         <title>JEHUB Centralized Academic Resources for Students</title>
+        <meta
+          name="description"
+          content="JEHUB is a student-focused ed-tech platform providing notes, tools, and discussions for diploma and BTech students."
+        />
       </Head>
 
       <div className="min-h-screen">
