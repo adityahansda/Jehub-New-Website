@@ -10,6 +10,7 @@ export interface Note {
   downloads: number;
   points: number;
   tags: string[];
+  thumbnail?: string;
 }
 
 export interface BlogPost {
