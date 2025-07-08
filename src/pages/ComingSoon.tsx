@@ -105,7 +105,7 @@ const ComingSoon = () => {
                 <Rocket className="h-4 w-4 mr-2" />
                 Something Amazing is Coming
               </div>
-              
+
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 The Future of
                 <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
@@ -113,9 +113,9 @@ const ComingSoon = () => {
                 </span>
                 is Almost Here
               </h1>
-              
+
               <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                Join thousands of students preparing for the ultimate academic collaboration platform. 
+                Join thousands of students preparing for the ultimate academic collaboration platform.
                 Share knowledge, earn rewards, and transform your learning experience.
               </p>
 
@@ -147,9 +147,9 @@ const ComingSoon = () => {
                     <div className="bg-green-100 text-green-800 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
                       <Bell className="h-8 w-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">You're In!</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">You&lsquo;re In!</h3>
                     <p className="text-gray-600">
-                      We'll notify you as soon as JEHUB launches. Get ready for an amazing experience!
+                      We&apos;ll notify you as soon as JEHUB launches. Get ready for an amazing experience!
                     </p>
                   </div>
                 ) : (
@@ -157,7 +157,7 @@ const ComingSoon = () => {
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 mb-2">Be the First to Know</h3>
                       <p className="text-gray-600 mb-4">
-                        Get early access and exclusive updates about JEHUB's launch
+                        Get early access and exclusive updates about JEHUB&apos;s launch
                       </p>
                     </div>
                     <div className="relative">
@@ -188,12 +188,12 @@ const ComingSoon = () => {
             {/* Features Preview */}
             <div className="mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                What's Coming
+                What&apos;s Coming
               </h2>
               <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
                 Discover the powerful features that will revolutionize how students learn and collaborate
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
@@ -221,7 +221,7 @@ const ComingSoon = () => {
               <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
                 Students worldwide are already excited about JEHUB. Be part of the educational revolution.
               </p>
-              
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {stats.map((stat, index) => (
                   <div key={index} className="text-center">
@@ -249,13 +249,13 @@ const ComingSoon = () => {
                 <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
                   <span className="sr-only">LinkedIn</span>
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                   </svg>
                 </a>
                 <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
                   <span className="sr-only">Instagram</span>
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.647.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323C5.902 8.198 7.053 7.708 8.35 7.708s2.448.49 3.323 1.297c.876.876 1.366 2.027 1.366 3.324s-.49 2.448-1.366 3.323c-.875.876-2.026 1.366-3.323 1.366zm7.718 0c-1.297 0-2.448-.49-3.323-1.297-.876-.875-1.366-2.026-1.366-3.323s.49-2.448 1.366-3.323c.875-.876 2.026-1.366 3.323-1.366s2.448.49 3.323 1.366c.876.875 1.366 2.026 1.366 3.323s-.49 2.448-1.366 3.323c-.875.876-2.026 1.366-3.323 1.366z"/>
+                    <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.647.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323C5.902 8.198 7.053 7.708 8.35 7.708s2.448.49 3.323 1.297c.876.876 1.366 2.027 1.366 3.324s-.49 2.448-1.366 3.323c-.875.876-2.026 1.366-3.323 1.366zm7.718 0c-1.297 0-2.448-.49-3.323-1.297-.876-.875-1.366-2.026-1.366-3.323s.49-2.448 1.366-3.323c.875-.876 2.026-1.366 3.323-1.366s2.448.49 3.323 1.366c.876.875 1.366 2.026 1.366 3.323s-.49 2.448-1.366 3.323c-.875.876-2.026 1.366-3.323 1.366z" />
                   </svg>
                 </a>
               </div>

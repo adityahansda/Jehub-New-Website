@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Calendar, User, Clock, Plus } from 'lucide-react';
 import { mockBlogPosts } from '../data/mockData';
-
+import Image from 'next/image'
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -10,7 +10,7 @@ const Blog = () => {
 
   const filteredPosts = mockBlogPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || selectedCategory === 'All' || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -46,11 +46,10 @@ const Blog = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category === 'All' ? '' : category)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    selectedCategory === category || (category === 'All' && !selectedCategory)
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${selectedCategory === category || (category === 'All' && !selectedCategory)
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -92,15 +91,15 @@ const Blog = () => {
                   <span className="text-gray-500 text-xs">•</span>
                   <span className="text-gray-500 text-xs">{post.readTime}</span>
                 </div>
-                
+
                 <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
                   {post.title}
                 </h2>
-                
+
                 <p className="text-gray-600 mb-4 line-clamp-3">
                   {post.excerpt}
                 </p>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400" />
@@ -111,7 +110,7 @@ const Blog = () => {
                     <span className="text-sm">{post.date}</span>
                   </div>
                 </div>
-                
+
                 <button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg">
                   Read More
                 </button>

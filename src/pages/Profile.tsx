@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut } from 'lucide-react';
-
+import Image from 'next/image'
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -196,11 +196,10 @@ const Profile = () => {
               <div className="space-y-4">
                 {recentActivity.map((activity, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      activity.type === 'upload' ? 'bg-blue-100 text-blue-600' :
-                      activity.type === 'request' ? 'bg-green-100 text-green-600' :
-                      'bg-purple-100 text-purple-600'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === 'upload' ? 'bg-blue-100 text-blue-600' :
+                        activity.type === 'request' ? 'bg-green-100 text-green-600' :
+                          'bg-purple-100 text-purple-600'
+                      }`}>
                       {activity.type === 'upload' && <Upload className="h-5 w-5" />}
                       {activity.type === 'request' && <MessageSquare className="h-5 w-5" />}
                       {activity.type === 'post' && <MessageSquare className="h-5 w-5" />}

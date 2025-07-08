@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { 
-  Download, 
-  Eye, 
-  Heart, 
-  Share2, 
-  Flag, 
-  User, 
-  Calendar, 
-  BookOpen, 
-  Tag, 
+import Image from 'next/image'
+import {
+  Download,
+  Eye,
+  Heart,
+  Share2,
+  Flag,
+  User,
+  Calendar,
+  BookOpen,
+  Tag,
   Star,
   ChevronLeft,
   ChevronRight,
@@ -34,10 +35,10 @@ const NotesPreview = () => {
 
   // Find the note by ID (in a real app, this would be an API call)
   const note = mockNotes.find(n => n.id === id) || mockNotes[0];
-  
+
   // Mock preview pages (in a real app, this would be generated from the actual file)
   const totalPages = 15;
-  
+
   // Mock comments
   const comments = [
     {
@@ -197,11 +198,10 @@ const NotesPreview = () => {
                 </button>
                 <button
                   onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    isLiked 
-                      ? 'bg-red-100 text-red-700 border border-red-200' 
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isLiked
+                      ? 'bg-red-100 text-red-700 border border-red-200'
                       : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
-                  }`}
+                    }`}
                 >
                   <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                   {isLiked ? 'Liked' : 'Like'}

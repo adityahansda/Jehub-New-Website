@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  Users, 
-  Rocket, 
-  Star, 
-  CheckCircle, 
-  Upload, 
-  Send, 
+import {
+  Users,
+  Rocket,
+  Star,
+  CheckCircle,
+  Upload,
+  Send,
   MessageSquare,
   Code,
   Palette,
@@ -19,7 +19,25 @@ import {
 } from 'lucide-react';
 
 const JoinTeam = () => {
-  const [formData, setFormData] = useState({
+  type FormData = {
+    fullName: string;
+    email: string;
+    whatsapp: string;
+    college: string;
+    currentStatus: string;
+    positions: string[];
+    skills: string;
+    whyJoin: string;
+    coolSkills: string;
+    startupExperience: string;
+    voluntaryWork: string;
+    hoursPerWeek: string;
+    hearAbout: string;
+    portfolio: string;
+    resume: File | null;
+  };
+
+  const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
     whatsapp: '',
@@ -34,7 +52,7 @@ const JoinTeam = () => {
     hoursPerWeek: '',
     hearAbout: '',
     portfolio: '',
-    resume: null as File | null
+    resume: null
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -42,7 +60,7 @@ const JoinTeam = () => {
 
   const statusOptions = [
     'Diploma Student',
-    'B.Tech Student', 
+    'B.Tech Student',
     'Other College Student',
     'Working Professional',
     'Freelancer'
@@ -121,10 +139,10 @@ const JoinTeam = () => {
     try {
       // Here you would integrate with Google Sheets API or form service
       console.log('Form submitted:', formData);
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       setIsSubmitted(true);
     } catch (error) {
       console.error('Submission error:', error);
@@ -135,8 +153,8 @@ const JoinTeam = () => {
   };
 
   const scrollToForm = () => {
-    document.getElementById('application-form')?.scrollIntoView({ 
-      behavior: 'smooth' 
+    document.getElementById('application-form')?.scrollIntoView({
+      behavior: 'smooth'
     });
   };
 
@@ -155,7 +173,7 @@ const JoinTeam = () => {
               Thank you for applying to join the JEHUB team! Your response has been submitted successfully.
             </p>
             <p className="text-gray-600 mb-8">
-              We'll review your application and contact you soon via WhatsApp or Email. 
+              We&quot;ll review your application and contact you soon via WhatsApp or Email.
               Keep an eye on your notifications!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -190,16 +208,16 @@ const JoinTeam = () => {
             <Rocket className="h-4 w-4 mr-2" />
             Join the Revolution
           </div>
-          
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
             Become a Part of the
             <span className="block bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
               JEHUB Core Team 🚀
             </span>
           </h1>
-          
+
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
-            We're building the next-gen student tech community. Join us if you're passionate 
+            We&quot;re building the next-gen student tech community. Join us if you&quot;re passionate
             and ready to contribute to something meaningful.
           </p>
 
@@ -267,7 +285,7 @@ const JoinTeam = () => {
         <div id="application-form" className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-orange-500 p-6 sm:p-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-white text-center">
-              Join the JEHUB Team – Let's Build Together!
+              Join the JEHUB Team – Let&quot;s Build Together!
             </h2>
             <p className="text-blue-100 text-center mt-2">
               Fill out the form below to apply for your desired position
@@ -369,11 +387,10 @@ const JoinTeam = () => {
                   return (
                     <label
                       key={position.id}
-                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-                        formData.positions.includes(position.id)
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 hover:border-blue-300 hover:bg-blue-50'
-                      }`}
+                      className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all duration-200 ${formData.positions.includes(position.id)
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-300 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
                     >
                       <input
                         type="checkbox"

@@ -140,7 +140,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ user }) => {
               <div key={index} className="flex items-center space-x-3">
                 <span className="text-sm font-medium text-gray-600 w-16">{data.week}</span>
                 <div className="flex-1 bg-gray-200 rounded-full h-3">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${(data.contributions / maxContributions) * 100}%` }}
                   ></div>
@@ -160,7 +160,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ user }) => {
               <Award className="h-6 w-6" />
               <h3 className="text-xl font-bold">Your Rank</h3>
             </div>
-            <p className="text-blue-100">You're performing great this month!</p>
+            <p className="text-blue-100">You&apos;re performing great this month!</p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">#{user.rank}</div>

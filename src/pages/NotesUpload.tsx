@@ -58,7 +58,7 @@ const NotesUpload = () => {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center">
             <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
             <p className="text-green-800">
-              Notes uploaded successfully! You've earned 50 points. Thank you for contributing to the community.
+              Notes uploaded successfully! You&quot;ve earned 50 points. Thank you for contributing to the community.
             </p>
           </div>
         )}
