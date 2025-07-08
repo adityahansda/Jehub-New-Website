@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Heart, MessageCircle, Share2, Flag, Clock } from 'lucide-react';
 import { mockCommunityPosts } from '../data/mockData';
-
+import Image from 'next/image'
 const Community = () => {
   const [activeTab, setActiveTab] = useState<'trending' | 'latest' | 'answered'>('trending');
   const [showNewPost, setShowNewPost] = useState(false);
@@ -131,11 +131,10 @@ const Community = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                activeTab === tab.key
+              className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === tab.key
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                   : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
-              }`}
+                }`}
             >
               {tab.label}
             </button>

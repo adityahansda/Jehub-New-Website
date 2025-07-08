@@ -1,6 +1,6 @@
 import React from 'react';
 import { BookOpen, Users, Target, Heart, Mail, Phone, MapPin } from 'lucide-react';
-
+import Image from 'next/image'
 const About = () => {
   const features = [
     {

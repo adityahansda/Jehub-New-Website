@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trophy, Star, Medal, Crown } from 'lucide-react';
 import { mockLeaderboard } from '../data/mockData';
-
+import Image from 'next/image'
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
 
@@ -53,11 +53,10 @@ const Leaderboard = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                activeTab === tab.key
+              className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === tab.key
                   ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                   : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 border border-gray-200'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -69,9 +68,8 @@ const Leaderboard = () => {
           {mockLeaderboard.slice(0, 3).map((user, index) => (
             <div
               key={user.id}
-              className={`${
-                index === 0 ? 'md:order-2' : index === 1 ? 'md:order-1' : 'md:order-3'
-              } bg-white rounded-xl shadow-lg border border-gray-200 p-6 text-center relative overflow-hidden`}
+              className={`${index === 0 ? 'md:order-2' : index === 1 ? 'md:order-1' : 'md:order-3'
+                } bg-white rounded-xl shadow-lg border border-gray-200 p-6 text-center relative overflow-hidden`}
             >
               <div className={`absolute inset-0 ${getLevelColor(user.level)} opacity-10`}></div>
               <div className="relative">
@@ -106,9 +104,8 @@ const Leaderboard = () => {
             {mockLeaderboard.map((user, index) => (
               <div
                 key={user.id}
-                className={`p-6 hover:bg-gray-50 transition-colors ${
-                  index < 3 ? 'bg-gradient-to-r from-blue-50 to-purple-50' : ''
-                }`}
+                className={`p-6 hover:bg-gray-50 transition-colors ${index < 3 ? 'bg-gradient-to-r from-blue-50 to-purple-50' : ''
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
