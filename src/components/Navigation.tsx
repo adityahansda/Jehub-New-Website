@@ -32,8 +32,8 @@ const Navigation = () => {
               <Image
                 src="/images/jharkhand_Enginner_s_Hub-watermark2.png"
                 alt="Jharkhand Engineer's Hub"
-                width={300}
-                height={300}
+                width={137}
+                height={48}
                 className="h-12 w-auto"
                 priority
               />
