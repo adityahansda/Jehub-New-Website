@@ -1,8 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
-import Head from 'next/head';
+import { Html, Head, Main, NextScript } from 'next/document';
 import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
-import { stats } from '../data/mockData';
+// If '../data/mockData' does not export 'stats', define a fallback here
+import { stats as importedStats } from '../data/mockData';
+
+const stats = importedStats || {
+  notesUploaded: 0,
+  activeMembers: 0,
+  requestsFulfilled: 0,
+};
 
 const Home = () => {
   const features = [
@@ -69,6 +76,7 @@ const Home = () => {
 
   return (
     <>
+      <Html lang="en"></Html>
       <Head>
         <title>JEHUB – Centralized Academic Resources for Students</title>
         <meta
@@ -261,7 +269,7 @@ const Home = () => {
         </section>
       </div>
     </>
+
   );
 };
-
 export default Home;
