@@ -30,7 +30,7 @@ const Navigation = () => {
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center">
               <Image
-                src="/images/jharkhand_Enginner_s_Hub-watermark2.png"
+                src="/images/logo.png"
                 alt="Jharkhand Engineer's Hub"
                 width={137}
                 height={48}
