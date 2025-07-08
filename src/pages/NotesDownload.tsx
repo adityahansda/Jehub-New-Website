@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Grid, List } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X } from 'lucide-react';
 import { mockNotes } from '../data/mockData';
-import NoteThumbnail from '../components/NoteThumbnail';
 
 const NotesDownload = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,16 +132,14 @@ const NotesDownload = () => {
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-                title="Grid View"
               >
-                <Grid className="h-4 w-4" />
+                <Filter className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-                title="List View"
               >
-                <List className="h-4 w-4" />
+                <Filter className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -151,22 +148,9 @@ const NotesDownload = () => {
         {/* Notes Grid/List */}
         <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}`}>
           {filteredNotes.map((note) => (
-            <div key={note.id} className={`bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${
-              viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
-            }`}>
-              {/* Thumbnail */}
-              <div className={`${viewMode === 'list' ? 'w-48 h-32 flex-shrink-0' : 'w-full h-48'}`}>
-                <NoteThumbnail
-                  title={note.title}
-                  subject={note.subject}
-                  className="w-full h-full"
-                />
-              </div>
-              
-              <div className="p-6 flex-1">
-                <div className={`flex items-start justify-between mb-4 ${
-                  viewMode === 'list' ? 'flex-row' : 'flex-col sm:flex-row'
-                }`}>
+            <div key={note.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                       {note.title}
@@ -178,14 +162,12 @@ const NotesDownload = () => {
                       <span>{note.uploadDate}</span>
                     </div>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium flex-shrink-0">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                     {note.points} pts
                   </div>
                 </div>
 
-                <p className={`text-gray-600 mb-4 ${
-                  viewMode === 'list' ? 'line-clamp-2' : 'line-clamp-3'
-                }`}>
+                <p className="text-gray-600 mb-4 line-clamp-3">
                   {note.description}
                 </p>
 
@@ -201,9 +183,7 @@ const NotesDownload = () => {
                   </span>
                 </div>
 
-                <div className={`flex items-center justify-between ${
-                  viewMode === 'list' ? 'flex-row' : 'flex-col sm:flex-row gap-2'
-                }`}>
+                <div className="flex items-center justify-between">
                   <div className="flex items-center text-sm text-gray-600">
                     <Download className="h-4 w-4 mr-1" />
                     <span>{note.downloads} downloads</span>
@@ -227,9 +207,7 @@ const NotesDownload = () => {
                 </div>
 
                 {/* Tags */}
-                <div className={`flex flex-wrap gap-1 mt-4 ${
-                  viewMode === 'list' ? 'max-w-md' : ''
-                }`}>
+                <div className="flex flex-wrap gap-1 mt-4">
                   {note.tags.map((tag, index) => (
                     <span key={index} className="flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
                       <Tag className="h-3 w-3 mr-1" />
