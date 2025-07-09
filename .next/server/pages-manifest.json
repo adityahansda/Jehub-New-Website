@@ -1,8 +1,9 @@
 {
   "/_app": "pages/_app.js",
-  "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/about": "pages/about.js",
-  "/leaderboard": "pages/leaderboard.js",
-  "/join-team": "pages/join-team.js"
+  "/_error": "pages/_error.js",
+  "/": "pages/index.js",
+  "/notes-download": "pages/notes-download.js",
+  "/coming-soon": "pages/coming-soon.js",
+  "/notes-upload": "pages/notes-upload.js"
 }
