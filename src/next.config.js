@@ -9,7 +9,10 @@ const nextConfig = {
   eslint: {
     dirs: ['pages', 'components', 'lib', 'src'],
   },
-
+  experimental: {
+    legacyBrowsers: false, // ✅ Disable support for older browsers like IE11
+    esmExternals: 'loose', // ✅ Use modern ES modules for externals
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);
