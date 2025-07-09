@@ -21,16 +21,16 @@ const Footer = () => {
               Empowering students to learn, share, and grow together. Join our academic community today.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="#" aria-label="Visit our Facebook page" className="text-gray-400 hover:text-blue-400 transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="#" aria-label="Visit our Twitter profile" className="text-gray-400 hover:text-blue-400 transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="#" aria-label="Visit our Instagram profile" aria-label="Visit our Instagram profile" className="text-gray-400 hover:text-blue-400 transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="#" aria-label="Visit our LinkedIn profile" className="text-gray-400 hover:text-blue-400 transition-colors">
                 <Linkedin className="h-5 w-5" />
               </a>
             </div>

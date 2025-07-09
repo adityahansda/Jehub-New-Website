@@ -78,9 +78,9 @@ const Navigation = () => {
               Sign Up
             </Link>
           </div>
-
           {/* Mobile Menu Button */}
           <button
+            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
