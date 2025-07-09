@@ -90,7 +90,7 @@ const NotesDownload = () => {
             </div>
 
             {/* Filter Dropdowns */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <select
                 value={filters.branch}
                 onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
@@ -118,7 +118,7 @@ const NotesDownload = () => {
                 placeholder="Subject"
                 value={filters.subject}
                 onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 w-full focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -183,15 +183,15 @@ const NotesDownload = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-left sm:items-center justify-between">
                   <div className="flex items-center text-sm text-gray-600">
                     <Download className="h-4 w-4 mr-1" />
                     <span>{note.downloads} downloads</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-between">
                     <Link
                       href={`/notes-preview/${note.id}`}
-                      className="flex items-center px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="flex items-center py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       Preview
