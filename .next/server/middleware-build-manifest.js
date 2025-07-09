@@ -24,10 +24,10 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/blog.js"
     ],
-    "/notes-preview/[id]": [
+    "/notes-request": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/notes-preview/[id].js"
+      "static/chunks/pages/notes-request.js"
     ]
   },
   "ampFirstPages": []
