@@ -2,7 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/notes-request": "pages/notes-request.js",
   "/notes-download": "pages/notes-download.js",
+  "/blog": "pages/blog.js",
   "/notes-preview/[id]": "pages/notes-preview/[id].js"
 }

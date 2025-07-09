@@ -19,10 +19,10 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/notes-download": [
+    "/blog": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/notes-download.js"
+      "static/chunks/pages/blog.js"
     ],
     "/notes-preview/[id]": [
       "static/chunks/webpack.js",
