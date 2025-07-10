@@ -107,8 +107,8 @@ const Leaderboard = () => {
                 className={`p-6 hover:bg-gray-50 transition-colors ${index < 3 ? 'bg-gradient-to-r from-blue-50 to-purple-50' : ''
                   }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                  <div className="flex items-center gap-4 ">
                     <div className="text-2xl font-bold text-gray-400 min-w-[3rem]">
                       {getRankBadge(user.rank)}
                     </div>
@@ -122,7 +122,7 @@ const Leaderboard = () => {
                       <p className="text-sm text-gray-600">{user.college}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex justify-between gap-4">
                     <div className="flex items-center gap-1">
                       {getLevelIcon(user.level)}
                       <span className="text-sm font-medium text-gray-700">{user.level}</span>
