@@ -218,7 +218,7 @@ const NotesRequest = () => {
         <div className="space-y-4">
           {filteredRequests.map((request) => (
             <div key={request.id} className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {request.title}
