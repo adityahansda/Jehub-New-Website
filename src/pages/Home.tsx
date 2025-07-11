@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import * as gtag from '@/lib/gtag';
 
 import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
 // If '../data/mockData' does not export 'stats', define a fallback here
@@ -13,15 +12,7 @@ const stats = importedStats || {
   requestsFulfilled: 0,
 };
 
-
-
 const Home = () => {
-
-  useEffect(() => {
-    // Track pageview on mount
-    gtag.pageview(window.location.pathname);
-  }, []);
-
   const features = [
     {
       icon: BookOpen,
