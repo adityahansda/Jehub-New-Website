@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Mail, Bell, Users, Star, Rocket, Calendar, Clock } from 'lucide-react';
+import * as gtag from '@/lib/gtag';
 
 const ComingSoon = () => {
   const [email, setEmail] = useState('');
