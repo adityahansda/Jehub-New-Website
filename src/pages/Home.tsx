@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import * as gtag from '@/lib/gtag';
@@ -13,7 +13,15 @@ const stats = importedStats || {
   requestsFulfilled: 0,
 };
 
+
+
 const Home = () => {
+
+  useEffect(() => {
+    // Track pageview on mount
+    gtag.pageview(window.location.pathname);
+  }, []);
+
   const features = [
     {
       icon: BookOpen,
