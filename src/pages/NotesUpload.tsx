@@ -15,6 +15,7 @@ const NotesUpload = () => {
     subject: '',
     description: '',
     tags: '',
+    authorName: '',
     file: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +84,8 @@ const NotesUpload = () => {
         subject: formData.subject,
         description: formData.description,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        authorName: formData.authorName,
+        uploadDate: new Date().toISOString(),
         githubUrl: newGithubUrl,
         fileName: formData.file.name,
         userIp: ip,
@@ -105,6 +108,7 @@ const NotesUpload = () => {
         subject: '',
         description: '',
         tags: '',
+        authorName: '',
         file: null
       });
 
@@ -298,6 +302,21 @@ const NotesUpload = () => {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Describe what your notes cover, key topics, and any special features"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="authorName" className="block text-sm font-medium text-gray-700 mb-2">
+                    Author Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="authorName"
+                    required
+                    value={formData.authorName}
+                    onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter your name or nickname"
                   />
                 </div>
 
