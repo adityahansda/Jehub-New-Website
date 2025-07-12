@@ -1,9 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X } from 'lucide-react';
-import { mockNotes } from '../data/mockData';
+import { databases } from '../lib/appwrite';
+import { Query } from 'appwrite';
+
+type Note = {
+  id: string;
+  title: string;
+  branch: string;
+  semester: string;
+  subject: string;
+  description: string;
+  tags: string[];
+  uploader: string;
+  uploadDate: string;
+  githubUrl: string;
+  fileName: string;
+  downloads: number;
+  likes: number;
+};
 
 const NotesDownload = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     branch: '',
@@ -20,7 +40,45 @@ const NotesDownload = () => {
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
-  const filteredNotes = mockNotes.filter(note => {
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        setLoading(true);
+        const response = await databases.listDocuments(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+          [Query.orderDesc('uploadDate')]
+        );
+
+        const fetchedNotes = response.documents.map(doc => ({
+          id: doc.$id,
+          title: doc.title,
+          branch: doc.branch,
+          semester: doc.semester,
+          subject: doc.subject,
+          description: doc.description,
+          tags: doc.tags,
+          uploader: doc.authorName,
+          uploadDate: doc.uploadDate,
+          githubUrl: doc.githubUrl,
+          fileName: doc.fileName,
+          downloads: doc.downloads,
+          likes: doc.likes
+        }));
+
+        setNotes(fetchedNotes);
+      } catch (err) {
+        setError('Failed to fetch notes. Please try again later.');
+        console.error('Error fetching notes:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotes();
+  }, []);
+
+  const filteredNotes = notes.filter(note => {
     const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       note.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       note.subject.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,7 +91,7 @@ const NotesDownload = () => {
   });
 
   const handleDownload = (noteId: string) => {
-    const note = mockNotes.find(n => n.id === noteId);
+    const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
     // Show download popup
@@ -43,7 +101,16 @@ const NotesDownload = () => {
       status: 'downloading'
     });
 
-    // Simulate download process
+    // Create download link
+    const downloadUrl = note.githubUrl || `https://example.com/notes/${note.fileName}`;
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', note.fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Update popup status
     setTimeout(() => {
       setDownloadPopup(prev => ({ ...prev, status: 'success' }));
 
@@ -51,10 +118,7 @@ const NotesDownload = () => {
       setTimeout(() => {
         setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
       }, 2000);
-    }, 1500);
-
-    // Mock download functionality
-    console.log('Downloading note:', noteId);
+    }, 500);
   };
 
   const closePopup = () => {
@@ -159,7 +223,7 @@ const NotesDownload = () => {
                       <User className="h-4 w-4 mr-1" />
                       <span className="mr-4">{note.uploader}</span>
                       <Calendar className="h-4 w-4 mr-1" />
-                      <span>{note.uploadDate}</span>
+                      <span>{new Date(note.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                     </div>
                   </div>
                   <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
