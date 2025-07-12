@@ -208,29 +208,6 @@ const NotesUpload = () => {
           </div>
         )}
 
-        {/* Upload Progress */}
-        {isSubmitting && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-blue-800 font-medium">Uploading to GitHub</span>
-              <span className="text-blue-800">{uploadProgress}%</span>
-            </div>
-            {/* Progress Bar */}
-            {isSubmitting && (
-              <div className="mt-4">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-                <p className="text-center mt-2 text-sm text-gray-600">
-                  Uploading: {uploadProgress}%
-                </p>
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upload Form */}
@@ -386,6 +363,29 @@ const NotesUpload = () => {
             </div>
           </div>
 
+          {/* Upload Progress */}
+          {isSubmitting && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-blue-800 font-medium">Uploading to GitHub</span>
+                <span className="text-blue-800">{uploadProgress}%</span>
+              </div>
+              {/* Progress Bar */}
+              {isSubmitting && (
+                <div className="mt-4">
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-center mt-2 text-sm text-gray-600">
+                    Uploading: {uploadProgress}%
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Points Information */}
