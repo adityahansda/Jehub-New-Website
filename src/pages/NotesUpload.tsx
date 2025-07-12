@@ -4,6 +4,8 @@ import { Upload, FileText, Star, CheckCircle } from 'lucide-react';
 // import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadToGitHub, validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { databases } from '../lib/appwrite';
+import { ID } from 'appwrite';
 
 const NotesUpload = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ const NotesUpload = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [uploadFailed, setUploadFailed] = useState(false);
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [githubUrl, setGithubUrl] = useState('');
@@ -68,8 +71,11 @@ const NotesUpload = () => {
       if (progressIntervalId) clearInterval(progressIntervalId);
       setUploadProgress(100);
 
-      // Store metadata in Firestore - DISABLED
-      /*
+      // Fetch user's IP address
+      const ipResponse = await fetch('/api/ip');
+      const { ip } = await ipResponse.json();
+
+      // Store metadata in Appwrite
       const notesData = {
         title: formData.title,
         branch: formData.branch,
@@ -77,15 +83,19 @@ const NotesUpload = () => {
         subject: formData.subject,
         description: formData.description,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        githubUrl,
+        githubUrl: newGithubUrl,
         fileName: formData.file.name,
-        uploadedAt: serverTimestamp(),
+        userIp: ip,
         downloads: 0,
         likes: 0
       };
 
-      await addDoc(collection(db, 'notes'), notesData);
-      */
+      await databases.createDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+        ID.unique(),
+        notesData
+      );
 
       // Reset form
       setFormData({
@@ -103,6 +113,7 @@ const NotesUpload = () => {
     } catch (err: any) {
       if (progressIntervalId) clearInterval(progressIntervalId);
       setError(err.message || 'Failed to upload notes. Please try again.');
+      setUploadFailed(true);
       console.error('Upload error:', err);
     } finally {
       setIsSubmitting(false);
@@ -136,8 +147,27 @@ const NotesUpload = () => {
           </p>
         </div>
 
+        {/* Failure Message */}
+        {uploadFailed && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <p className="text-red-800 font-bold">Upload Failed!</p>
+            </div>
+            <p className="text-red-700 mt-2">{error}</p>
+            <button
+              onClick={() => {
+                setUploadFailed(false);
+                setError('');
+              }}
+              className="mt-4 bg-red-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
         {/* Error Message */}
-        {error && (
+        {error && !uploadFailed && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center">
             <p className="text-red-800">{error}</p>
           </div>
