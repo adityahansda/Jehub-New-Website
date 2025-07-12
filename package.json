@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "appwrite": "^18.1.1",
     "firebase": "^11.10.0",
     "git": "^0.1.5",
     "lucide-react": "^0.344.0",
