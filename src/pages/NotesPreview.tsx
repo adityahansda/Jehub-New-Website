@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
-import PDFViewer from '../components/PDFViewer';
+import dynamic from 'next/dynamic';
+
+const PDFViewer = dynamic(() => import('../components/PDFViewer'), {
+  ssr: false,
+  loading: () => <p>Loading PDF viewer...</p>
+});
 import {
   Download,
   Eye,
@@ -33,9 +38,9 @@ import { Query } from 'appwrite';
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
   if (!url) return url;
-  
+
   console.log('Converting URL to download:', url);
-  
+
   // Handle raw.githubusercontent.com URLs
   if (url.includes('raw.githubusercontent.com')) {
     // Convert: https://raw.githubusercontent.com/user/repo/main/path/file.pdf
@@ -51,20 +56,20 @@ function convertToDownloadUrl(url: string): string {
       return downloadUrl;
     }
   }
-  
+
   // Handle github.com/user/repo/raw/ URLs
   if (url.includes('github.com') && url.includes('/raw/')) {
     console.log('Already a GitHub raw URL for download:', url);
     return url;
   }
-  
+
   // Handle github.com/user/repo/blob/ URLs (convert to raw for download)
   if (url.includes('github.com') && url.includes('/blob/')) {
     const downloadUrl = url.replace('/blob/', '/raw/');
     console.log('Converted blob to raw URL:', downloadUrl);
     return downloadUrl;
   }
-  
+
   // If it's already a download URL or other format, return as is
   console.log('URL unchanged:', url);
   return url;
@@ -74,9 +79,9 @@ function convertToDownloadUrl(url: string): string {
 // Transform download URLs to viewable URLs
 function transformUrlForViewing(url: string): string {
   if (!url) return url;
-  
+
   console.log('Transforming URL for viewing:', url);
-  
+
   // Handle GitHub URLs
   if (url.includes('github.com')) {
     // Convert GitHub blob URL to raw URL for viewing
@@ -91,26 +96,26 @@ function transformUrlForViewing(url: string): string {
       return url;
     }
   }
-  
+
   // Handle raw.githubusercontent.com URLs (already good for viewing)
   if (url.includes('raw.githubusercontent.com')) {
     console.log('Raw githubusercontent URL for viewing:', url);
     return url;
   }
-  
+
   // Handle Google Drive URLs
   if (url.includes('drive.google.com')) {
     // Extract file ID from various Google Drive URL formats
-    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) || 
-                       url.match(/id=([a-zA-Z0-9-_]+)/) ||
-                       url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    
+    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) ||
+      url.match(/id=([a-zA-Z0-9-_]+)/) ||
+      url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+
     if (fileIdMatch && fileIdMatch[1]) {
       const fileId = fileIdMatch[1];
       return `https://drive.google.com/file/d/${fileId}/preview`;
     }
   }
-  
+
   // Handle Dropbox URLs
   if (url.includes('dropbox.com')) {
     // Convert Dropbox share URL to direct link
@@ -121,7 +126,7 @@ function transformUrlForViewing(url: string): string {
       return url + '?dl=1';
     }
   }
-  
+
   // Handle OneDrive URLs
   if (url.includes('1drv.ms') || url.includes('onedrive.live.com')) {
     // OneDrive requires specific embedding format
@@ -130,13 +135,13 @@ function transformUrlForViewing(url: string): string {
       return url;
     }
   }
-  
+
   // Add CORS proxy for external URLs if needed
   if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
     // Try to load directly first, fallback to CORS proxy if needed
     return url;
   }
-  
+
   return url;
 }
 
@@ -156,6 +161,7 @@ type Note = {
   downloads: number;
   likes: number;
   points: number;
+  degree: string;
 };
 
 const NotesPreview = () => {
@@ -172,7 +178,7 @@ const NotesPreview = () => {
     noteTitle: string;
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
-  
+
   // PDF-related state
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
@@ -180,7 +186,7 @@ const NotesPreview = () => {
   useEffect(() => {
     const fetchNote = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
         const response = await databases.getDocument(
@@ -203,11 +209,12 @@ const NotesPreview = () => {
           fileName: response.fileName,
           downloads: response.downloads,
           likes: response.likes,
-          points: response.points || 0
+          points: response.points || 0,
+          degree: response.degree
         };
 
         setNote(fetchedNote);
-        
+
         // Set PDF URL if available and transform for viewing
         if (fetchedNote.githubUrl) {
           const viewableUrl = transformUrlForViewing(fetchedNote.githubUrl);
@@ -254,7 +261,7 @@ const NotesPreview = () => {
   useEffect(() => {
     const fetchRelatedNotes = async () => {
       if (!note) return;
-      
+
       try {
         const response = await databases.listDocuments(
           process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
@@ -280,7 +287,8 @@ const NotesPreview = () => {
           fileName: doc.fileName,
           downloads: doc.downloads,
           likes: doc.likes,
-          points: doc.points || 0
+          points: doc.points || 0,
+          degree: doc.degree
         }));
 
         setRelatedNotes(fetchedRelatedNotes);
@@ -367,7 +375,7 @@ const NotesPreview = () => {
 
   const handleShare = () => {
     if (!note) return;
-    
+
     if (navigator.share) {
       navigator.share({
         title: note.title,
@@ -383,7 +391,7 @@ const NotesPreview = () => {
 
   const handleReport = () => {
     if (!note) return;
-    
+
     console.log('Reporting note:', note.id);
     alert('Thank you for your report. We will review this content.');
   };
@@ -493,7 +501,13 @@ const NotesPreview = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      <span>{note.uploadDate}</span>
+                      <span>
+                        {new Date(note.uploadDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Download className="h-4 w-4" />
@@ -514,6 +528,9 @@ const NotesPreview = () => {
                     </span>
                     <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
                       {note.subject}
+                    </span>
+                    <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
+                      {note.degree}
                     </span>
                     {note.tags.map((tag, index) => (
                       <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
@@ -539,8 +556,8 @@ const NotesPreview = () => {
                 <button
                   onClick={handleLike}
                   className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isLiked
-                      ? 'bg-red-100 text-red-700 border border-red-200'
-                      : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
+                    ? 'bg-red-100 text-red-700 border border-red-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
                     }`}
                 >
                   <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -633,9 +650,11 @@ const NotesPreview = () => {
                   <div className="space-y-4">
                     {comments.map((comment) => (
                       <div key={comment.id} className="flex gap-3">
-                        <img
+                        <Image
                           src={comment.avatar}
                           alt={comment.user}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-full border-2 border-white shadow-md"
                         />
                         <div className="flex-1">
@@ -693,9 +712,11 @@ const NotesPreview = () => {
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Uploader</h3>
               <div className="flex items-center gap-3 mb-4">
-                <img
+                <Image
                   src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
                   alt={note.uploader}
+                  width={48}
+                  height={48}
                   className="w-12 h-12 rounded-full border-2 border-white shadow-md"
                 />
                 <div>

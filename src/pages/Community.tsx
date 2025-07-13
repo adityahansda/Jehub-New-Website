@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Plus, Heart, MessageCircle, Share2, Flag, Clock } from 'lucide-react';
 import { mockCommunityPosts } from '../data/mockData';
-import Image from 'next/image'
 const Community = () => {
   const [activeTab, setActiveTab] = useState<'trending' | 'latest' | 'answered'>('trending');
   const [showNewPost, setShowNewPost] = useState(false);
@@ -148,9 +148,11 @@ const Community = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <img
+                    <Image
                       src={post.avatar}
                       alt={post.user}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full border-2 border-white shadow-md"
                     />
                     <div>
