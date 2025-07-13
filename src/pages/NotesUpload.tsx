@@ -16,6 +16,7 @@ const NotesUpload = () => {
     description: '',
     tags: '',
     authorName: '',
+    degree: '',
     file: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,7 +91,8 @@ const NotesUpload = () => {
         fileName: formData.file.name,
         userIp: ip,
         downloads: 0,
-        likes: 0
+        likes: 0,
+        degree: formData.degree
       };
 
       await databases.createDocument(
@@ -109,6 +111,7 @@ const NotesUpload = () => {
         description: '',
         tags: '',
         authorName: '',
+        degree: '',
         file: null
       });
 
@@ -233,7 +236,7 @@ const NotesUpload = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-2">
                       Branch *
@@ -271,6 +274,23 @@ const NotesUpload = () => {
                           {semester}
                         </option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="degree" className="block text-sm font-medium text-gray-700 mb-2">
+                      Degree *
+                    </label>
+                    <select
+                      id="degree"
+                      required
+                      value={formData.degree}
+                      onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select Degree</option>
+                      <option value="B.Tech">B.Tech</option>
+                      <option value="Diploma">Diploma</option>
                     </select>
                   </div>
                 </div>
