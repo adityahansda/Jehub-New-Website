@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-
+// import { SpeedInsights } from "@vercel/speed-insights/next"
 import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
 // If '../data/mockData' does not export 'stats', define a fallback here
 import { stats as importedStats } from '../data/mockData';
