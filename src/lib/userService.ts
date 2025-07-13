@@ -70,9 +70,23 @@ export const createUserProfile = async (profileData: {
       updatedAt: now,
     };
     
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+    const usersCollectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
+    
+    console.log('Environment variables:', {
+      databaseId,
+      usersCollectionId,
+      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
+    });
+    
+    if (!databaseId || !usersCollectionId) {
+      throw new Error(`Missing environment variables: databaseId=${databaseId}, usersCollectionId=${usersCollectionId}`);
+    }
+    
     const document = await databases.createDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      usersCollectionId,
       ID.unique(),
       defaultProfile
     );
