@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { Query } from 'appwrite';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the LoadingSpinner component
+import LoadingSpinner from '../components/LoadingSpinner';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -60,6 +60,7 @@ type Note = {
   downloads: number;
   likes: number;
   points: number;
+  degree: string;
 };
 
 const NotesDownload = () => {
@@ -70,7 +71,8 @@ const NotesDownload = () => {
   const [filters, setFilters] = useState({
     branch: '',
     semester: '',
-    subject: ''
+    subject: '',
+    degree: ''
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [downloadPopup, setDownloadPopup] = useState<{
@@ -78,9 +80,11 @@ const NotesDownload = () => {
     noteTitle: string;
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
+  const [likedNotes, setLikedNotes] = useState<Set<string>>(new Set());
 
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+  const degrees = ['B.Tech', 'Diploma'];
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -106,7 +110,8 @@ const NotesDownload = () => {
           fileName: doc.fileName,
           downloads: doc.downloads,
           likes: doc.likes,
-          points: doc.points || 0
+          points: doc.points || 0,
+          degree: doc.degree
         }));
 
         setNotes(fetchedNotes);
@@ -128,9 +133,10 @@ const NotesDownload = () => {
 
     const matchesBranch = !filters.branch || note.branch === filters.branch;
     const matchesSemester = !filters.semester || note.semester === filters.semester;
+    const matchesDegree = !filters.degree || note.degree === filters.degree;
     const matchesSubject = !filters.subject || note.subject.toLowerCase().includes(filters.subject.toLowerCase());
 
-    return matchesSearch && matchesBranch && matchesSemester && matchesSubject;
+    return matchesSearch && matchesBranch && matchesSemester && matchesSubject && matchesDegree;
   });
 
   const handleDownload = async (noteId: string) => {
@@ -212,17 +218,69 @@ const NotesDownload = () => {
     setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
   };
 
+  const handleLike = async (noteId: string) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+
+    try {
+      const isLiked = likedNotes.has(noteId);
+      const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
+
+      // Update database
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+        noteId,
+        { likes: newLikes }
+      );
+
+      // Update local state
+      setNotes(prevNotes =>
+        prevNotes.map(n =>
+          n.id === noteId ? { ...n, likes: newLikes } : n
+        )
+      );
+
+      // Update liked notes set
+      setLikedNotes(prev => {
+        const newSet = new Set(prev);
+        if (isLiked) {
+          newSet.delete(noteId);
+        } else {
+          newSet.add(noteId);
+        }
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
+  };
+
+  const handleShare = (note: Note) => {
+    if (navigator.share) {
+      navigator.share({
+        title: note.title,
+        text: note.description,
+        url: `${window.location.origin}/notes-preview/${note.id}`,
+      });
+    } else {
+      // Fallback: copy to clipboard
+      const shareUrl = `${window.location.origin}/notes-preview/${note.id}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Link copied to clipboard!');
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Download Notes
+            📚 Download Notes
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Access thousands of high-quality notes from students worldwide
           </p>
         </div>
@@ -238,7 +296,7 @@ const NotesDownload = () => {
         ) : (
           <>
             {/* Search and Filters */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 mb-8">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search Bar */}
                 <div className="flex-1 relative">
@@ -253,7 +311,7 @@ const NotesDownload = () => {
                 </div>
 
                 {/* Filter Dropdowns */}
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                   <select
                     value={filters.branch}
                     onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
@@ -276,6 +334,17 @@ const NotesDownload = () => {
                     ))}
                   </select>
 
+                  <select
+                    value={filters.degree}
+                    onChange={(e) => setFilters({ ...filters, degree: e.target.value })}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">All Degrees</option>
+                    {degrees.map(degree => (
+                      <option key={degree} value={degree}>{degree}</option>
+                    ))}
+                  </select>
+
                   <input
                     type="text"
                     placeholder="Subject"
@@ -294,25 +363,27 @@ const NotesDownload = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    title="Grid View"
                   >
-                    <Filter className="h-4 w-4" />
+                    <Grid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    title="List View"
                   >
-                    <Filter className="h-4 w-4" />
+                    <List className="h-4 w-4" />
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Notes Grid/List */}
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}`}>
+            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}`}>
               {filteredNotes.map((note) => (
                 <div key={note.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
@@ -344,28 +415,54 @@ const NotesDownload = () => {
                       <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
                         {note.subject}
                       </span>
+                      <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">
+                        {note.degree}
+                      </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-left sm:items-center justify-between">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Download className="h-4 w-4 mr-1" />
-                        <span>{note.downloads} downloads</span>
-                      </div>
-                      <div className="flex gap-2 justify-between">
-                        <Link
-                          href={`/notes-preview/${note.id}`}
-                          className="flex items-center py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Preview
-                        </Link>
-                        <button
-                          onClick={() => handleDownload(note.id)}
-                          className="flex items-center px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </button>
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center text-gray-600">
+                            <Download className="h-4 w-4 mr-1" />
+                            <span>{note.downloads}</span>
+                            <span className="ml-1 hidden sm:inline">downloads</span>
+                          </div>
+                          <button
+                            onClick={() => handleLike(note.id)}
+                            className="flex items-center transition-all duration-200 hover:scale-105 group"
+                          >
+                            <Heart 
+                              className={`h-4 w-4 mr-1 transition-all duration-200 stroke-2 ${
+                                likedNotes.has(note.id) 
+                                  ? 'fill-red-500 text-red-500 scale-110' 
+                                  : 'text-gray-700 hover:text-red-500 group-hover:fill-red-100'
+                              }`} 
+                            />
+                            <span className={`transition-colors ${
+                              likedNotes.has(note.id) ? 'text-red-500 font-medium' : 'text-gray-700'
+                            }`}>
+                              {note.likes}
+                            </span>
+                            <span className="ml-1 hidden sm:inline text-gray-600">likes</span>
+                          </button>
+                        </div>
+                        <div className="flex items-center space-x-2 pr-2">
+                          <Link
+                            href={`/notes-preview/${note.id}`}
+                            className="flex items-center px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Preview
+                          </Link>
+                          <button
+                            onClick={() => handleDownload(note.id)}
+                            className="flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </button>
+                        </div>
                       </div>
                     </div>
 

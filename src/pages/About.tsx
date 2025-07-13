@@ -1,6 +1,6 @@
 import React from 'react';
-import { BookOpen, Users, Target, Heart, Mail, Phone, MapPin } from 'lucide-react';
-import Image from 'next/image'
+import Image from 'next/image';
+import { Users, BookOpen, Star, Globe, Heart, Shield, Mail, Phone, MapPin, Target } from 'lucide-react';
 const About = () => {
   const features = [
     {
@@ -127,9 +127,11 @@ const About = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map((member, index) => (
               <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition-all duration-300">
-                <img
+                <Image
                   src={member.image}
                   alt={member.name}
+                  width={96}
+                  height={96}
                   className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-lg"
                 />
                 <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
