@@ -74,7 +74,13 @@ export const uploadToGitHub = async (file: File, path: string): Promise<string> 
       }
     });
 
-    // Return the download URL
+    // Return the raw URL for PDF viewing (not download URL)
+    // Convert the HTML URL to raw URL for better compatibility
+    const htmlUrl = response.data.content?.html_url || '';
+    if (htmlUrl.includes('/blob/')) {
+      return htmlUrl.replace('/blob/', '/raw/');
+    }
+    // Fallback to download URL if raw URL can't be constructed
     return response.data.content?.download_url || '';
   } catch (error: any) {
     console.error('GitHub upload error:', error);
