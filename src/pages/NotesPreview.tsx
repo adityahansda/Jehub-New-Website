@@ -171,6 +171,21 @@ const NotesPreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isLiked, setIsLiked] = useState(false);
+
+  // Load liked status from localStorage when note is loaded
+  useEffect(() => {
+    if (note) {
+      const savedLikedNotes = localStorage.getItem('likedNotes');
+      if (savedLikedNotes) {
+        try {
+          const likedNotesArray = JSON.parse(savedLikedNotes);
+          setIsLiked(likedNotesArray.includes(note.id));
+        } catch (error) {
+          console.error('Error parsing liked notes from localStorage:', error);
+        }
+      }
+    }
+  }, [note]);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [downloadPopup, setDownloadPopup] = useState<{
@@ -369,8 +384,48 @@ const NotesPreview = () => {
     }
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  const handleLike = async () => {
+    if (!note) return;
+
+    try {
+      const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
+
+      // Update database
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+        note.id,
+        { likes: newLikes }
+      );
+
+      // Update local state
+      setNote({ ...note, likes: newLikes });
+      const newIsLiked = !isLiked;
+      setIsLiked(newIsLiked);
+
+      // Update localStorage
+      const savedLikedNotes = localStorage.getItem('likedNotes');
+      let likedNotesArray = [];
+      if (savedLikedNotes) {
+        try {
+          likedNotesArray = JSON.parse(savedLikedNotes);
+        } catch (error) {
+          console.error('Error parsing liked notes from localStorage:', error);
+        }
+      }
+
+      if (newIsLiked) {
+        if (!likedNotesArray.includes(note.id)) {
+          likedNotesArray.push(note.id);
+        }
+      } else {
+        likedNotesArray = likedNotesArray.filter((id: string) => id !== note.id);
+      }
+
+      localStorage.setItem('likedNotes', JSON.stringify(likedNotesArray));
+    } catch (error) {
+      console.error('Error updating like:', error);
+    }
   };
 
   const handleShare = () => {
@@ -699,7 +754,7 @@ const NotesPreview = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Likes</span>
-                  <span className="font-semibold">89</span>
+                  <span className="font-semibold">{note.likes}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Comments</span>

@@ -82,6 +82,24 @@ const NotesDownload = () => {
   }>({ show: false, noteTitle: '', status: 'downloading' });
   const [likedNotes, setLikedNotes] = useState<Set<string>>(new Set());
 
+  // Load liked notes from localStorage on component mount
+  useEffect(() => {
+    const savedLikedNotes = localStorage.getItem('likedNotes');
+    if (savedLikedNotes) {
+      try {
+        const likedNotesArray = JSON.parse(savedLikedNotes);
+        setLikedNotes(new Set(likedNotesArray));
+      } catch (error) {
+        console.error('Error parsing liked notes from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save liked notes to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('likedNotes', JSON.stringify(Array.from(likedNotes)));
+  }, [likedNotes]);
+
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
   const degrees = ['B.Tech', 'Diploma'];
@@ -222,10 +240,27 @@ const NotesDownload = () => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
-    try {
-      const isLiked = likedNotes.has(noteId);
-      const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
+    const isLiked = likedNotes.has(noteId);
+    const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
+    
+    // Optimistic update - update UI immediately
+    setNotes(prevNotes =>
+      prevNotes.map(n =>
+        n.id === noteId ? { ...n, likes: newLikes } : n
+      )
+    );
+    
+    setLikedNotes(prev => {
+      const newSet = new Set(prev);
+      if (isLiked) {
+        newSet.delete(noteId);
+      } else {
+        newSet.add(noteId);
+      }
+      return newSet;
+    });
 
+    try {
       // Update database
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
@@ -233,26 +268,25 @@ const NotesDownload = () => {
         noteId,
         { likes: newLikes }
       );
-
-      // Update local state
+    } catch (error) {
+      console.error('Error updating like:', error);
+      
+      // Revert optimistic update on error
       setNotes(prevNotes =>
         prevNotes.map(n =>
-          n.id === noteId ? { ...n, likes: newLikes } : n
+          n.id === noteId ? { ...n, likes: note.likes } : n
         )
       );
-
-      // Update liked notes set
+      
       setLikedNotes(prev => {
         const newSet = new Set(prev);
         if (isLiked) {
-          newSet.delete(noteId);
-        } else {
           newSet.add(noteId);
+        } else {
+          newSet.delete(noteId);
         }
         return newSet;
       });
-    } catch (error) {
-      console.error('Error updating like:', error);
     }
   };
 
