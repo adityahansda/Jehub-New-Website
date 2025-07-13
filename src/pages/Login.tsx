@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { account } from '../lib/appwrite';
+import { OAuthProvider } from 'appwrite';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,18 +12,27 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const { login, loading, error } = useAuth();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login
-    console.log('Login:', formData);
+    try {
+      await login(formData.email, formData.password);
+      // Redirect to dashboard or home page after successful login
+      router.push('/admin-dashboard');
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      // Import and initialize the Appwrite account object first
-      // await account.createOAuth2Session('google', 'http://localhost:3000/dashboard', 'http://localhost:3000/login');
-      console.log('Google OAuth needs to be implemented with proper account initialization');
+      await account.createOAuth2Session(
+        OAuthProvider.Google,
+        'http://localhost:3000/admin-dashboard',
+        'http://localhost:3000/login'
+      );
     } catch (error) {
       console.error('Google Sign-In failed:', error);
     }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
-const PDFViewer = dynamic(() => import('../components/PDFViewer'), {
+const PDFViewer = dynamic(() => import('../../components/PDFViewer'), {
   ssr: false,
   loading: () => <p>Loading PDF viewer...</p>
 });
@@ -29,11 +29,14 @@ import {
   MessageCircle,
   CheckCircle,
   X,
+  XCircle,
   AlertCircle,
   Loader
 } from 'lucide-react';
-import { databases } from '../lib/appwrite';
+import { databases } from '../../lib/appwrite';
 import { Query } from 'appwrite';
+import { checkUrlStatus } from '../../lib/pdfValidation';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -171,6 +174,8 @@ const NotesPreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isLiked, setIsLiked] = useState(false);
+  const [pdfValidationStatus, setPdfValidationStatus] = useState<'checking' | 'valid' | 'deleted' | 'error' | null>(null);
+  const [showDeletedMessage, setShowDeletedMessage] = useState(false);
 
   // Load liked status from localStorage when note is loaded
   useEffect(() => {
@@ -196,6 +201,22 @@ const NotesPreview = () => {
 
   // PDF-related state
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  
+  // Function to validate PDF URL
+  const validatePdfUrl = async (url: string) => {
+    setPdfValidationStatus('checking');
+    try {
+      const result = await checkUrlStatus(url);
+      setPdfValidationStatus(result.status);
+      
+      if (result.status === 'deleted') {
+        setShowDeletedMessage(true);
+      }
+    } catch (error) {
+      console.error('PDF validation error:', error);
+      setPdfValidationStatus('error');
+    }
+  };
 
   // Fetch note data from database
   useEffect(() => {
@@ -236,6 +257,9 @@ const NotesPreview = () => {
           console.log('Original URL:', fetchedNote.githubUrl);
           console.log('Transformed URL:', viewableUrl);
           setPdfUrl(viewableUrl);
+          
+          // Validate PDF URL
+          validatePdfUrl(fetchedNote.githubUrl);
         }
       } catch (err) {
         setError('Failed to fetch note details. Please try again later.');
@@ -318,6 +342,12 @@ const NotesPreview = () => {
 
   const handleDownload = async () => {
     if (!note) return;
+
+    // Check if PDF is deleted before attempting download
+    if (pdfValidationStatus === 'deleted') {
+      setShowDeletedMessage(true);
+      return;
+    }
 
     // Show download popup
     setDownloadPopup({
@@ -647,10 +677,62 @@ const NotesPreview = () => {
               </div>
             )}
 
+            {/* Deleted PDF Message */}
+            {showDeletedMessage && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  <AlertCircle className="h-8 w-8 text-red-600 mr-3" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-red-900">Note Deleted</h3>
+                    <p className="text-red-700">This PDF file has been removed from GitHub and is no longer available.</p>
+                  </div>
+                </div>
+                <div className="bg-red-100 rounded-lg p-4 mb-4">
+                  <p className="text-red-800 font-medium mb-2">What happened?</p>
+                  <p className="text-red-700 text-sm mb-2">
+                    The PDF file linked to this note has been deleted from GitHub and cannot be accessed or downloaded.
+                  </p>
+                  <p className="text-red-700 text-sm">
+                    This usually happens when the file is removed from the repository or the repository becomes private.
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setShowDeletedMessage(false)}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                  <p className="text-sm text-red-600">
+                    <strong>Need help?</strong> Contact the administrator to report this issue.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* PDF Validation Status */}
+            {pdfValidationStatus === 'checking' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center">
+                  <LoadingSpinner size="small" className="mr-2" />
+                  <span className="text-blue-800">Validating PDF availability...</span>
+                </div>
+              </div>
+            )}
+
             {/* PDF Preview */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
-              {pdfUrl ? (
+              {pdfValidationStatus === 'deleted' ? (
+                <div className="text-center py-8 text-red-500">
+                  <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <XCircle className="h-8 w-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-red-900 mb-2">PDF Not Available</h3>
+                  <p className="text-red-700 mb-4">This PDF file has been deleted from GitHub and cannot be previewed.</p>
+                  <p className="text-sm text-red-600">Contact the administrator for assistance.</p>
+                </div>
+              ) : pdfUrl ? (
                 <PDFViewer
                   url={pdfUrl}
                   fileName={note.fileName}
