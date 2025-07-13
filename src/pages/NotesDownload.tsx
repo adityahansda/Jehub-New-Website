@@ -4,6 +4,7 @@ import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Hea
 import { databases } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { checkUrlStatus } from '../lib/pdfValidation';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -169,6 +170,21 @@ const NotesDownload = () => {
     });
 
     try {
+      // First validate the PDF URL
+      const urlValidation = await checkUrlStatus(note.githubUrl);
+      
+      if (urlValidation.status === 'deleted') {
+        setDownloadPopup(prev => ({ ...prev, status: 'error' }));
+        setTimeout(() => {
+          setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
+        }, 3000);
+        alert('This PDF has been deleted from GitHub and is no longer available. Please contact the administrator.');
+        return;
+      }
+
+      if (urlValidation.status === 'error') {
+        console.warn('PDF validation failed, but attempting download anyway');
+      }
       // Update download count in database
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,

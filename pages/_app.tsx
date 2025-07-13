@@ -4,11 +4,14 @@ import '../src/styles/pdf-viewer.css'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 import Layout from '../src/components/Layout'
+import { AuthProvider } from '../src/contexts/AuthContext'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <AuthProvider>
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    </AuthProvider>
   )
 }
