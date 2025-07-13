@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { account } from '../lib/appwrite';
 import { Models, ID } from 'appwrite';
-import { createUserProfile, UserProfile } from '../lib/userService';
+import { createUserProfile, UserProfile, updateUserProfile } from '../lib/userService';
+import { recordLoginActivity, updateLoginStreak } from '../lib/activityService';
 
 interface AuthContextType {
   user: Models.User<Models.Preferences> | null;
@@ -54,9 +55,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setError(null);
       setLoading(true);
+      
+      // Check if there's already an active session
+      try {
+        const currentUser = await account.get();
+        if (currentUser) {
+          // User is already logged in, delete current session first
+          await account.deleteSession('current');
+        }
+      } catch (error) {
+        // No active session, continue with login
+      }
+      
       await account.createEmailPasswordSession(email, password);
       const userData = await account.get();
       setUser(userData);
+      
+      // Record login activity and update streak
+      try {
+        await recordLoginActivity(userData.$id);
+        await updateLoginStreak(userData.$id);
+        
+        // Update last login date in user profile
+        await updateUserProfile(userData.$id, {
+          lastLoginDate: new Date().toISOString(),
+        });
+      } catch (activityError) {
+        console.error('Error recording login activity:', activityError);
+        // Don't throw error as login was successful
+      }
     } catch (error: any) {
       setError(error.message || 'Login failed');
       throw error;
