@@ -15,6 +15,16 @@ const Login = () => {
     console.log('Login:', formData);
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      // Import and initialize the Appwrite account object first
+      // await account.createOAuth2Session('google', 'http://localhost:3000/dashboard', 'http://localhost:3000/login');
+      console.log('Google OAuth needs to be implemented with proper account initialization');
+    } catch (error) {
+      console.error('Google Sign-In failed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
       <div className="max-w-md w-full space-y-8">

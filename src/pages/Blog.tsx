@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Search, Calendar, User, Clock, Plus } from 'lucide-react';
 import { mockBlogPosts } from '../data/mockData';
-import Image from 'next/image'
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -77,9 +77,11 @@ const Blog = () => {
           {filteredPosts.map((post) => (
             <article key={post.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="aspect-w-16 aspect-h-9">
-                <img
+                <Image
                   src={post.image}
                   alt={post.title}
+                  width={400}
+                  height={192}
                   className="w-full h-48 object-cover"
                 />
               </div>

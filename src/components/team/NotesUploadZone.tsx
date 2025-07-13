@@ -8,6 +8,7 @@ const NotesUploadZone = () => {
     description: '',
     subject: '',
     semester: '',
+    degree: '',
     file: null as File | null
   });
 
@@ -51,7 +52,7 @@ const NotesUploadZone = () => {
     e.preventDefault();
     console.log('Uploading notes:', formData);
     setShowUploadForm(false);
-    setFormData({ title: '', description: '', subject: '', semester: '', file: null });
+    setFormData({ title: '', description: '', subject: '', semester: '', degree: '', file: null });
   };
 
   const getStatusColor = (status: string) => {
@@ -126,7 +127,7 @@ const NotesUploadZone = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                 <input
@@ -155,6 +156,19 @@ const NotesUploadZone = () => {
                   <option value="6th">6th Semester</option>
                   <option value="7th">7th Semester</option>
                   <option value="8th">8th Semester</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                <select
+                  value={formData.degree}
+                  onChange={(e) => setFormData(prev => ({ ...prev, degree: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Degree</option>
+                  <option value="B.Tech">B.Tech</option>
+                  <option value="Diploma">Diploma</option>
                 </select>
               </div>
             </div>
