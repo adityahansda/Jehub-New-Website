@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Trophy, Star, Medal, Crown } from 'lucide-react';
 import { mockLeaderboard } from '../data/mockData';
-import Image from 'next/image'
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
 
@@ -74,9 +74,11 @@ const Leaderboard = () => {
               <div className={`absolute inset-0 ${getLevelColor(user.level)} opacity-10`}></div>
               <div className="relative">
                 <div className="text-4xl mb-2">{getRankBadge(user.rank)}</div>
-                <img
+                <Image
                   src={user.avatar}
                   alt={user.name}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full mx-auto mb-4 border-4 border-white shadow-lg"
                 />
                 <h3 className="text-xl font-bold text-gray-900 mb-1">{user.name}</h3>
@@ -112,9 +114,11 @@ const Leaderboard = () => {
                     <div className="text-2xl font-bold text-gray-400 min-w-[3rem]">
                       {getRankBadge(user.rank)}
                     </div>
-                    <img
+                    <Image
                       src={user.avatar}
                       alt={user.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full border-2 border-white shadow-md"
                     />
                     <div>
