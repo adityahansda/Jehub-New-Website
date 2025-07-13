@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut } from 'lucide-react';
-import Image from 'next/image'
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -42,9 +42,11 @@ const Profile = () => {
           <div className="px-6 pb-6">
             <div className="flex items-center justify-between -mt-16">
               <div className="flex items-center">
-                <img
+                <Image
                   src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
                   alt={profile.name}
+                  width={96}
+                  height={96}
                   className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
                 />
                 <div className="ml-4 pt-16">

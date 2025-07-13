@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ZoomIn, ZoomOut, RotateCw, Download, Maximize2, Minimize2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
-// Import react-pdf styles
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+// Note: react-pdf styles are imported in _app.tsx
 
 // Configure PDF.js worker
 if (typeof window !== 'undefined') {
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 }
 
 interface PDFViewerProps {
