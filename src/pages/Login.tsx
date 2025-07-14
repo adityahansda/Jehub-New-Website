@@ -20,7 +20,6 @@ const Login = () => {
   useEffect(() => {
     // Only redirect if we have a user, not loading, and not already redirecting
     if (user && !loading && !isRedirecting) {
-      console.log('User authenticated, redirecting...', user);
       setIsRedirecting(true);
       
       // Get the redirect parameter from the URL
@@ -60,13 +59,15 @@ const Login = () => {
     
     // Don't allow login if user is already authenticated
     if (user) {
-      console.log('User already authenticated, skipping login');
       return;
     }
     
     try {
       await login(formData.email, formData.password);
-      // Don't redirect here - let the useEffect handle it
+      
+      // Redirect directly after successful login
+      const redirectTo = router.query.redirect as string || '/profile';
+      router.replace(redirectTo);
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -76,7 +77,7 @@ const Login = () => {
     try {
       await account.createOAuth2Session(
         OAuthProvider.Google,
-        'http://localhost:3000/admin-dashboard',
+        'http://localhost:3000/profile',
         'http://localhost:3000/login'
       );
     } catch (error) {

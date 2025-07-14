@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 const Profile = () => {
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Alex Johnson',
@@ -12,6 +16,42 @@ const Profile = () => {
     bio: 'Passionate about data structures and algorithms. Love helping fellow students with programming concepts.',
     joinDate: '2023-08-15'
   });
+
+  // Update profile with user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.name || 'User',
+        email: user.email || 'user@email.com',
+        joinDate: user.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '2023-08-15'
+      }));
+    }
+  }, [user]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login?redirect=/profile');
+    }
+  }, [user, loading, router]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   const stats = {
     totalPoints: 2450,
@@ -31,6 +71,15 @@ const Profile = () => {
   const handleSave = () => {
     setIsEditing(false);
     // Handle save logic
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -185,7 +234,10 @@ const Profile = () => {
             </div>
 
             {/* Logout Button */}
-            <button className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+            <button 
+              onClick={handleLogout}
+              className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </button>

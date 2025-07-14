@@ -40,7 +40,7 @@ const SignUp = () => {
         semester: formData.semester,
       });
       alert('Registration successful!');
-      router.push('/dashboard');
+      router.push('/profile');
     } catch (err:any) {
       alert(err.message || 'Registration failed.');
     }
