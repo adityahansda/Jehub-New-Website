@@ -28,7 +28,7 @@ export const validateAppwriteConfig = () => {
   ];
 
   const missingFields = requiredFields.filter(field => {
-    const value = field.split('.').reduce((obj, key) => obj?.[key], appwriteConfig);
+    const value = field.split('.').reduce((obj: any, key: string) => obj?.[key], appwriteConfig);
     return !value;
   });
 
