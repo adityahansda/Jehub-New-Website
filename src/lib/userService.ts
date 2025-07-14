@@ -14,6 +14,9 @@ export interface UserProfile {
   avatar?: string;
   joinDate: string;
   
+  // User role and permissions
+  role?: 'admin' | 'manager' | 'intern' | 'user';
+  
   // Statistics
   totalPoints: number;
   notesUploaded: number;
@@ -58,6 +61,7 @@ export const createUserProfile = async (profileData: {
       bio: '',
       avatar: '',
       joinDate: now,
+      role: 'user' as const,
       totalPoints: 0,
       notesUploaded: 0,
       notesDownloaded: 0,
@@ -91,6 +95,7 @@ export const createUserProfile = async (profileData: {
         Permission.read(Role.user(profileData.userId)),
         Permission.write(Role.user(profileData.userId)),
         Permission.read(Role.any()),
+        Permission.create(Role.any()),
       ]
     );
     
