@@ -19,7 +19,8 @@ export interface UserRole {
   isAdmin: boolean;
   isManager: boolean;
   isIntern: boolean;
-  role: 'admin' | 'manager' | 'intern' | 'user';
+  isStudent: boolean;
+  role: 'admin' | 'manager' | 'intern' | 'student' | 'user';
 }
 
 export const getUserRole = async (user: Models.User<Models.Preferences> | null): Promise<UserRole> => {
@@ -28,6 +29,7 @@ export const getUserRole = async (user: Models.User<Models.Preferences> | null):
       isAdmin: false,
       isManager: false,
       isIntern: false,
+      isStudent: false,
       role: 'user',
     };
   }
@@ -42,6 +44,7 @@ export const getUserRole = async (user: Models.User<Models.Preferences> | null):
   let isAdminByProfile = false;
   let isManagerByProfile = false;
   let isInternByProfile = false;
+  let isStudentByProfile = false;
   
   try {
     const profile = await getUserProfile(user.$id);
@@ -51,6 +54,7 @@ export const getUserRole = async (user: Models.User<Models.Preferences> | null):
       isAdminByProfile = profileRole === 'admin';
       isManagerByProfile = profileRole === 'manager';
       isInternByProfile = profileRole === 'intern';
+      isStudentByProfile = profileRole === 'student';
     }
   } catch (error) {
     console.error('Error fetching user profile for role check:', error);
@@ -59,32 +63,36 @@ export const getUserRole = async (user: Models.User<Models.Preferences> | null):
   const isAdmin = isAdminById || isAdminByEmail || isAdminByProfile;
   const isManager = isManagerByProfile || isAdmin;
   const isIntern = isInternByProfile || isManager;
+  const isStudent = isStudentByProfile || (!isAdmin && !isManager && !isIntern);
 
-  let role: 'admin' | 'manager' | 'intern' | 'user' = 'user';
+  let role: 'admin' | 'manager' | 'intern' | 'student' | 'user' = 'user';
   if (isAdmin) role = 'admin';
   else if (isManager) role = 'manager';
   else if (isIntern) role = 'intern';
+  else if (isStudent) role = 'student';
 
   return {
     isAdmin,
     isManager,
     isIntern,
+    isStudent,
     role,
   };
 };
 
 export const checkUserPermission = async (
   user: Models.User<Models.Preferences> | null,
-  requiredRole: 'admin' | 'manager' | 'intern' | 'user'
+  requiredRole: 'admin' | 'manager' | 'intern' | 'student' | 'user'
 ): Promise<boolean> => {
   if (!user) return false;
 
   const userRole = await getUserRole(user);
   
   const roleHierarchy = {
-    admin: 4,
-    manager: 3,
-    intern: 2,
+    admin: 5,
+    manager: 4,
+    intern: 3,
+    student: 2,
     user: 1,
   };
 
@@ -105,4 +113,8 @@ export const requireManager = async (user: Models.User<Models.Preferences> | nul
 
 export const requireIntern = async (user: Models.User<Models.Preferences> | null): Promise<boolean> => {
   return await checkUserPermission(user, 'intern');
+};
+
+export const requireStudent = async (user: Models.User<Models.Preferences> | null): Promise<boolean> => {
+  return await checkUserPermission(user, 'student');
 };

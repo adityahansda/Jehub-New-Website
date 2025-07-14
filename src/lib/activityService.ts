@@ -10,13 +10,6 @@ export interface UserActivity {
   description?: string;
   points: number;
   relatedItemId?: string; // ID of note, post, etc.
-  metadata?: {
-    fileName?: string;
-    fileSize?: number;
-    noteTitle?: string;
-    downloadCount?: number;
-    [key: string]: any;
-  };
   createdAt: string;
 }
 
@@ -45,7 +38,6 @@ export const createUserActivity = async (activityData: {
   description?: string;
   points: number;
   relatedItemId?: string;
-  metadata?: UserActivity['metadata'];
 }): Promise<UserActivity> => {
   try {
     const now = new Date().toISOString();
@@ -100,10 +92,6 @@ export const recordLoginActivity = async (userId: string): Promise<void> => {
       title: 'User logged in',
       description: 'User successfully logged into the system',
       points: 5,
-      metadata: {
-        loginTime: new Date().toISOString(),
-        device: navigator.userAgent,
-      }
     });
   } catch (error) {
     console.error('Error recording login activity:', error);
@@ -128,12 +116,6 @@ export const recordDownloadActivity = async (downloadData: {
       description: `Downloaded note file: ${downloadData.fileName}`,
       points: downloadData.points,
       relatedItemId: downloadData.noteId,
-      metadata: {
-        fileName: downloadData.fileName,
-        fileSize: downloadData.fileSize,
-        noteTitle: downloadData.title,
-        ...downloadData.metadata,
-      }
     });
   } catch (error) {
     console.error('Error recording download activity:', error);

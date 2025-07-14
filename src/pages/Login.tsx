@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -12,15 +12,61 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading, error } = useAuth();
+  const { login, loading, error, user } = useAuth();
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Redirect to profile when user is authenticated
+  useEffect(() => {
+    // Only redirect if we have a user, not loading, and not already redirecting
+    if (user && !loading && !isRedirecting) {
+      console.log('User authenticated, redirecting...', user);
+      setIsRedirecting(true);
+      
+      // Get the redirect parameter from the URL
+      const redirectTo = router.query.redirect as string || '/profile';
+      
+      // Use replace instead of push to prevent back button issues
+      router.replace(redirectTo);
+    }
+  }, [user, loading, isRedirecting, router]);
+
+  // If user is authenticated, don't render the form
+  if (user && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't allow login if user is already authenticated
+    if (user) {
+      console.log('User already authenticated, skipping login');
+      return;
+    }
+    
     try {
       await login(formData.email, formData.password);
-      // Redirect to profile page after successful login
-      router.push('/profile');
+      // Don't redirect here - let the useEffect handle it
     } catch (error) {
       console.error('Login failed:', error);
     }

@@ -17,8 +17,14 @@ const Footer = () => {
                   alt="Jharkhand Engineer's Hub"
                   width={137}
                   height={48}
-                  className="h-12 w-auto"
                   priority
+                  sizes="(max-width: 768px) 100vw, 137px"
+                  style={{
+                    width: 'auto',
+                    height: '48px',
+                    maxWidth: '137px',
+                    objectFit: 'contain'
+                  }}
                 />
               </div>
               {/* <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
