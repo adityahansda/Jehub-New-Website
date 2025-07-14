@@ -24,9 +24,17 @@ export function middleware(request: NextRequest) {
   // Check if the user has an auth session cookie
   const hasAuth = request.cookies.has('a_session_686d35da003a55dfcc11');
   
+  // Log middleware activity for debugging
+  console.log(`Middleware: ${pathname}, hasAuth: ${hasAuth}`);
+  
+  // Debug: Log all cookies to see what's available
+  const allCookies = Array.from(request.cookies.getAll());
+  console.log('All cookies:', allCookies.map(c => c.name));
+  
   // Handle protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {
     if (!hasAuth) {
+      console.log(`Redirecting to login from protected route: ${pathname}`);
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
@@ -36,7 +44,13 @@ export function middleware(request: NextRequest) {
   // Handle auth routes (login, signup) - redirect if already authenticated
   if (authRoutes.some(route => pathname.startsWith(route))) {
     if (hasAuth) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      console.log(`Redirecting authenticated user away from auth route: ${pathname}`);
+      // Check if there's a redirect parameter to send user to original destination
+      const redirectUrl = request.nextUrl.searchParams.get('redirect');
+      if (redirectUrl) {
+        return NextResponse.redirect(new URL(redirectUrl, request.url));
+      }
+      return NextResponse.redirect(new URL('/profile', request.url));
     }
   }
   
@@ -52,7 +66,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - _next/data (Next.js data fetching)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!api|_next/static|_next/image|_next/data|favicon.ico|public/).*)',
   ],
 };

@@ -5,7 +5,7 @@ import { UserRole } from '../lib/authUtils';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'manager' | 'intern' | 'user';
+  requiredRole?: 'admin' | 'manager' | 'intern' | 'student' | 'user';
   fallback?: React.ReactNode;
 }
 
@@ -48,9 +48,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check role-based authorization
   if (userRole && requiredRole !== 'user') {
     const roleHierarchy = {
-      admin: 4,
-      manager: 3,
-      intern: 2,
+      admin: 5,
+      manager: 4,
+      intern: 3,
+      student: 2,
       user: 1,
     };
 
@@ -58,6 +59,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const requiredRoleLevel = roleHierarchy[requiredRole];
 
     if (userRoleLevel < requiredRoleLevel) {
+      // Special handling for students - redirect to profile page
+      if (userRole.role === 'student' && router.pathname !== '/profile') {
+        router.push('/profile');
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          </div>
+        );
+      }
+      
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -66,6 +77,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             <p className="text-sm text-gray-500 mt-2">
               Required role: {requiredRole} | Your role: {userRole.role}
             </p>
+            {userRole.role === 'student' && (
+              <button 
+                onClick={() => router.push('/profile')}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              >
+                Go to Profile
+              </button>
+            )}
           </div>
         </div>
       );
@@ -78,7 +97,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 // Higher-order component for protecting pages
 export const withAuth = (
   Component: React.ComponentType<any>,
-  requiredRole?: 'admin' | 'manager' | 'intern' | 'user'
+  requiredRole?: 'admin' | 'manager' | 'intern' | 'student' | 'user'
 ) => {
   return function AuthenticatedComponent(props: any) {
     return (

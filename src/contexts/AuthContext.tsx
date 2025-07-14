@@ -50,7 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userData);
       const role = await getUserRole(userData);
       setUserRole(role);
-    } catch (error) {
+    } catch (error: any) {
+      // 401 errors are expected for anonymous users - don't log them
+      if (error.code !== 401 && error.code !== 403) {
+        console.error('Error checking user session:', error);
+      }
       setUser(null);
       setUserRole(null);
     } finally {
@@ -91,7 +95,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const role = await getUserRole(userData);
       setUserRole(role);
       
-      // Record login activity and update streak
+      // Set loading to false before recording activity
+      setLoading(false);
+      
+      // Record login activity and update streak (don't block on this)
       try {
         await recordLoginActivity(userData.$id);
         await updateLoginStreak(userData.$id);
@@ -106,25 +113,97 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error: any) {
       setError(error.message || 'Login failed');
-      throw error;
-    } finally {
       setLoading(false);
+      throw error;
     }
   };
 
   const register = async (email: string, password: string, name: string) => {
+    let userAccount = null;
+    let sessionCreated = false;
+    
     try {
       setError(null);
       setLoading(true);
-      await account.create(ID.unique(), email, password, name);
+      
+      // First, clear any existing session
+      try {
+        await account.deleteSession('current');
+      } catch (error) {
+        // No existing session, continue
+      }
+      
+      // Step 1: Create new user account
+      userAccount = await account.create(ID.unique(), email, password, name);
+      console.log('User account created successfully:', userAccount);
+      
+      // Step 2: Create session for the new user
       await account.createEmailPasswordSession(email, password);
+      sessionCreated = true;
+      console.log('Session created successfully');
+      
+      // Step 3: Get user data
       const userData = await account.get();
+      
+      // Step 4: Try to create user profile
+      try {
+        await createUserProfile({
+          userId: userData.$id,
+          name: userData.name,
+          email: userData.email,
+        });
+        console.log('User profile created successfully');
+      } catch (profileError: any) {
+        console.error('Profile creation failed:', profileError);
+        
+        // Rollback: Delete the user account if profile creation fails
+        try {
+          console.log('Rolling back user account creation...');
+          
+          // Delete the current session first
+          if (sessionCreated) {
+            await account.deleteSession('current');
+          }
+          
+          // Note: Appwrite doesn't provide a direct way to delete user accounts from client side
+          // The account will remain in Appwrite but without a profile in our database
+          // This is a limitation of Appwrite's client-side API
+          
+          console.log('Rollback completed');
+        } catch (rollbackError) {
+          console.error('Rollback failed:', rollbackError);
+        }
+        
+        // Throw the original profile creation error
+        throw new Error(`Profile creation failed: ${profileError.message}`);
+      }
+      
+      // Step 5: Set user state only after everything succeeds
       setUser(userData);
       const role = await getUserRole(userData);
       setUserRole(role);
+      
     } catch (error: any) {
-      setError(error.message || 'Registration failed');
-      throw error;
+      console.error('Registration error:', error);
+      let errorMessage = 'Registration failed';
+      
+      if (error.code === 409) {
+        errorMessage = 'User with this email already exists';
+      } else if (error.code === 400) {
+        errorMessage = 'Invalid email or password format';
+      } else if (error.code === 401) {
+        errorMessage = 'Registration not allowed. Please check your Appwrite project settings';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+      
+      // Ensure user state is cleared on any error
+      setUser(null);
+      setUserRole(null);
+      
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -138,35 +217,94 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     branch?: string;
     semester?: string;
   }) => {
+    let userAccount = null;
+    let sessionCreated = false;
+    
     try {
       setError(null);
       setLoading(true);
       
-      // Create user account
-      const userAccount = await account.create(ID.unique(), userData.email, userData.password, userData.name);
+      // First, clear any existing session
+      try {
+        await account.deleteSession('current');
+      } catch (error) {
+        // No existing session, continue
+      }
       
-      // Create session
+      // Step 1: Create user account
+      userAccount = await account.create(ID.unique(), userData.email, userData.password, userData.name);
+      console.log('User account created successfully:', userAccount);
+      
+      // Step 2: Create session
       await account.createEmailPasswordSession(userData.email, userData.password);
+      sessionCreated = true;
+      console.log('Session created successfully');
       
-      // Get user data
+      // Step 3: Get user data
       const authenticatedUser = await account.get();
+      
+      // Step 4: Create user profile in database (this must succeed)
+      try {
+        await createUserProfile({
+          userId: authenticatedUser.$id,
+          name: userData.name,
+          email: userData.email,
+          college: userData.college,
+          branch: userData.branch,
+          semester: userData.semester,
+        });
+        console.log('User profile created successfully');
+      } catch (profileError: any) {
+        console.error('Profile creation failed:', profileError);
+        
+        // Rollback: Delete the user account if profile creation fails
+        try {
+          console.log('Rolling back user account creation...');
+          
+          // Delete the current session first
+          if (sessionCreated) {
+            await account.deleteSession('current');
+          }
+          
+          // Note: Appwrite doesn't provide a direct way to delete user accounts from client side
+          // The account will remain in Appwrite but without a profile in our database
+          // This is a limitation of Appwrite's client-side API
+          
+          console.log('Rollback completed');
+        } catch (rollbackError) {
+          console.error('Rollback failed:', rollbackError);
+        }
+        
+        // Throw the original profile creation error
+        throw new Error(`Profile creation failed: ${profileError.message}`);
+      }
+      
+      // Step 5: Set user state only after everything succeeds
       setUser(authenticatedUser);
       const role = await getUserRole(authenticatedUser);
       setUserRole(role);
       
-      // Create user profile in database
-      await createUserProfile({
-        userId: authenticatedUser.$id,
-        name: userData.name,
-        email: userData.email,
-        college: userData.college,
-        branch: userData.branch,
-        semester: userData.semester,
-      });
-      
     } catch (error: any) {
-      setError(error.message || 'Registration failed');
-      throw error;
+      console.error('Registration with profile error:', error);
+      let errorMessage = 'Registration failed';
+      
+      if (error.code === 409) {
+        errorMessage = 'User with this email already exists';
+      } else if (error.code === 400) {
+        errorMessage = 'Invalid email or password format';
+      } else if (error.code === 401) {
+        errorMessage = 'Registration not allowed. Please check your Appwrite project settings';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setError(errorMessage);
+      
+      // Ensure user state is cleared on any error
+      setUser(null);
+      setUserRole(null);
+      
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
