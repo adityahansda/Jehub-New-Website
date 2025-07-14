@@ -1,5 +1,6 @@
 import { databases } from './appwrite';
 import { ID, Query } from 'appwrite';
+import { databaseId, collections } from './appwriteConfig';
 
 export interface UserActivity {
   $id?: string;
@@ -54,8 +55,8 @@ export const createUserActivity = async (activityData: {
     };
     
     const document = await databases.createDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USER_ACTIVITIES_COLLECTION_ID as string,
+      databaseId,
+      collections.activities,
       ID.unique(),
       activity
     );
@@ -70,8 +71,8 @@ export const createUserActivity = async (activityData: {
 export const getUserActivities = async (userId: string, limit: number = 10): Promise<UserActivity[]> => {
   try {
     const response = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USER_ACTIVITIES_COLLECTION_ID as string,
+      databaseId,
+      collections.activities,
       [
         Query.equal('userId', userId),
         Query.orderDesc('createdAt'),
@@ -137,8 +138,8 @@ export const recordDownloadActivity = async (downloadData: {
 export const getUserDownloadHistory = async (userId: string, limit: number = 20): Promise<UserActivity[]> => {
   try {
     const response = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USER_ACTIVITIES_COLLECTION_ID as string,
+      databaseId,
+      collections.activities,
       [
         Query.equal('userId', userId),
         Query.equal('type', 'download'),

@@ -1,5 +1,6 @@
 import { databases } from './appwrite';
 import { ID, Query } from 'appwrite';
+import { databaseId, collections } from './appwriteConfig';
 
 export interface UserProfile {
   $id?: string; // Appwrite document ID
@@ -70,23 +71,20 @@ export const createUserProfile = async (profileData: {
       updatedAt: now,
     };
     
-    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-    const usersCollectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
-    
-    console.log('Environment variables:', {
+    console.log('Using Appwrite configuration:', {
       databaseId,
-      usersCollectionId,
+      usersCollectionId: collections.users,
       endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
+      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
     });
     
-    if (!databaseId || !usersCollectionId) {
-      throw new Error(`Missing environment variables: databaseId=${databaseId}, usersCollectionId=${usersCollectionId}`);
+    if (!databaseId || !collections.users) {
+      throw new Error(`Missing configuration: databaseId=${databaseId}, usersCollectionId=${collections.users}`);
     }
     
     const document = await databases.createDocument(
       databaseId,
-      usersCollectionId,
+      collections.users,
       ID.unique(),
       defaultProfile
     );
@@ -101,8 +99,8 @@ export const createUserProfile = async (profileData: {
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     const response = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      collections.users,
       [
         Query.equal('userId', userId)
       ]
@@ -123,8 +121,8 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
     }
 
     const document = await databases.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      collections.users,
       profile.$id,
       {
         ...updates,
