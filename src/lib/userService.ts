@@ -1,5 +1,5 @@
 import { databases } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, Permission, Role } from 'appwrite';
 import { databaseId, collections } from './appwriteConfig';
 
 export interface UserProfile {
@@ -86,7 +86,12 @@ export const createUserProfile = async (profileData: {
       databaseId,
       collections.users,
       ID.unique(),
-      defaultProfile
+      defaultProfile,
+      [
+        Permission.read(Role.user(profileData.userId)),
+        Permission.write(Role.user(profileData.userId)),
+        Permission.read(Role.any()),
+      ]
     );
     
     return document as unknown as UserProfile;
