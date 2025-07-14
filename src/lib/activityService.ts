@@ -1,5 +1,5 @@
 import { databases } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, Permission, Role } from 'appwrite';
 import { databaseId, collections } from './appwriteConfig';
 
 export interface UserActivity {
@@ -58,7 +58,12 @@ export const createUserActivity = async (activityData: {
       databaseId,
       collections.activities,
       ID.unique(),
-      activity
+      activity,
+      [
+        Permission.read(Role.user(activityData.userId)),
+        Permission.write(Role.user(activityData.userId)),
+        Permission.read(Role.any()),
+      ]
     );
     
     return document as unknown as UserActivity;
