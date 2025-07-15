@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
-  const { login, loading, error } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await login(email, password);
-      alert('Logged in successfully!');
-    } catch (err) {
-      alert('Login failed. Please try again.');
-    }
+    alert('Login functionality has been disabled.');
   };
 
   return (
@@ -36,9 +29,8 @@ const Login: React.FC = () => {
           required
         />
       </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Logging in...' : 'Login'}
+      <button type="submit">
+        Login
       </button>
     </form>
   );

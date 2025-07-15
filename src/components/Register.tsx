@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 
 const Register: React.FC = () => {
-  const { register, loading, error } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await register(email, password, name);
-      alert('Registered successfully!');
-    } catch (err) {
-      alert('Registration failed. Please try again.');
-    }
+    alert('Registration functionality has been disabled.');
   };
 
   return (
@@ -46,9 +39,8 @@ const Register: React.FC = () => {
           required
         />
       </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Registering...' : 'Register'}
+      <button type="submit">
+        Register
       </button>
     </form>
   );

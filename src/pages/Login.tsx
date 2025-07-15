@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { account } from '../lib/appwrite';
-import { OAuthProvider } from 'appwrite';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -12,30 +9,15 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading, error } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await login(formData.email, formData.password);
-      // Redirect to dashboard or home page after successful login
-      router.push('/admin-dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
+    alert('Login functionality has been disabled.');
   };
 
   const handleGoogleSignIn = async () => {
-    try {
-      await account.createOAuth2Session(
-        OAuthProvider.Google,
-        'http://localhost:3000/admin-dashboard',
-        'http://localhost:3000/login'
-      );
-    } catch (error) {
-      console.error('Google Sign-In failed:', error);
-    }
+    alert('Google Sign-In functionality has been disabled.');
   };
 
   return (
@@ -117,7 +99,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               Sign In
             </button>

@@ -1,5 +1,7 @@
 import { databases } from './appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, Permission, Role } from 'appwrite';
+import { databaseId, collections } from './appwriteConfig';
+import { getDeterministicProfilePicture, isValidProfilePictureUrl } from './profileUtils';
 
 export interface UserProfile {
   $id?: string; // Appwrite document ID
@@ -12,6 +14,9 @@ export interface UserProfile {
   bio?: string;
   avatar?: string;
   joinDate: string;
+  
+  // User role and permissions
+  role?: 'admin' | 'manager' | 'intern' | 'student' | 'user';
   
   // Statistics
   totalPoints: number;
@@ -55,9 +60,11 @@ export const createUserProfile = async (profileData: {
     const defaultProfile = {
       ...profileData,
       bio: '',
-      avatar: '',
+      avatar: getDeterministicProfilePicture(profileData.userId),
       joinDate: now,
+      role: 'student' as const,
       totalPoints: 0,
+      points: 0, // Add this missing field
       notesUploaded: 0,
       notesDownloaded: 0,
       requestsFulfilled: 0,
@@ -70,11 +77,27 @@ export const createUserProfile = async (profileData: {
       updatedAt: now,
     };
     
+    console.log('Using Appwrite configuration:', {
+      databaseId,
+      usersCollectionId: collections.users,
+      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID,
+    });
+    
+    if (!databaseId || !collections.users) {
+      throw new Error(`Missing configuration: databaseId=${databaseId}, usersCollectionId=${collections.users}`);
+    }
+    
     const document = await databases.createDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      collections.users,
       ID.unique(),
-      defaultProfile
+      defaultProfile,
+      [
+        Permission.read(Role.user(profileData.userId)),
+        Permission.write(Role.user(profileData.userId)),
+        Permission.read(Role.any()),
+      ]
     );
     
     return document as unknown as UserProfile;
@@ -87,8 +110,8 @@ export const createUserProfile = async (profileData: {
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     const response = await databases.listDocuments(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      collections.users,
       [
         Query.equal('userId', userId)
       ]
@@ -108,9 +131,17 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
       throw new Error('User profile not found');
     }
 
+    // Validate avatar URL if provided
+    if (updates.avatar !== undefined) {
+      if (updates.avatar && !isValidProfilePictureUrl(updates.avatar)) {
+        // If invalid URL provided, use deterministic profile picture
+        updates.avatar = getDeterministicProfilePicture(userId);
+      }
+    }
+
     const document = await databases.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID as string,
+      databaseId,
+      collections.users,
       profile.$id,
       {
         ...updates,
@@ -124,3 +155,49 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
     throw error;
   }
 };
+
+/**
+ * Fixes avatar URLs for users who have empty or invalid avatar URLs
+ * This is a utility function to migrate existing users
+ */
+export const fixUserAvatars = async (): Promise<void> => {
+  try {
+    console.log('Starting avatar fix process...');
+    
+    // Get all users
+    const response = await databases.listDocuments(
+      databaseId,
+      collections.users
+    );
+    
+    const usersToUpdate = response.documents.filter((user: any) => 
+      !user.avatar || user.avatar === '' || !isValidProfilePictureUrl(user.avatar)
+    );
+    
+    console.log(`Found ${usersToUpdate.length} users with invalid avatars`);
+    
+    // Update each user with a valid avatar
+    for (const user of usersToUpdate) {
+      try {
+        await databases.updateDocument(
+          databaseId,
+          collections.users,
+          user.$id,
+          {
+            avatar: getDeterministicProfilePicture(user.userId),
+            updatedAt: new Date().toISOString(),
+          }
+        );
+        console.log(`Updated avatar for user: ${user.email}`);
+      } catch (error) {
+        console.error(`Failed to update avatar for user ${user.email}:`, error);
+      }
+    }
+    
+    console.log('Avatar fix process completed');
+  } catch (error) {
+    console.error('Error during avatar fix process:', error);
+    throw error;
+  }
+};
+
