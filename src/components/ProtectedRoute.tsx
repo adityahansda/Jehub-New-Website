@@ -3,26 +3,29 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../lib/authUtils';
 
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'admin' | 'manager' | 'intern' | 'student' | 'user';
   fallback?: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+const ProtectedRoute = ({ 
   children, 
   requiredRole = 'user',
   fallback 
-}) => {
-  const { user, userRole, loading } = useAuth();
+}: ProtectedRouteProps) => {
+  const { userRole, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login if not authenticated
-      router.push(`/login?redirect=${encodeURIComponent(router.pathname)}`);
+    if (loading) return;
+    
+    if (!userRole) {
+      router.push('/login');
+      return;
     }
-  }, [user, loading, router]);
+  }, [userRole, loading, router]);
 
   // Show loading state
   if (loading) {
@@ -32,18 +35,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       </div>
     );
   }
-
-  // Show fallback if not authenticated
-  if (!user) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
-          <p className="text-gray-600">Please log in to access this page.</p>
-        </div>
-      </div>
-    );
+  
+  // If no user role after loading, don't render content
+  if (!userRole) {
+    return null;
   }
+
 
   // Check role-based authorization
   if (userRole && requiredRole !== 'user') {

@@ -4,8 +4,8 @@ import { Upload, FileText, Star, CheckCircle } from 'lucide-react';
 // import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadToGitHub, validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { databases } from '../lib/appwrite';
-import { ID } from 'appwrite';
+// Database operations now handled through API route
+
 
 const NotesUpload = () => {
   const [formData, setFormData] = useState({
@@ -77,7 +77,7 @@ const NotesUpload = () => {
       const ipResponse = await fetch('/api/ip');
       const { ip } = await ipResponse.json();
 
-      // Store metadata in Appwrite
+      // Store metadata in database through API route
       const notesData = {
         title: formData.title,
         branch: formData.branch,
@@ -86,21 +86,28 @@ const NotesUpload = () => {
         description: formData.description,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         authorName: formData.authorName,
-        uploadDate: new Date().toISOString(),
         githubUrl: newGithubUrl,
         fileName: formData.file.name,
         userIp: ip,
-        downloads: 0,
-        likes: 0,
         degree: formData.degree
       };
 
-      await databases.createDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-        ID.unique(),
-        notesData
-      );
+      const dbResponse = await fetch('/api/notes-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(notesData),
+      });
+
+      if (!dbResponse.ok) {
+        const errorData = await dbResponse.json();
+        console.error('Database save failed:', errorData);
+        throw new Error(`Upload completed but database save failed: ${errorData.error || 'Unknown error'}`);
+      }
+
+      const dbResult = await dbResponse.json();
+      console.log('Database save successful:', dbResult);
 
       // Reset form
       setFormData({
@@ -150,7 +157,7 @@ const NotesUpload = () => {
             Upload Your Notes
           </h1>
           <p className="text-xl text-gray-600">
-            Share your knowledge with the community and earn points
+            Share your knowledge with the community and earn points - No login required!
           </p>
         </div>
 

@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+
 const Profile = () => {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
@@ -31,8 +33,11 @@ const Profile = () => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login?redirect=/profile');
+    if (loading) return;
+    
+    if (!user) {
+      router.push('/login');
+      return;
     }
   }, [user, loading, router]);
 
@@ -76,7 +81,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/login');
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
