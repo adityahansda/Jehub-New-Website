@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import ProtectedRoute from '../components/ProtectedRoute';
 import { 
   Users, 
   FileText, 
@@ -43,7 +45,9 @@ import DashboardStats from '../components/admin/DashboardStats';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [userRole] = useState('admin'); // This would come from auth context
+  const { userRole } = useAuth();
+  
+  const currentUserRole = userRole?.role || 'user';
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3, roles: ['admin', 'manager'] },
@@ -57,28 +61,28 @@ const AdminDashboard = () => {
     { id: 'broadcast', label: 'Broadcast', icon: Bell, roles: ['admin', 'manager'] },
   ];
 
-  const visibleTabs = tabs.filter(tab => tab.roles.includes(userRole));
+  const visibleTabs = tabs.filter(tab => tab.roles.includes(currentUserRole));
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
         return <DashboardStats />;
       case 'team':
-        return <TeamMemberManager userRole={userRole} />;
+        return <TeamMemberManager userRole={currentUserRole} />;
       case 'notes':
-        return <NotesCenter userRole={userRole} />;
+        return <NotesCenter userRole={currentUserRole} />;
       case 'leaderboard':
-        return <LeaderboardControl userRole={userRole} />;
+        return <LeaderboardControl userRole={currentUserRole} />;
       case 'users':
         return <UserAccountManager />;
       case 'pages':
         return <PageManagement />;
       case 'forms':
-        return <FormDataViewer userRole={userRole} />;
+        return <FormDataViewer userRole={currentUserRole} />;
       case 'settings':
         return <SystemSettings />;
       case 'broadcast':
-        return <BroadcastSection userRole={userRole} />;
+        return <BroadcastSection userRole={currentUserRole} />;
       default:
         return <DashboardStats />;
     }
@@ -96,7 +100,7 @@ const AdminDashboard = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium capitalize">
-                {userRole}
+                {currentUserRole}
               </div>
               <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
             </div>

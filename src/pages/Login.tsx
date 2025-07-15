@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { account } from '../lib/appwrite';
+import { OAuthProvider } from 'appwrite';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,18 +12,74 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const { login, loading, error, user } = useAuth();
+  const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect to profile when user is authenticated
+  useEffect(() => {
+    // Only redirect if we have a user, not loading, and not already redirecting
+    if (user && !loading && !isRedirecting) {
+      setIsRedirecting(true);
+      
+      // Get the redirect parameter from the URL
+      const redirectTo = router.query.redirect as string || '/profile';
+      
+      // Use replace instead of push to prevent back button issues
+      router.replace(redirectTo);
+    }
+  }, [user, loading, isRedirecting, router]);
+
+  // If user is authenticated, don't render the form
+  if (user && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login
-    console.log('Login:', formData);
+    
+    // Don't allow login if user is already authenticated
+    if (user) {
+      return;
+    }
+    
+    try {
+      await login(formData.email, formData.password);
+      
+      // Redirect directly after successful login
+      const redirectTo = router.query.redirect as string || '/profile';
+      router.replace(redirectTo);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      // Import and initialize the Appwrite account object first
-      // await account.createOAuth2Session('google', 'http://localhost:3000/dashboard', 'http://localhost:3000/login');
-      console.log('Google OAuth needs to be implemented with proper account initialization');
+      await account.createOAuth2Session(
+        OAuthProvider.Google,
+        'http://localhost:3000/profile',
+        'http://localhost:3000/login'
+      );
     } catch (error) {
       console.error('Google Sign-In failed:', error);
     }
@@ -39,6 +99,11 @@ const Login = () => {
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -104,9 +169,17 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Sign In
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { User, Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -17,11 +19,31 @@ const SignUp = () => {
 
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+  const { registerWithProfile, loading, error } = useAuth();
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup
-    console.log('Signup:', formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match.');
+      return;
+    }
+
+    try {
+      await registerWithProfile({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        college: formData.college,
+        branch: formData.branch,
+        semester: formData.semester,
+      });
+      alert('Registration successful!');
+      router.push('/profile');
+    } catch (err:any) {
+      alert(err.message || 'Registration failed.');
+    }
   };
 
   return (
@@ -37,6 +59,12 @@ const SignUp = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -199,9 +227,10 @@ const SignUp = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
