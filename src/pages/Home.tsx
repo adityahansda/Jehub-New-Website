@@ -109,10 +109,10 @@ const Home = () => {
                   Explore Notes
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/notes-upload"
                   className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-orange-600 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
-                  Join Now
+                  Upload Notes
                 </Link>
               </div>
             </div>
@@ -260,10 +260,10 @@ const Home = () => {
               Join JEHUB today and become part of a thriving academic community
             </p>
             <Link
-              href="/signup"
+              href="/notes-download"
               className="inline-flex items-center bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              Join JEHUB Today
+              Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
