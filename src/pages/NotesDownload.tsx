@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List } from 'lucide-react';
-import { databases } from '../lib/appwrite';
-import { Query } from 'appwrite';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
+import { databases } from '../lib/appwrite';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -109,31 +108,14 @@ const NotesDownload = () => {
     const fetchNotes = async () => {
       try {
         setLoading(true);
-        const response = await databases.listDocuments(
-          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-          process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-          [Query.orderDesc('uploadDate')]
-        );
-
-        const fetchedNotes = response.documents.map(doc => ({
-          id: doc.$id,
-          title: doc.title,
-          branch: doc.branch,
-          semester: doc.semester,
-          subject: doc.subject,
-          description: doc.description,
-          tags: doc.tags,
-          uploader: doc.authorName,
-          uploadDate: doc.uploadDate,
-          githubUrl: doc.githubUrl,
-          fileName: doc.fileName,
-          downloads: doc.downloads,
-          likes: doc.likes,
-          points: doc.points || 0,
-          degree: doc.degree
-        }));
-
-        setNotes(fetchedNotes);
+        const response = await fetch('/api/notes');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setNotes(data.notes);
       } catch (err) {
         setError('Failed to fetch notes. Please try again later.');
         console.error('Error fetching notes:', err);
@@ -185,24 +167,31 @@ const NotesDownload = () => {
       if (urlValidation.status === 'error') {
         console.warn('PDF validation failed, but attempting download anyway');
       }
-      // Update download count in database
-      await databases.updateDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-        noteId,
-        {
-          downloads: note.downloads + 1
-        }
-      );
-
-      // Update local state
-      setNotes(prevNotes =>
-        prevNotes.map(n =>
-          n.id === noteId
-            ? { ...n, downloads: n.downloads + 1 }
-            : n
-        )
-      );
+      
+      // Try to update download count in database (gracefully handle if not authenticated)
+      try {
+        await databases.updateDocument(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+          process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+          noteId,
+          {
+            downloads: note.downloads + 1
+          }
+        );
+        
+        // Update local state only if database update succeeds
+        setNotes(prevNotes =>
+          prevNotes.map(n =>
+            n.id === noteId
+              ? { ...n, downloads: n.downloads + 1 }
+              : n
+          )
+        );
+      } catch (dbError) {
+        console.warn('Could not update download count in database:', dbError);
+        // Don't fail the download if database update fails
+        // The download still proceeds for public users
+      }
 
       // Convert raw URL to download URL and create download link
       const downloadUrl = convertToDownloadUrl(note.githubUrl) || `https://example.com/notes/${note.fileName}`;
@@ -224,7 +213,7 @@ const NotesDownload = () => {
         }, 2000);
       }, 500);
     } catch (error) {
-      console.error('Error updating download count:', error);
+      console.error('Error during download:', error);
 
       // Still proceed with download but show error status
       const downloadUrl = convertToDownloadUrl(note.githubUrl) || `https://example.com/notes/${note.fileName}`;
@@ -277,7 +266,7 @@ const NotesDownload = () => {
     });
 
     try {
-      // Update database
+      // Update database (gracefully handle if not authenticated)
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
         process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
@@ -285,7 +274,7 @@ const NotesDownload = () => {
         { likes: newLikes }
       );
     } catch (error) {
-      console.error('Error updating like:', error);
+      console.warn('Could not update like in database (may require authentication):', error);
       
       // Revert optimistic update on error
       setNotes(prevNotes =>
@@ -303,6 +292,11 @@ const NotesDownload = () => {
         }
         return newSet;
       });
+      
+      // Show a subtle notification that likes require authentication
+      setTimeout(() => {
+        alert('Note: Likes are saved locally. Sign in to sync your preferences across devices.');
+      }, 100);
     }
   };
 

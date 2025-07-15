@@ -5,49 +5,25 @@ import type { NextRequest } from 'next/server';
 const protectedRoutes = [
   '/dashboard',
   '/admin-dashboard',
-  '/notes-upload',
   '/profile',
   '/settings',
   '/admin-pdf-validation',
   '/team-dashboard',
 ];
 
-// Routes that should redirect authenticated users away
-const authRoutes = [
-  '/login',
-  '/signup',
-];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check if the user has an auth session cookie
-  // Appwrite uses session cookies in the format: a_session_<projectId>_<hash>
-  const hasAuth = request.cookies.getAll().some(cookie => 
-    cookie.name.startsWith('a_session_686d35da003a55dfcc11')
-  );
+  // Check if route requires authentication
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   
-  // Log middleware activity for debugging (can be removed in production)
-  // console.log(`Middleware: ${pathname}, hasAuth: ${hasAuth}, cookies: ${request.cookies.getAll().map(c => c.name).join(', ')}`);
-  
-  // Handle protected routes
-  if (protectedRoutes.some(route => pathname.startsWith(route))) {
-    if (!hasAuth) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-  
-  // Handle auth routes (login, signup) - redirect if already authenticated
-  if (authRoutes.some(route => pathname.startsWith(route))) {
-    if (hasAuth) {
-      // Check if there's a redirect parameter to send user to original destination
-      const redirectUrl = request.nextUrl.searchParams.get('redirect');
-      if (redirectUrl) {
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
-      }
-      return NextResponse.redirect(new URL('/profile', request.url));
+  if (isProtectedRoute) {
+    const token = request.cookies.get('session')?.value;
+    
+    if (!token) {
+      // Redirect to login if no token found
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
   
