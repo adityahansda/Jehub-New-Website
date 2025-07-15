@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { BookOpen, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, MessageCircle, Youtube } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -35,17 +35,17 @@ const Footer = () => {
               Empowering students to learn, share, and grow together. Join our academic community today.
             </p>
             <div className="flex space-x-4">
-              <a href="#" aria-label="Visit our Facebook page" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Facebook className="h-5 w-5" />
+              <a href="https://t.me/JharkhandEnginnersHub" target="_blank" rel="noopener noreferrer" aria-label="Join our Telegram channel" className="text-gray-400 hover:text-blue-400 transition-colors">
+                <MessageCircle className="h-5 w-5" />
               </a>
-              <a href="#" aria-label="Visit our Twitter profile" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Twitter className="h-5 w-5" />
+              <a href="https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU" target="_blank" rel="noopener noreferrer" aria-label="Join our WhatsApp group" className="text-gray-400 hover:text-green-400 transition-colors">
+                <MessageCircle className="h-5 w-5" />
               </a>
-              <a href="#" aria-label="Visit our Instagram profile" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="https://www.youtube.com/@JharkhandEngineersHub" target="_blank" rel="noopener noreferrer" aria-label="Visit our YouTube channel" className="text-gray-400 hover:text-red-400 transition-colors">
+                <Youtube className="h-5 w-5" />
+              </a>
+              <a href="https://www.instagram.com/jharkhandengineershub/" target="_blank" rel="noopener noreferrer" aria-label="Visit our Instagram profile" className="text-gray-400 hover:text-pink-400 transition-colors">
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" aria-label="Visit our LinkedIn profile" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Linkedin className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -81,15 +81,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-blue-400" />
-                <span className="text-gray-400 text-sm">contact@jehub.com</span>
+                <span className="text-gray-400 text-sm">jharkhandengineershub@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-blue-400" />
-                <span className="text-gray-400 text-sm">+1 (555) 123-4567</span>
+                <span className="text-gray-400 text-sm">+91 6205981226</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-blue-400" />
-                <span className="text-gray-400 text-sm">123 Education St, Learning City</span>
+                <span className="text-gray-400 text-sm">Jharkhand</span>
               </div>
             </div>
           </div>
@@ -97,7 +97,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2024 JEHUB. All rights reserved. Made with ❤️ for students.
+            © 2024 JEHUB - Jharkhand Engineers Hub. All rights reserved. Made with ❤️ for students.
           </p>
         </div>
       </div>
