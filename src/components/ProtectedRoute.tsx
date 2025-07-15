@@ -3,8 +3,6 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../lib/authUtils';
 
-// 🔧 DEVELOPMENT BYPASS - Set to true to bypass authentication
-const BYPASS_AUTH = true; // Change to false to enable authentication
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,45 +10,37 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+const ProtectedRoute = ({ 
   children, 
   requiredRole = 'user',
   fallback 
-}) => {
-  const { user, userRole, loading } = useAuth();
+}: ProtectedRouteProps) => {
+  const { userRole, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (BYPASS_AUTH) {
-      console.log('🚫 AUTH BYPASS: ProtectedRoute - Authentication bypassed');
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!userRole) {
+      router.push('/login');
       return;
     }
-    if (!loading && !user) {
-      // Redirect to login if not authenticated
-      router.push(`/login?redirect=${encodeURIComponent(router.pathname)}`);
-    }
-  }, [user, loading, router]);
+  }, [userRole, loading, router]);
 
   // Show loading state
-  if (!BYPASS_AUTH && loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
-
-  // Show fallback if not authenticated
-  if (!BYPASS_AUTH && !user) {
-    return fallback || (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
-          <p className="text-gray-600">Please log in to access this page.</p>
-        </div>
-      </div>
-    );
+  
+  // If no user role after loading, don't render content
+  if (!userRole) {
+    return null;
   }
+
 
   // Check role-based authorization
   if (userRole && requiredRole !== 'user') {
