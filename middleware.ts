@@ -18,9 +18,19 @@ const authRoutes = [
   '/signup',
 ];
 
+// 🔧 DEVELOPMENT BYPASS - Set to true to disable authentication
+const BYPASS_AUTH = true; // Change to false to enable authentication
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
+  // Development bypass - skip all authentication checks
+  if (BYPASS_AUTH) {
+    console.log(`🚫 AUTH BYPASS: ${pathname} - Authentication bypassed for development`);
+    return NextResponse.next();
+  }
+  
+  // Normal authentication flow (when BYPASS_AUTH is false)
   // Check if the user has an auth session cookie
   // Appwrite uses session cookies in the format: a_session_<projectId>_<hash>
   const hasAuth = request.cookies.getAll().some(cookie => 
@@ -28,7 +38,7 @@ export function middleware(request: NextRequest) {
   );
   
   // Log middleware activity for debugging (can be removed in production)
-  // console.log(`Middleware: ${pathname}, hasAuth: ${hasAuth}, cookies: ${request.cookies.getAll().map(c => c.name).join(', ')}`);
+  console.log(`Middleware: ${pathname}, hasAuth: ${hasAuth}`);
   
   // Handle protected routes
   if (protectedRoutes.some(route => pathname.startsWith(route))) {

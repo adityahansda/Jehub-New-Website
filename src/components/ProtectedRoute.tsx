@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import { UserRole } from '../lib/authUtils';
 
+// 🔧 DEVELOPMENT BYPASS - Set to true to bypass authentication
+const BYPASS_AUTH = true; // Change to false to enable authentication
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'admin' | 'manager' | 'intern' | 'student' | 'user';
@@ -17,7 +20,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, userRole, loading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
+  useEffect(() => {
+    if (BYPASS_AUTH) {
+      console.log('🚫 AUTH BYPASS: ProtectedRoute - Authentication bypassed');
+      return;
+    }
     if (!loading && !user) {
       // Redirect to login if not authenticated
       router.push(`/login?redirect=${encodeURIComponent(router.pathname)}`);
@@ -25,7 +32,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }, [user, loading, router]);
 
   // Show loading state
-  if (loading) {
+  if (!BYPASS_AUTH && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -34,7 +41,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Show fallback if not authenticated
-  if (!user) {
+  if (!BYPASS_AUTH && !user) {
     return fallback || (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
