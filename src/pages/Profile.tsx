@@ -3,6 +3,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+// 🔧 DEVELOPMENT BYPASS - Set to true to bypass authentication
+const BYPASS_AUTH = true; // Change to false to enable authentication
+
 const Profile = () => {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
@@ -29,15 +33,29 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (unless bypassed)
   useEffect(() => {
+    if (BYPASS_AUTH) {
+      console.log('🚫 AUTH BYPASS: Profile page - Authentication bypassed for development');
+      return;
+    }
+    
+    console.log('🔍 Profile useEffect triggered:', {
+      user: user ? 'User exists' : 'No user',
+      loading,
+      userId: user?.$id,
+      userName: user?.name,
+      userEmail: user?.email
+    });
+    
     if (!loading && !user) {
+      console.log('🚨 No user found, redirecting to login');
       router.push('/login?redirect=/profile');
     }
   }, [user, loading, router]);
 
-  // Show loading state while checking authentication
-  if (loading) {
+  // Show loading state while checking authentication (unless bypassed)
+  if (!BYPASS_AUTH && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -48,8 +66,8 @@ const Profile = () => {
     );
   }
 
-  // Don't render anything if user is not authenticated
-  if (!user) {
+  // Don't render anything if user is not authenticated (unless bypassed)
+  if (!BYPASS_AUTH && !user) {
     return null;
   }
 

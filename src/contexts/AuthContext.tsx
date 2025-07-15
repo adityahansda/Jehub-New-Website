@@ -91,6 +91,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       await account.createEmailPasswordSession(email, password);
       const userData = await account.get();
+      
+      // Check if user profile exists, create if missing
+      try {
+        const profile = await getUserProfile(userData.$id);
+        if (!profile) {
+          console.log('Creating missing user profile...');
+          await createUserProfile({
+            userId: userData.$id,
+            name: userData.name,
+            email: userData.email,
+          });
+        }
+      } catch (profileError) {
+        console.error('Error checking/creating user profile:', profileError);
+      }
+      
       setUser(userData);
       const role = await getUserRole(userData);
       setUserRole(role);

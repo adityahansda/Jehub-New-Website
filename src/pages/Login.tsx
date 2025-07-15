@@ -18,6 +18,16 @@ const Login = () => {
 
   // Redirect to profile when user is authenticated
   useEffect(() => {
+    console.log('🔍 Login useEffect triggered:', {
+      user: user ? 'User exists' : 'No user',
+      loading,
+      isRedirecting,
+      userId: user?.$id,
+      userName: user?.name,
+      userEmail: user?.email,
+      currentPath: router.pathname
+    });
+    
     // Only redirect if we have a user, not loading, and not already redirecting
     if (user && !loading && !isRedirecting) {
       setIsRedirecting(true);
@@ -25,8 +35,15 @@ const Login = () => {
       // Get the redirect parameter from the URL
       const redirectTo = router.query.redirect as string || '/profile';
       
-      // Use replace instead of push to prevent back button issues
-      router.replace(redirectTo);
+      console.log('🚀 Redirecting to:', redirectTo);
+      
+      // Add a small delay to ensure user state is fully set
+      setTimeout(() => {
+        router.replace(redirectTo).catch((error) => {
+          console.error('❌ Redirect failed:', error);
+          setIsRedirecting(false);
+        });
+      }, 100);
     }
   }, [user, loading, isRedirecting, router]);
 
@@ -64,10 +81,7 @@ const Login = () => {
     
     try {
       await login(formData.email, formData.password);
-      
-      // Redirect directly after successful login
-      const redirectTo = router.query.redirect as string || '/profile';
-      router.replace(redirectTo);
+      // Note: Redirect is handled by useEffect after login success
     } catch (error) {
       console.error('Login failed:', error);
     }

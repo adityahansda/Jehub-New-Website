@@ -7,6 +7,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { databases } from '../lib/appwrite';
 import { ID } from 'appwrite';
 
+// 🔧 DEVELOPMENT BYPASS - Set to true to bypass authentication
+const BYPASS_AUTH = true; // Change to false to enable authentication
+
 const NotesUpload = () => {
   const [formData, setFormData] = useState({
     title: '',
