@@ -34,8 +34,14 @@ const Navigation = () => {
                 alt="Jharkhand Engineer's Hub"
                 width={137}
                 height={48}
-                className="h-12 w-auto"
                 priority
+                sizes="(max-width: 768px) 100vw, 137px"
+                style={{
+                  width: 'auto',
+                  height: '48px',
+                  maxWidth: '137px',
+                  objectFit: 'contain'
+                }}
               />
             </div>
             {/* <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -63,21 +69,6 @@ const Navigation = () => {
             })}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            <Link
-              href="/login"
-              className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              Sign Up
-            </Link>
-          </div>
           {/* Mobile Menu Button */}
           <button
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
@@ -115,20 +106,6 @@ const Navigation = () => {
               );
             })}
             <div className="border-t border-gray-200 pt-2 mt-2">
-              <Link
-                href="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setIsMenuOpen(false)}
-                className="block px-3 py-2 text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg mt-1 hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-              >
-                Sign Up
-              </Link>
             </div>
           </div>
         </div>

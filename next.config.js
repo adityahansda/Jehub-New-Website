@@ -25,7 +25,24 @@ const nextConfig = {
     serverComponentsExternalPackages: ['pdfjs-dist'],
   },
   images: {
-    domains: ['raw.githubusercontent.com', 'github.com', 'images.pexels.com', 'example.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+    ],
   },
 };
 
