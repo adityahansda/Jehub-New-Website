@@ -64,7 +64,7 @@ const MobileTest = () => {
             <ol className="space-y-1 text-green-800 list-decimal list-inside">
               <li>Test each link above on both mobile and desktop</li>
               <li>Verify the mobile bottom navigation appears on screens &lt; 768px</li>
-              <li>Check that the "More" menu works properly</li>
+              <li>Check that the &quot;More&quot; menu works properly</li>
               <li>Ensure all pages load without errors</li>
               <li>Test the responsive behavior when resizing the window</li>
             </ol>

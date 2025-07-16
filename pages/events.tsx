@@ -183,7 +183,7 @@ const Events = () => {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
           <h3 className="text-2xl font-bold mb-4">Want to organize an event?</h3>
           <p className="text-blue-100 mb-6">
-            Have an idea for a workshop, study group, or competition? We'd love to help you organize it!
+            Have an idea for a workshop, study group, or competition? We&apos;d love to help you organize it!
           </p>
           <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
             Propose an Event

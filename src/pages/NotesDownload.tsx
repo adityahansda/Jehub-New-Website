@@ -410,9 +410,9 @@ const NotesDownload = () => {
                   {(filtersOpen || !isMobile) && (
                     <motion.div 
                       className="flex flex-col sm:flex-row gap-2 sm:gap-4"
-                      initial={isMobile ? { opacity: 0, y: -10 } : false}
-                      animate={isMobile ? { opacity: 1, y: 0 } : false}
-                      exit={isMobile ? { opacity: 0, y: -10 } : false}
+                      initial={isMobile ? { opacity: 0, y: -10 } : undefined}
+                      animate={isMobile ? { opacity: 1, y: 0 } : undefined}
+                      exit={isMobile ? { opacity: 0, y: -10 } : undefined}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                   <select

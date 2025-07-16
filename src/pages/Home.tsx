@@ -15,7 +15,7 @@ const stats = importedStats || {
 
 const Home = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState({ name: 'Aditya', avatar: null });
+  const [user, setUser] = useState({ name: 'Aditya', avatar: undefined });
 
   useEffect(() => {
     const checkMobile = () => {

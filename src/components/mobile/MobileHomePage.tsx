@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   Search,
   Filter,
@@ -176,7 +177,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [announcements.length]);
 
 
 
@@ -207,9 +208,11 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
             >
               <Menu className="h-5 w-5 text-gray-600" />
             </motion.button>
-            <img
+            <Image
               src="/images/logo.png"
               alt="JEHUB"
+              width={32}
+              height={32}
               className="h-8 w-auto"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -251,7 +254,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
                 className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center"
               >
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                  <Image src={user.avatar} alt={user.name} width={32} height={32} className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <User className="h-4 w-4 text-white" />
                 )}

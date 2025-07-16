@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { 
   User, 
   Camera, 
@@ -153,7 +154,7 @@ const MobileProfilePage: React.FC<ProfilePageProps> = ({
               <div className="relative mb-4">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden">
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <Image src={user.avatar} alt={user.name} width={96} height={96} className="w-full h-full object-cover" />
                   ) : (
                     <User className="h-12 w-12 text-white" />
                   )}
@@ -248,7 +249,7 @@ const MobileProfilePage: React.FC<ProfilePageProps> = ({
               <div className="relative mb-4">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden">
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <Image src={user.avatar} alt={user.name} width={96} height={96} className="w-full h-full object-cover" />
                   ) : (
                     <User className="h-12 w-12 text-white" />
                   )}
