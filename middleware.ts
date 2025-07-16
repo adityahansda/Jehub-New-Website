@@ -5,10 +5,14 @@ import type { NextRequest } from 'next/server';
 const protectedRoutes = [
   '/dashboard',
   '/admin-dashboard',
-  '/profile',
   '/settings',
   '/admin-pdf-validation',
   '/team-dashboard',
+];
+
+// Routes that are conditionally protected (handled by component logic)
+const conditionallyProtectedRoutes = [
+  '/profile', // Allow access for mobile users, require auth for desktop
 ];
 
 

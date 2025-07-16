@@ -1,6 +1,8 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Users, BookOpen, Star, Globe, Heart, Shield, Mail, Phone, MapPin, Target, Award, Zap, TrendingUp, Calendar, GraduationCap, MessageCircle, Code, Palette, PenTool, Megaphone, Github, Linkedin, Twitter, Instagram, Building, CheckCircle, ArrowRight, Sparkles, Lightbulb, Rocket, Network, FileText, UserCheck, Headphones, Monitor, Briefcase, School, Clock, ChevronRight } from 'lucide-react';
+import { coreTeam } from '../data/teamData';
 
 const About = () => {
   const coreValues = [
@@ -49,104 +51,6 @@ const About = () => {
     }
   ];
 
-  const coreTeam = [
-    {
-      name: 'Aditya Hansda',
-      role: 'Founder & Lead Developer',
-      education: 'Diploma in Computer Science Engineering, JUT',
-      specialization: 'Full-Stack Development & Community Building',
-      bio: 'Visionary diploma student who founded JEHUB to create a space where fellow learners feel heard, guided, and connected.',
-      image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      social: {
-        github: '#',
-        linkedin: '#',
-        twitter: '#'
-      }
-    },
-    {
-      name: 'Priya Kumari',
-      role: 'Co-Founder & Community Manager',
-      education: 'Diploma in Electronics & Communication, JUT',
-      specialization: 'Community Engagement & Student Relations',
-      bio: 'Passionate about building inclusive learning environments and connecting students across different branches.',
-      image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      social: {
-        github: '#',
-        linkedin: '#',
-        instagram: '#'
-      }
-    },
-    {
-      name: 'Rahul Singh',
-      role: 'Technical Lead',
-      education: 'Diploma in Information Technology, JUT',
-      specialization: 'Backend Development & System Architecture',
-      bio: 'Expert in building scalable systems and ensuring smooth technical operations for the JEHUB platform.',
-      image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      social: {
-        github: '#',
-        linkedin: '#',
-        twitter: '#'
-      }
-    }
-  ];
-
-  const jehubTeam = [
-    {
-      name: 'Anita Devi',
-      role: 'Content Coordinator',
-      education: 'Diploma in Civil Engineering, JUT',
-      specialization: 'Academic Content & Resource Management',
-      bio: 'Ensures quality and relevance of all academic resources shared on the platform.',
-      image: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Content Team'
-    },
-    {
-      name: 'Vikash Kumar',
-      role: 'UI/UX Designer',
-      education: 'Diploma in Mechanical Engineering, JUT',
-      specialization: 'User Interface Design & User Experience',
-      bio: 'Creates intuitive and student-friendly interfaces that make learning accessible and enjoyable.',
-      image: 'https://images.pexels.com/photos/1181288/pexels-photo-1181288.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Design Team'
-    },
-    {
-      name: 'Sunita Kumari',
-      role: 'Outreach Coordinator',
-      education: 'Diploma in Electrical Engineering, JUT',
-      specialization: 'Campus Relations & Event Management',
-      bio: 'Builds connections with different colleges and organizes campus-level events and activities.',
-      image: 'https://images.pexels.com/photos/1181346/pexels-photo-1181346.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Outreach Team'
-    },
-    {
-      name: 'Amit Raj',
-      role: 'Quality Assurance Lead',
-      education: 'Diploma in Computer Science, JUT',
-      specialization: 'Software Testing & Quality Control',
-      bio: 'Ensures all platform features work seamlessly and provides the best user experience.',
-      image: 'https://images.pexels.com/photos/1181563/pexels-photo-1181563.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Development Team'
-    },
-    {
-      name: 'Neha Sharma',
-      role: 'Social Media Manager',
-      education: 'Diploma in Electronics, JUT',
-      specialization: 'Digital Marketing & Social Media Strategy',
-      bio: 'Manages JEHUB\'s online presence and keeps the community engaged across all platforms.',
-      image: 'https://images.pexels.com/photos/1181412/pexels-photo-1181412.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Marketing Team'
-    },
-    {
-      name: 'Ravi Gupta',
-      role: 'Campus Ambassador',
-      education: 'Diploma in Mining Engineering, JUT',
-      specialization: 'Campus Networking & Student Engagement',
-      bio: 'Represents JEHUB in various colleges and helps expand our reach to more students.',
-      image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-      department: 'Campus Team'
-    }
-  ];
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -424,42 +328,20 @@ const About = () => {
           </div>
         </div>
         
-        {/* JEHUB Team Section */}
+        {/* Team Section - Link to dedicated team page */}
         <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-3xl p-8 sm:p-12 mb-16">
-          <div className="text-center mb-12">
+          <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              JEHUB Team
+              Our Team
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Dedicated team members from various JUT branches working together to make JEHUB successful
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Meet the dedicated team members working together to make JEHUB successful
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {jehubTeam.map((member, index) => (
-              <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl hover:border-blue-200 transition-all duration-300 group">
-                <div className="relative mb-4">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    width={96}
-                    height={96}
-                    className="w-24 h-24 rounded-full mx-auto border-4 border-gray-200 shadow-md group-hover:border-blue-300 transition-all duration-300"
-                  />
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4 text-white" />
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{member.name}</h3>
-                <p className="text-blue-600 font-medium mb-2">{member.role}</p>
-                <p className="text-xs text-gray-500 mb-2">{member.education}</p>
-                <p className="text-xs text-purple-600 font-medium mb-3">{member.specialization}</p>
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{member.bio}</p>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-2 rounded-full border border-blue-200">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-blue-700 font-medium">{member.department}</span>
-                </div>
-              </div>
-            ))}
+            <Link href="/team" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Users className="h-5 w-5" />
+              View Team
+              <ChevronRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
         
@@ -470,7 +352,7 @@ const About = () => {
               Scope & Future Plans
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our roadmap for expanding JEHUB's impact across Jharkhand and beyond
+              Our roadmap for expanding JEHUB&apos;s impact across Jharkhand and beyond
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -563,7 +445,7 @@ const About = () => {
                   <h3 className="text-xl font-semibold text-gray-900">Growing Community</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  As we've grown, so has our team. Today, JEHUB is proudly mentored by individuals from varied branches 
+                  As we&apos;ve grown, so has our team. Today, JEHUB is proudly mentored by individuals from varied branches
                   and backgrounds, bringing together diverse expertise to support students across disciplines. This 
                   cross-branch collaboration ensures that no student feels left out—and every learner, regardless of 
                   specialization, finds JEHUB a place they can rely on.
@@ -594,7 +476,7 @@ const About = () => {
                 Get in Touch
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Ready to join the JEHUB community? Have questions? We'd love to hear from you!
+                Ready to join the JEHUB community? Have questions? We&apos;d love to hear from you!
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

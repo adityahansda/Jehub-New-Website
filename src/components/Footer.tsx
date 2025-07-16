@@ -32,7 +32,7 @@ const Footer = () => {
               </span> */}
             </Link>
             <p className="text-gray-400 text-sm">
-              Empowering students to learn, share, and grow together. Join our academic community today.
+              Empowering students to learn, share, and grow together. Join our academic platform today.
             </p>
             <div className="flex space-x-4">
               <a href="https://t.me/JharkhandEnginnersHub" target="_blank" rel="noopener noreferrer" aria-label="Join our Telegram channel" className="text-gray-400 hover:text-blue-400 transition-colors">
@@ -58,7 +58,6 @@ const Footer = () => {
               <li><Link href="/notes-download" className="text-gray-400 hover:text-white transition-colors">Download Notes</Link></li>
               <li><Link href="/notes-request" className="text-gray-400 hover:text-white transition-colors">Request Notes</Link></li>
               <li><Link href="/leaderboard" className="text-gray-400 hover:text-white transition-colors">Leaderboard</Link></li>
-              <li><Link href="/community" className="text-gray-400 hover:text-white transition-colors">Community</Link></li>
             </ul>
           </div>
 

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 // import { SpeedInsights } from "@vercel/speed-insights/next"
 import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
 // If '../data/mockData' does not export 'stats', define a fallback here
 import { stats as importedStats } from '../data/mockData';
+import MobileHomePage from '../components/mobile/MobileHomePage';
 
 const stats = importedStats || {
   notesUploaded: 0,
@@ -13,6 +14,37 @@ const stats = importedStats || {
 };
 
 const Home = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [user, setUser] = useState({ name: 'Aditya', avatar: null });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Return mobile home page if on mobile
+  if (isMobile) {
+    return (
+      <>
+        <Head>
+          <title>JEHUB - Centralized Academic Resources for Students</title>
+          <meta
+            name="description"
+            content="JEHUB is a student-focused ed-tech platform providing notes, tools, and discussions for diploma and BTech students."
+          />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </Head>
+        <MobileHomePage user={user} notificationCount={3} />
+      </>
+    );
+  }
+
   const features = [
     {
       icon: BookOpen,
@@ -21,7 +53,7 @@ const Home = () => {
     },
     {
       icon: Users,
-      title: 'Community Discussions',
+      title: 'Team Collaboration',
       description: 'Connect with peers, ask questions, and share knowledge together'
     },
     {
@@ -40,7 +72,7 @@ const Home = () => {
     {
       number: '01',
       title: 'Create Account',
-      description: 'Join our community of students and start your academic journey'
+      description: 'Join our team of students and start your academic journey'
     },
     {
       number: '02',
@@ -58,7 +90,7 @@ const Home = () => {
     {
       name: 'Sarah Johnson',
       role: 'Computer Science Student',
-      text: 'JEHUB has been a game-changer for my studies. The notes are high-quality and the community is incredibly supportive.',
+      text: 'JEHUB has been a game-changer for my studies. The notes are high-quality and the support is incredible.',
       rating: 5
     },
     {
@@ -99,7 +131,7 @@ const Home = () => {
                 </span>
               </h1>
               <p className="text-xl sm:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-                Join our academic community to exchange notes, request help, and boost your learning journey with thousands of students worldwide.
+                Join our academic platform to exchange notes, request help, and boost your learning journey with thousands of students worldwide.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
@@ -184,7 +216,7 @@ const Home = () => {
                   Join Thousands of Students
                 </h2>
                 <p className="text-xl text-blue-100">
-                  See what our community has accomplished together
+                  See what our team has accomplished together
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -228,7 +260,7 @@ const Home = () => {
                 What Students Say
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Hear from our community members about their JEHUB experience
+                Hear from our users about their JEHUB experience
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -257,7 +289,7 @@ const Home = () => {
               Ready to Boost Your Studies?
             </h2>
             <p className="text-xl mb-8 text-blue-100">
-              Join JEHUB today and become part of a thriving academic community
+              Join JEHUB today and become part of a thriving academic platform
             </p>
             <Link
               href="/notes-download"
