@@ -35,9 +35,9 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, router }) => 
   const currentVariant = isMobile ? variants[direction] : variants.desktop;
 
   const transition = {
-    type: 'tween',
+    type: 'tween' as const,
     duration: 0.3,
-    ease: [0.25, 0.1, 0.25, 1] // Cubic bezier for smooth feel
+    ease: [0.25, 0.1, 0.25, 1] as const // Cubic bezier for smooth feel
   };
 
   return (

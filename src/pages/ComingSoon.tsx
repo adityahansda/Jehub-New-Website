@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Image from 'next/image';
 import {
   BookOpen,
   Mail,
@@ -110,9 +111,11 @@ const ComingSoon = () => {
         <header className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-center">
             <div className="flex items-center justify-center">
-              <img 
+              <Image 
                 src="/images/logo.png" 
                 alt="JEHUB Logo" 
+                width={128}
+                height={128}
                 className="h-32 w-32 object-contain"
               />
             </div>

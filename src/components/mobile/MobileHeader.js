@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Bell, User } from 'lucide-react';
 
 const MobileHeader = ({ user, notificationCount = 0 }) => {
@@ -13,9 +14,11 @@ const MobileHeader = ({ user, notificationCount = 0 }) => {
       <div className="flex items-center justify-between px-4 py-3">
         {/* Logo */}
         <div className="flex items-center">
-          <img 
+          <Image 
             src="/images/logo.png" 
             alt="JEHUB" 
+            width={32}
+            height={32}
             className="h-8 w-auto"
             onError={(e) => {
               e.target.style.display = 'none';
@@ -83,9 +86,11 @@ const MobileHeader = ({ user, notificationCount = 0 }) => {
           <div className="relative">
             <button className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200">
               {user?.avatar ? (
-                <img
+                <Image
                   src={user.avatar}
                   alt={user.name || 'Profile'}
+                  width={32}
+                  height={32}
                   className="h-8 w-8 rounded-full object-cover border-2 border-gray-200"
                 />
               ) : (
