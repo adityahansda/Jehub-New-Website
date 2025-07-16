@@ -17,7 +17,6 @@ import {
   ArrowRight,
   Star,
   ChevronRight,
-  Sparkles,
   Megaphone,
   Menu,
   X,
@@ -44,26 +43,56 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAnnouncement, setShowAnnouncement] = useState(true);
-  const [showGreeting, setShowGreeting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
 
-  // Check if it's the first visit today
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const lastVisit = localStorage.getItem('lastVisitDate');
-
-    if (lastVisit !== today) {
-      setShowGreeting(true);
-      localStorage.setItem('lastVisitDate', today);
-
-      // Hide greeting after 30 seconds
-      const timer = setTimeout(() => {
-        setShowGreeting(false);
-      }, 30000);
-
-      return () => clearTimeout(timer);
+  const heroSlides = [
+    {
+      id: 1,
+      icon: Star,
+      title: 'Welcome to JEHUB',
+      subtitle: 'One platform for notes, events, and opportunities.',
+      buttonText: 'Explore Now',
+      buttonLink: '/about',
+      gradient: 'from-blue-600 via-purple-600 to-pink-600'
+    },
+    {
+      id: 2,
+      icon: Users,
+      title: 'Join the Community',
+      subtitle: 'Connect with thousands of students and professionals.',
+      buttonText: 'Join Now',
+      buttonLink: '/join-team',
+      gradient: 'from-green-600 via-teal-600 to-blue-600'
+    },
+    {
+      id: 3,
+      icon: Award,
+      title: 'Earn Points & Rewards',
+      subtitle: 'Contribute to the platform and climb the leaderboard.',
+      buttonText: 'View Leaderboard',
+      buttonLink: '/leaderboard',
+      gradient: 'from-orange-600 via-red-600 to-pink-600'
+    },
+    {
+      id: 4,
+      icon: BookOpen,
+      title: 'Share Knowledge',
+      subtitle: 'Upload notes, request materials, and help others learn.',
+      buttonText: 'Upload Notes',
+      buttonLink: '/notes-upload',
+      gradient: 'from-purple-600 via-indigo-600 to-blue-600'
     }
-  }, []);
+  ];
+
+  // Auto-slide hero section
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [heroSlides.length]);
 
   const categories = [
     {
@@ -267,37 +296,6 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
       {/* Universal Sidebar */}
       <UniversalSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
-      {/* Greeting Message */}
-      <AnimatePresence>
-        {showGreeting && (
-          <motion.div 
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 px-4 relative"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 flex-1">
-                <Sparkles className="h-5 w-5 animate-pulse" />
-                <div className="overflow-hidden">
-                  <p className="text-sm font-medium">
-                    Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'}, {user.name}! Welcome back to JEHUB 🎉
-                  </p>
-                </div>
-              </div>
-              <motion.button
-                onClick={() => setShowGreeting(false)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="text-white/80 hover:text-white"
-              >
-                <span className="text-lg">×</span>
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Announcement Strip */}
       <AnimatePresence>
@@ -366,24 +364,49 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
           </div>
         </div>
 
-        {/* Hero Banner */}
+        {/* Hero Slider */}
         <div className="mb-6">
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
+          <div className="relative overflow-hidden rounded-3xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentHeroSlide}
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -100 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className={`bg-gradient-to-r ${heroSlides[currentHeroSlide].gradient} rounded-3xl p-6 text-white relative overflow-hidden`}
+              >
+                {/* Background decorations */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
 
-            <div className="relative z-10">
-              <div className="mb-4">
-                <Sparkles className="h-8 w-8 text-yellow-300 animate-pulse" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Welcome to JEHUB</h2>
-              <p className="text-blue-100 mb-4">One platform for notes, events, and opportunities.</p>
-              <Link href="/about">
-                <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold flex items-center space-x-2 hover:bg-blue-50 transition-colors">
-                  <span>Explore Now</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </Link>
+                <div className="relative z-10">
+                  <div className="mb-4">
+                    {React.createElement(heroSlides[currentHeroSlide].icon, { className: "h-8 w-8 text-yellow-300 animate-pulse" })}
+                  </div>
+                  <h2 className="text-2xl font-bold mb-2">{heroSlides[currentHeroSlide].title}</h2>
+                  <p className="text-blue-100 mb-4">{heroSlides[currentHeroSlide].subtitle}</p>
+                  <Link href={heroSlides[currentHeroSlide].buttonLink}>
+                    <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold flex items-center space-x-2 hover:bg-blue-50 transition-colors">
+                      <span>{heroSlides[currentHeroSlide].buttonText}</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Slide indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentHeroSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentHeroSlide ? 'bg-white w-6' : 'bg-white/50'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </div>
