@@ -1,5 +1,10 @@
-import ComingSoon from '../src/pages/ComingSoon'
+import Layout from '../src/components/Layout';
+import ComingSoon from '../src/pages/ComingSoon';
 
 export default function ComingSoonPage() {
-  return <ComingSoon />
+  return (
+    <Layout>
+      <ComingSoon />
+    </Layout>
+  );
 }

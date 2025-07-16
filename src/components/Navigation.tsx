@@ -14,7 +14,6 @@ const Navigation = () => {
     { path: '/notes-download', label: 'Download', icon: Download },
     { path: '/notes-request', label: 'Request', icon: HelpCircle },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { path: '/community', label: 'Community', icon: Users },
     { path: '/blog', label: 'Blog', icon: PenTool },
     { path: '/about', label: 'About', icon: MessageSquare },
     { path: '/join-team', label: 'Join Team', icon: UserPlus },
