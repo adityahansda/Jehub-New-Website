@@ -1,30 +1,12 @@
-# 🧠 JeHub – Jharkhand Engineers Hub
+## 📚 Notes & Study Materials
 
-**JeHub** is an open-source educational initiative to help students from Jharkhand and beyond access notes, resources, and opportunities—all in one place.
+JeHub hosts verified semester-wise notes, including:
 
----
+- 📘 B.Tech Computer Science Notes (All Semesters)
+- 📗 Diploma Notes (Branch-wise)
+- 📝 Handwritten PDFs and PPT Slides
+- 📂 Organized by Subject, Semester, and University
 
-## 📌 About
+> Note: All notes are reviewed before being uploaded. Contributors must follow the content format guidelines provided in the onboarding document.
 
-JeHub is a community-driven project that collects, organizes, and shares study materials, tech resources, and college admission info for engineering students. We welcome contributions from students, educators, and developers.
-
----
-
-## 🚀 Features
-
-- 📚 Semester-wise Notes (PDFs, PPTs, handwritten)
-- 🧾 Admission & Scholarship Info
-- 🌐 Open-source student projects
-- 📘 Technical blogs and guides
-
----
-
-## 🤝 How to Contribute
-
-We love contributions! Here's how you can get started:
-
-1. **Fork the repository**
-2. **Clone your fork:**
-
-   ```bash
-   git clone https://github.com/your-username/JeHub.git
+If you'd like to contribute your notes or help organize them, [apply to join our team](#).
