@@ -157,7 +157,7 @@ const NotesUpload = () => {
             Upload Your Notes
           </h1>
           <p className="text-xl text-gray-600">
-            Share your knowledge with the community and earn points - No login required!
+            Share your knowledge with others and earn points - No login required!
           </p>
         </div>
 
@@ -192,7 +192,7 @@ const NotesUpload = () => {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center">
             <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
             <p className="text-green-800">
-              Notes uploaded successfully! Thank you for contributing to the community.
+              Notes uploaded successfully! Thank you for contributing to the platform.
             </p>
           </div>
         )}

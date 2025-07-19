@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Trophy, Star, Medal, Crown } from 'lucide-react';
 import { mockLeaderboard } from '../data/mockData';
+import PageHeader from '../components/PageHeader';
+import UniversalSidebar from '../components/UniversalSidebar';
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const getLevelIcon = (level: string) => {
     switch (level) {
@@ -31,17 +34,25 @@ const Leaderboard = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Leaderboard
-          </h1>
-          <p className="text-xl text-gray-600">
-            Top contributors ranked by their community contributions
-          </p>
-        </div>
+    <div className="min-h-screen">
+      <PageHeader 
+        title="Leaderboard" 
+        icon={Trophy}
+        onMenuClick={() => setIsSidebarOpen(true)}
+      />
+      <UniversalSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+      
+      <div className="pt-16 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <p className="text-xl text-gray-600">
+              Top contributors ranked by their platform contributions
+            </p>
+          </div>
 
         {/* Filter Tabs */}
         <div className="flex justify-center gap-2 mb-8">
@@ -161,7 +172,7 @@ const Leaderboard = () => {
                 <span className="font-semibold text-blue-600">+30 pts</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-700">Community Post</span>
+                <span className="text-gray-700">Platform Post</span>
                 <span className="font-semibold text-blue-600">+10 pts</span>
               </div>
             </div>
@@ -182,6 +193,7 @@ const Leaderboard = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

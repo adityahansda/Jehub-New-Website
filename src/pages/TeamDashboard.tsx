@@ -20,7 +20,6 @@ import TaskManagement from '../components/team/TaskManagement';
 import LeaveRequest from '../components/team/LeaveRequest';
 import TeamLeaderboard from '../components/team/TeamLeaderboard';
 import NotesUploadZone from '../components/team/NotesUploadZone';
-import CommunityEngagement from '../components/team/CommunityEngagement';
 import ResourcesLibrary from '../components/team/ResourcesLibrary';
 
 const TeamDashboard = () => {
@@ -50,7 +49,6 @@ const TeamDashboard = () => {
     { id: 'leave', label: 'Leave Request', icon: Calendar },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'notes', label: 'Notes Upload', icon: Upload },
-    { id: 'community', label: 'Community', icon: MessageSquare },
     { id: 'resources', label: 'Resources', icon: FolderOpen },
   ];
 
@@ -62,7 +60,6 @@ const TeamDashboard = () => {
             <PerformanceMetrics user={currentUser} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TaskManagement isOverview={true} />
-              <CommunityEngagement isOverview={true} />
             </div>
           </div>
         );
@@ -76,8 +73,6 @@ const TeamDashboard = () => {
         return <TeamLeaderboard currentUser={currentUser} />;
       case 'notes':
         return <NotesUploadZone />;
-      case 'community':
-        return <CommunityEngagement />;
       case 'resources':
         return <ResourcesLibrary />;
       default:
