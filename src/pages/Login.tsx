@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -8,21 +9,15 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login
-    console.log('Login:', formData);
+    alert('Login functionality has been disabled.');
   };
 
   const handleGoogleSignIn = async () => {
-    try {
-      // Import and initialize the Appwrite account object first
-      // await account.createOAuth2Session('google', 'http://localhost:3000/dashboard', 'http://localhost:3000/login');
-      console.log('Google OAuth needs to be implemented with proper account initialization');
-    } catch (error) {
-      console.error('Google Sign-In failed:', error);
-    }
+    alert('Google Sign-In functionality has been disabled.');
   };
 
   return (
@@ -104,7 +99,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               Sign In
             </button>

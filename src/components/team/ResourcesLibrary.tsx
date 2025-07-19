@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FolderOpen, FileText, Download, Image, Wrench, Search, Filter } from 'lucide-react';
+import { FolderOpen, FileText, Download, Image as ImageIcon, Wrench, Search, Filter } from 'lucide-react';
 
 const ResourcesLibrary = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,7 +74,7 @@ const ResourcesLibrary = () => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'document': return <FileText className="h-5 w-5 text-blue-600" />;
-      case 'image': return <Image className="h-5 w-5 text-green-600" />;
+      case 'image': return <ImageIcon className="h-5 w-5 text-green-600" />;
       case 'tool': return <Wrench className="h-5 w-5 text-purple-600" />;
       default: return <FileText className="h-5 w-5 text-gray-600" />;
     }
@@ -221,7 +221,7 @@ const ResourcesLibrary = () => {
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
           >
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <Image className="h-5 w-5 text-green-600" />
+              <ImageIcon className="h-5 w-5 text-green-600" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">Media Assets</h4>

@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { isServer }) => {
+  // Disable strict mode to reduce Fast Refresh issues
+  reactStrictMode: false,
+  
+  // Optimize build output
+  swcMinify: true,
+  
+  webpack: (config, { isServer, dev }) => {
     // Handle PDF.js worker
     if (!isServer) {
       config.resolve.fallback = {
@@ -18,14 +24,54 @@ const nextConfig = {
       };
     }
 
+    // Optimize for development
+    if (dev) {
+      config.devtool = 'eval-cheap-module-source-map';
+    }
+
     return config;
   },
+  
   experimental: {
     // Enable server components
     serverComponentsExternalPackages: ['pdfjs-dist'],
   },
+  
   images: {
-    domains: ['raw.githubusercontent.com', 'github.com', 'images.pexels.com', 'example.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    // Optimization settings
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+  },
+  
+  // Reduce bundle size
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
   },
 };
 
