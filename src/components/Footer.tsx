@@ -35,7 +35,7 @@ const Footer = () => {
               </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Empowering Jharkhand's engineering community with quality resources, 
+Empowering Jharkhand&apos;s engineering community with quality resources, 
               collaborative learning, and professional growth opportunities.
             </p>
             
@@ -132,7 +132,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
               <p className="text-gray-400 text-sm">
-                © 2024 JEHUB - Jharkhand Engineer's Hub. All rights reserved.
+© 2024 JEHUB - Jharkhand Engineer&apos;s Hub. All rights reserved.
               </p>
               <div className="flex space-x-4 text-sm">
                 <Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</Link>
