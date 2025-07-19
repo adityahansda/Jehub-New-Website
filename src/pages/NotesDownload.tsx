@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
 import { databases } from '../lib/appwrite';
+import PageHeader from '../components/PageHeader';
+import UniversalSidebar from '../components/UniversalSidebar';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -81,6 +84,9 @@ const NotesDownload = () => {
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
   const [likedNotes, setLikedNotes] = useState<Set<string>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Load liked notes from localStorage on component mount
   useEffect(() => {
@@ -99,6 +105,18 @@ const NotesDownload = () => {
   useEffect(() => {
     localStorage.setItem('likedNotes', JSON.stringify(Array.from(likedNotes)));
   }, [likedNotes]);
+
+  // Handle screen size changes
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
@@ -317,17 +335,29 @@ const NotesDownload = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            📚 Download Notes
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Page Header */}
+      <PageHeader 
+        title="Notes Download"
+        icon={Download}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
+      
+      {/* Universal Sidebar */}
+      <UniversalSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pt-20">
+        {/* Description */}
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Access thousands of high-quality notes from students worldwide
           </p>
-        </div>
+        </motion.div>
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -340,9 +370,14 @@ const NotesDownload = () => {
         ) : (
           <>
             {/* Search and Filters */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 mb-8">
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6 mb-8"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
               <div className="flex flex-col lg:flex-row gap-4">
-                {/* Search Bar */}
+                {/* Search Bar with Filter Button */}
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
@@ -350,12 +385,36 @@ const NotesDownload = () => {
                     placeholder="Search notes by title, subject, or keywords..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  {/* Filter Button - Visible on mobile */}
+                  <button
+                    onClick={() => setFiltersOpen(!filtersOpen)}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-100 transition-all lg:hidden ${
+                      filtersOpen ? 'bg-blue-50 scale-105' : ''
+                    }`}
+                    title={filtersOpen ? 'Hide Filters' : 'Show Filters'}
+                  >
+                    <Filter className={`h-5 w-5 transition-colors ${
+                      filtersOpen ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500'
+                    }`} />
+                    {/* Active filter indicator */}
+                    {(filters.branch || filters.semester || filters.degree || filters.subject) && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></div>
+                    )}
+                  </button>
                 </div>
 
-                {/* Filter Dropdowns */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                {/* Filter Dropdowns - Hidden on mobile by default */}
+                <AnimatePresence>
+                  {(filtersOpen || !isMobile) && (
+                    <motion.div 
+                      className="flex flex-col sm:flex-row gap-2 sm:gap-4"
+                      initial={isMobile ? { opacity: 0, y: -10 } : undefined}
+                      animate={isMobile ? { opacity: 1, y: 0 } : undefined}
+                      exit={isMobile ? { opacity: 0, y: -10 } : undefined}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
                   <select
                     value={filters.branch}
                     onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
@@ -396,7 +455,19 @@ const NotesDownload = () => {
                     onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 w-full focus:ring-blue-500 focus:border-transparent"
                   />
-                </div>
+                  
+                  {/* Clear Filters Button - Mobile only */}
+                  {isMobile && (filters.branch || filters.semester || filters.degree || filters.subject) && (
+                    <button
+                      onClick={() => setFilters({ branch: '', semester: '', subject: '', degree: '' })}
+                      className="mt-2 w-full px-4 py-2 text-sm text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* View Mode Toggle */}
@@ -421,14 +492,62 @@ const NotesDownload = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Notes Grid/List */}
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}`}>
-              {filteredNotes.map((note) => (
-                <div key={note.id} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <motion.div 
+              key={`${searchTerm}-${filters.branch}-${filters.semester}-${filters.subject}-${filters.degree}-${viewMode}`}
+              className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}`}
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.1,
+                    delayChildren: 0.2
+                  }
+                }
+              }}
+            >
+              <AnimatePresence>
+                {filteredNotes.map((note, index) => (
+                  <motion.div 
+                    key={note.id} 
+                    className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                    variants={{
+                      hidden: { 
+                        opacity: 0, 
+                        y: 50,
+                        scale: 0.9
+                      },
+                      visible: { 
+                        opacity: 1, 
+                        y: 0,
+                        scale: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 12,
+                          duration: 0.6
+                        }
+                      }
+                    }}
+                    whileHover={{ 
+                      y: -8,
+                      scale: 1.02,
+                      transition: { duration: 0.2 }
+                    }}
+                    layout
+                  >
                   <div className="p-4 sm:p-6">
-                    <div className="flex items-start justify-between mb-4">
+                    <motion.div 
+                      className="flex items-start justify-between mb-4"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
                       <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                           {note.title}
@@ -443,7 +562,7 @@ const NotesDownload = () => {
                       <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         {note.points} pts
                       </div>
-                    </div>
+                    </motion.div>
 
                     <p className="text-gray-600 mb-4 line-clamp-3">
                       {note.description}
@@ -520,9 +639,10 @@ const NotesDownload = () => {
                       ))}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+              </AnimatePresence>
+            </motion.div>
 
             {/* No Results */}
             {filteredNotes.length === 0 && (
