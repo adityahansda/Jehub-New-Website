@@ -16,7 +16,7 @@ const WishlistRegister = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   // Validate college email
   const validateCollegeEmail = (email: string) => {
@@ -103,15 +103,15 @@ const WishlistRegister = () => {
               </h1>
               
               <p className="text-[#d1d5db] mb-6">
-                Thank you for joining JEHUB's beta wishlist! You'll be among the first to access our platform when we launch.
+                Thank you for joining JEHUB&apos;s beta wishlist! You&apos;ll be among the first to access our platform when we launch.
               </p>
               
               <div className="bg-[#0e0e10] rounded-lg p-4 mb-6">
-                <p className="text-sm text-[#81e6d9] mb-2">What's next?</p>
+                <p className="text-sm text-[#81e6d9] mb-2">What&apos;s next?</p>
                 <ul className="text-sm text-[#d1d5db] space-y-1 text-left">
-                  <li>• You'll receive launch updates via email</li>
+                  <li>• You&apos;ll receive launch updates via email</li>
                   <li>• Get exclusive early access to features</li>
-                  <li>• Earn a special "Beta Tester" badge</li>
+                  <li>• Earn a special &quot;Beta Tester&quot; badge</li>
                   <li>• Shape the future of student collaboration</li>
                 </ul>
               </div>
@@ -301,11 +301,11 @@ const WishlistRegister = () => {
             <div className="bg-[#0e0e10] rounded-lg p-4 mt-6">
               <p className="text-sm font-medium text-[#81e6d9] mb-2 flex items-center">
                 <Star className="h-4 w-4 mr-1" />
-                What you'll get:
+                What you&apos;ll get:
               </p>
               <ul className="text-sm text-[#d1d5db] space-y-1">
                 <li>• Early access to JEHUB beta</li>
-                <li>• Exclusive "Beta Tester" badge</li>
+                <li>• Exclusive &quot;Beta Tester&quot; badge</li>
                 <li>• Direct feedback channel to developers</li>
                 <li>• Priority customer support</li>
                 <li>• Launch day bonuses and rewards</li>

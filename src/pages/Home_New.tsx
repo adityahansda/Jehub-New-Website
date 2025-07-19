@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
+import Image from 'next/image';
 import { 
   Upload, Download, Search, Gift, Trophy, Smartphone,
   DollarSign, Award, Crown, Star, Zap, Target,
@@ -74,7 +75,11 @@ const Home = () => {
           if (entry.isIntersecting) {
             const elementId = entry.target.getAttribute('data-reveal');
             if (elementId) {
-              setRevealedElements(prev => new Set([...prev, elementId]));
+              setRevealedElements(prev => {
+                const newSet = new Set(prev);
+                newSet.add(elementId);
+                return newSet;
+              });
             }
           }
         });
@@ -139,7 +144,7 @@ const Home = () => {
             <div className="flex justify-between items-center h-16">
               {/* Logo */}
               <Link href="/" className="flex items-center space-x-2">
-                <img src="/images/logo2.png" alt="JEHUB" className="h-8 w-auto" />
+                <Image src="/images/whitelogo.svg" alt="JEHUB" width={32} height={32} className="h-8 w-auto" />
               </Link>
               {/* Navigation */}
               <div className="hidden md:flex space-x-8">
@@ -195,7 +200,7 @@ const Home = () => {
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">What is JEHUB?</h2>
             <p className="text-xl text-[#d1d5db] max-w-4xl mx-auto leading-relaxed">
               JEHUB is a student-powered academic platform built for students, by students. It allows students to upload, access, and
-              earn rewards for academic notes. It's open-source, community-first, and launching soon.
+              earn rewards for academic notes. It&apos;s open-source, community-first, and launching soon.
             </p>
           </div>
         </section>
@@ -328,7 +333,7 @@ const Home = () => {
               <Terminal className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">💻 Contribute to JEHUB</h2>
-            <p className="text-xl text-[#d1d5db] mb-8">We're open-source! Developers, designers, content curators — join the team and build with us.</p>
+            <p className="text-xl text-[#d1d5db] mb-8">We&apos;re open-source! Developers, designers, content curators — join the team and build with us.</p>
             <button 
               onClick={() => setIsFormOpen(!isFormOpen)} 
               className="px-8 py-4 bg-[#9333ea] text-white rounded-lg font-semibold text-lg hover:bg-[#7c3aed] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-8"
@@ -427,7 +432,7 @@ const Home = () => {
 
             <div className="mt-12 bg-[#1c1c1f] p-8 rounded-2xl border border-[#2d2d30]">
               <h3 className="text-2xl font-bold text-white mb-4">Stay Updated</h3>
-              <p className="text-[#d1d5db] mb-6">Get the latest updates about JEHUB's launch and features</p>
+              <p className="text-[#d1d5db] mb-6">Get the latest updates about JEHUB&apos;s launch and features</p>
               <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
                 <input 
                   type="email" 
