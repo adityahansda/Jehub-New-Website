@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import MobileProfilePage from '../components/mobile/MobileProfilePage';
+
+
 const Profile = () => {
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Alex Johnson',
     email: 'alex.johnson@email.com',
@@ -13,24 +22,160 @@ const Profile = () => {
     joinDate: '2023-08-15'
   });
 
+  // Mobile detection and client-side rendering check
+  useEffect(() => {
+    setIsClient(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Update profile with user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.name || 'User',
+        email: user.email || 'user@email.com',
+        joinDate: user.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '2023-08-15'
+      }));
+    } else if (isMobile && isClient) {
+      // For mobile users without authentication, show default profile data
+      setProfile(prev => ({
+        ...prev,
+        name: 'Guest User',
+        email: 'guest@example.com',
+        joinDate: new Date().toLocaleDateString()
+      }));
+    }
+  }, [user, isMobile, isClient]);
+
+  // Redirect to login if not authenticated (only for desktop)
+  useEffect(() => {
+    if (!isClient) return;
+    
+    // Only redirect to login for desktop users when not authenticated
+    if (!loading && !user && !isMobile) {
+      router.push('/login');
+      return;
+    }
+  }, [user, loading, router, isMobile, isClient]);
+
+  // Show loading state while checking authentication or client-side rendering
+  if (!isClient || (loading && !isMobile)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // For mobile users, always show profile (even without authentication)
+  // For desktop users, only show if authenticated
+  if (!user && !isMobile) {
+    return null;
+  }
+
   const stats = {
     totalPoints: 2450,
     notesUploaded: 15,
     notesDownloaded: 43,
     requestsFulfilled: 8,
-    communityPosts: 12,
     rank: 1
   };
 
+  // Mobile profile data
+  const mobileStats = {
+    rank: stats.rank,
+    totalUsers: 5000,
+    points: stats.totalPoints,
+    notesUploaded: stats.notesUploaded,
+    notesDownloaded: stats.notesDownloaded,
+    requestsFulfilled: stats.requestsFulfilled,
+    streakDays: 7,
+    badges: 6
+  };
+
   const recentActivity = [
+    {
+      id: '1',
+      type: 'upload' as const,
+      description: 'Uploaded Data Structures Complete Notes',
+      timestamp: '2 hours ago',
+      points: 50
+    },
+    {
+      id: '2',
+      type: 'download' as const,
+      description: 'Downloaded Machine Learning Basics',
+      timestamp: '1 day ago'
+    },
+    {
+      id: '3',
+      type: 'request' as const,
+      description: 'Fulfilled request for Algorithm Notes',
+      timestamp: '2 days ago',
+      points: 30
+    },
+    {
+      id: '4',
+      type: 'badge' as const,
+      description: 'Earned "Top Contributor" badge',
+      timestamp: '3 days ago',
+      points: 100
+    }
+  ];
+
+  const mobileUserData = {
+    id: user?.$id || '1',
+    name: profile.name,
+    email: profile.email,
+    avatar: (user as any)?.avatar,
+    phone: (user as any)?.phone,
+    location: (user as any)?.location,
+    college: profile.college,
+    course: profile.branch,
+    semester: profile.semester,
+    joinDate: profile.joinDate,
+    bio: profile.bio
+  };
+
+  // Return mobile profile if on mobile
+  if (isMobile) {
+    return (
+      <MobileProfilePage 
+        user={mobileUserData}
+        stats={mobileStats}
+        recentActivity={recentActivity}
+      />
+    );
+  }
+
+  const desktopRecentActivity = [
     { type: 'upload', title: 'Data Structures Complete Notes', points: 50, date: '2 days ago' },
     { type: 'request', title: 'Fulfilled: Machine Learning Basics', points: 30, date: '1 week ago' },
-    { type: 'post', title: 'Community post about algorithms', points: 10, date: '2 weeks ago' }
   ];
 
   const handleSave = () => {
     setIsEditing(false);
     // Handle save logic
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -169,13 +314,6 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-purple-500" />
-                    <span className="text-sm text-gray-600">Community Posts</span>
-                  </div>
-                  <span className="font-semibold text-gray-900">{stats.communityPosts}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-yellow-500" />
                     <span className="text-sm text-gray-600">Requests Fulfilled</span>
                   </div>
@@ -185,7 +323,10 @@ const Profile = () => {
             </div>
 
             {/* Logout Button */}
-            <button className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+            <button 
+              onClick={handleLogout}
+              className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </button>
@@ -196,7 +337,7 @@ const Profile = () => {
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
               <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
+                {desktopRecentActivity.map((activity, index) => (
                   <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === 'upload' ? 'bg-blue-100 text-blue-600' :
                         activity.type === 'request' ? 'bg-green-100 text-green-600' :
