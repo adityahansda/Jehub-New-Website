@@ -101,8 +101,8 @@ const Login = () => {
       const currentUser = await AuthService.getCurrentUser();
       const userRole = await getUserRole(currentUser);
 
-      // Determine redirect path based on role
-      const redirectTo = getRoleBasedRedirectPath(userRole);
+      // Check for redirect parameter from URL
+      const redirectTo = router.query.redirect as string || getRoleBasedRedirectPath(userRole);
 
       setSuccess(getWelcomeMessage(userRole));
 
