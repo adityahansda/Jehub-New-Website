@@ -26,29 +26,39 @@ const ComingSoon = () => {
     seconds: 0,
   });
 
-  // Set launch date (you can modify this)
-  const launchDate = new Date("2025-08-01T00:00:00").getTime();
+  // Set launch date to match main home page - August 15, 2025 at 12:00 PM IST
+  const launchDate = new Date("2025-08-15T12:00:00+05:30").getTime();
 
   const handleClick = () => {
-    window.open("https://forms.gle/W38n16zcxCrsezaTA"), "_blank";
+    window.open("https://forms.gle/W38n16zcxCrsezaTA", "_blank");
   };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = launchDate - now;
+    const updateCountdown = () => {
+      try {
+        const now = new Date().getTime();
+        const distance = launchDate - now;
 
-      if (distance > 0) {
-        setTimeLeft({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor(
-            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          ),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000),
-        });
+        if (distance > 0) {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          
+          setTimeLeft({ days, hours, minutes, seconds });
+        } else {
+          // Set to 0 if target date has passed
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        }
+      } catch (error) {
+        console.error('Countdown error:', error);
+        // Fallback: set countdown to 0 on error
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
-    }, 1000);
+    };
+
+    updateCountdown(); // Call immediately
+    const timer = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(timer);
   }, [launchDate]);

@@ -27,25 +27,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <Image
-                src="/images/logo.png"
-                alt="Jharkhand Engineer's Hub"
-                width={137}
-                height={48}
-                priority
-                sizes="(max-width: 768px) 100vw, 137px"
-                style={{
-                  width: 'auto',
-                  height: '48px',
-                  maxWidth: '137px',
-                  objectFit: 'contain'
-                }}
-              />
-            </div>
-            {/* <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              JEHUB
-            </span> */}
+            <img src="/image/whitelogo.svg" alt="JEHUB" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
