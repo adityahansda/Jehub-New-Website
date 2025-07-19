@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest } from 'next/server';
-import { account as serverAccount } from './appwrite-server';
+import { Client, Account } from 'appwrite';
 import { Models } from 'appwrite';
 import { getUserRole, UserRole } from './authUtils';
 
@@ -14,28 +14,38 @@ export interface ServerAuthResult {
 
 // Extract session token from request
 export const getSessionFromRequest = (request: NextRequest | NextApiRequest): string | null => {
-  // Try to get session from cookies
-  const cookieHeader = 'cookies' in request ? request.cookies : request.headers.cookie;
-  
-  if (!cookieHeader) return null;
+  try {
+    // Handle NextRequest (middleware)
+    if ('cookies' in request && request.cookies) {
+      const cookies = request.cookies as any; // Type assertion for Next.js cookies
+      if (cookies && typeof cookies.get === 'function') {
+        const sessionCookie = cookies.get('session');
+        return sessionCookie?.value || null;
+      }
+    }
 
-  // Handle NextRequest (middleware)
-  if ('get' in cookieHeader && typeof cookieHeader.get === 'function') {
-    return cookieHeader.get('session')?.value || null;
+    // Handle NextApiRequest (API routes)
+    if ('headers' in request && request.headers) {
+      const headers = request.headers as any; // Type assertion for headers
+      const cookieHeader = headers.cookie;
+      if (typeof cookieHeader === 'string') {
+        const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+          const [key, value] = cookie.trim().split('=');
+          if (key && value) {
+            acc[key] = value;
+          }
+          return acc;
+        }, {} as Record<string, string>);
+        
+        return cookies.session || null;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error extracting session from request:', error);
+    return null;
   }
-
-  // Handle NextApiRequest (API routes)
-  if (typeof cookieHeader === 'string') {
-    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split('=');
-      acc[key] = value;
-      return acc;
-    }, {} as Record<string, string>);
-    
-    return cookies.session || null;
-  }
-
-  return null;
 };
 
 // Verify user session and role on server-side
@@ -57,14 +67,19 @@ export const verifyServerAuth = async (
       return defaultResult;
     }
 
-    // Create a new account client instance to avoid conflicts
-    const { account: serverAccount } = await import('./appwrite-server');
+    // Create a new client instance for this session
+    const client = new Client()
+      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
+      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
     
-    // Set the session for server account
-    serverAccount.setSession(sessionToken);
+    // Set the session token
+    client.setSession(sessionToken);
+    
+    // Create account instance with the session
+    const account = new Account(client);
     
     // Get current user
-    const user = await serverAccount.get();
+    const user = await account.get();
     
     if (!user) {
       return defaultResult;

@@ -19,17 +19,18 @@ const ProtectedRoute = ({
   const { userRole, loading } = useAuth();
   const router = useRouter();
 
+  // Always call useEffect at the top level
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!userRole && requiredRole === 'user') {
+      router.push('/login');
+      return;
+    }
+  }, [userRole, loading, router, requiredRole]);
+
   // For basic user role (default), just check authentication without heavy verification
   if (requiredRole === 'user') {
-    useEffect(() => {
-      if (loading) return;
-      
-      if (!userRole) {
-        router.push('/login');
-        return;
-      }
-    }, [userRole, loading, router]);
-
     // Show loading state
     if (loading) {
       return (
