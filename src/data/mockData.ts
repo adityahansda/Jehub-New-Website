@@ -46,16 +46,6 @@ export interface LeaderboardUser {
   level: string;
 }
 
-export interface CommunityPost {
-  id: string;
-  user: string;
-  avatar: string;
-  content: string;
-  timestamp: string;
-  likes: number;
-  comments: number;
-  type: 'text' | 'poll' | 'link' | 'file';
-}
 
 export const mockNotes: Note[] = [
   {
@@ -219,38 +209,6 @@ export const mockLeaderboard: LeaderboardUser[] = [
   }
 ];
 
-export const mockCommunityPosts: CommunityPost[] = [
-  {
-    id: '1',
-    user: 'Alex Johnson',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    content: 'Just uploaded comprehensive DSA notes! Hope they help everyone prepare for their exams. Feel free to ask questions in the comments.',
-    timestamp: '2 hours ago',
-    likes: 24,
-    comments: 8,
-    type: 'text'
-  },
-  {
-    id: '2',
-    user: 'Sarah Chen',
-    avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    content: 'Poll: Which programming language should I learn next? A) Python B) JavaScript C) Java D) C++',
-    timestamp: '4 hours ago',
-    likes: 15,
-    comments: 12,
-    type: 'poll'
-  },
-  {
-    id: '3',
-    user: 'Mike Davis',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    content: 'Found this amazing free course on machine learning. Highly recommended for CS students!',
-    timestamp: '6 hours ago',
-    likes: 32,
-    comments: 6,
-    type: 'link'
-  }
-];
 
 export const stats = {
   notesUploaded: 1247,

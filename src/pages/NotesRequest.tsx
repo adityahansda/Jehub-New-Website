@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, ArrowUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, ArrowUp, Clock, CheckCircle, AlertCircle, HelpCircle } from 'lucide-react';
 import { mockRequests } from '../data/mockData';
+import PageHeader from '../components/PageHeader';
+import UniversalSidebar from '../components/UniversalSidebar';
 
 const NotesRequest = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -12,6 +14,7 @@ const NotesRequest = () => {
     subject: '',
     description: ''
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
@@ -62,13 +65,20 @@ const NotesRequest = () => {
   });
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Page Header */}
+      <PageHeader 
+        title="Request Notes"
+        icon={HelpCircle}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
+      
+      {/* Universal Sidebar */}
+      <UniversalSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pt-20">
+        {/* Description */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Request Notes
-          </h1>
           <p className="text-xl text-gray-600">
             Can&quot;t find what you&quot;re looking for? Request it from the community
           </p>
