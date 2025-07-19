@@ -12,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   refreshUserRole: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,8 +64,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-
-
+  const refreshAuth = async () => {
+    await checkUser();
+  };
 
   const logout = async () => {
     try {
@@ -84,7 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     loading,
     error,
-    refreshUserRole
+    refreshUserRole,
+    refreshAuth
   };
 
   return (
