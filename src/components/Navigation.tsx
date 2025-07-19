@@ -27,7 +27,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <img src="/image/whitelogo.svg" alt="JEHUB" className="h-8 w-auto" />
+            <Image src="/images/blacklogo.svg" alt="JEHUB" width={32} height={32} className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
