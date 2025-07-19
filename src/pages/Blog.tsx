@@ -24,7 +24,7 @@ const Blog = () => {
             JEHUB Blog
           </h1>
           <p className="text-xl text-gray-600">
-            Insights, tips, and guides from our community of students and educators
+            Insights, tips, and guides from our network of students and educators
           </p>
         </div>
 
@@ -63,7 +63,7 @@ const Blog = () => {
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-2">Share Your Knowledge</h2>
             <p className="text-blue-100 mb-4">
-              Have insights to share? Write a blog post and help the community learn
+              Have insights to share? Write a blog post and help others learn
             </p>
             <button className="inline-flex items-center bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
               <Plus className="h-5 w-5 mr-2" />

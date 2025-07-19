@@ -1,5 +1,10 @@
-import AdminDashboard from '../src/pages/AdminDashboard'
+import Layout from '../src/components/Layout';
+import AdminDashboard from '../src/pages/AdminDashboard';
 
 export default function AdminDashboardPage() {
-  return <AdminDashboard />
+  return (
+    <Layout>
+      <AdminDashboard />
+    </Layout>
+  );
 }
