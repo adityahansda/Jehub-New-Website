@@ -234,7 +234,7 @@ const PageIndex = () => {
             </p>
             <p className="text-blue-700 text-sm">
               This page provides a comprehensive overview of all available pages on the JEHUB platform. 
-              Use the category filters to navigate through different sections, and click "View Page" to visit any page directly.
+              Use the category filters to navigate through different sections, and click &quot;View Page&quot; to visit any page directly.
             </p>
           </div>
         </div>

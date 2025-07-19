@@ -92,7 +92,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [heroSlides.length]);
 
   const categories = [
     {

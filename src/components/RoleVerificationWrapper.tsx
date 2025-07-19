@@ -37,7 +37,7 @@ const RoleVerificationWrapper: React.FC<RoleVerificationWrapperProps> = ({
     if (authLoading) return; // Wait for auth context to finish loading
 
     verifyRoleAccess();
-  }, [user, userRole, authLoading, requiredRole]);
+  }, [user, userRole, authLoading, requiredRole]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const verifyRoleAccess = async () => {
     if (!user) {
@@ -206,7 +206,7 @@ const RoleVerificationWrapper: React.FC<RoleVerificationWrapperProps> = ({
                 </h3>
                 
                 <p className="text-red-700 mb-4">
-                  You don't have the required permissions to access this page.
+                  You don&apos;t have the required permissions to access this page.
                 </p>
                 
                 <div className="bg-red-50 rounded-lg p-3 space-y-2 mb-4">

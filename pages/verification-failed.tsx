@@ -45,7 +45,7 @@ Best regards`;
             </h1>
             
             <p className="text-red-600 mb-4">
-              We couldn't verify your account permissions.
+              We couldn&apos;t verify your account permissions.
             </p>
           </div>
 
