@@ -1,49 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-// import { SpeedInsights } from "@vercel/speed-insights/next"
-import { BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, MessageSquare, TrendingUp, CheckCircle } from 'lucide-react';
-// If '../data/mockData' does not export 'stats', define a fallback here
-import { stats as importedStats } from '../data/mockData';
-import MobileHomePage from '../components/mobile/MobileHomePage';
-
-const stats = importedStats || {
-  notesUploaded: 0,
-  activeMembers: 0,
-  requestsFulfilled: 0,
-};
+import { 
+  BookOpen, Users, Trophy, PenTool, ArrowRight, Star, Download, Upload, 
+  Search, Filter, Zap, Award, Target, Smartphone, Clock, Rocket,
+  Code, Github, MessageCircle, Instagram, User, Mail, Calendar,
+  ChevronDown, Play, CheckCircle, TrendingUp, Coins, Crown, Medal
+} from 'lucide-react';
 
 const Home = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState({ name: 'Aditya', avatar: undefined });
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
 
+  const [waitlistCount, setWaitlistCount] = useState(431);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Countdown timer
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const targetDate = new Date('2025-08-15T12:00:00').getTime();
+    
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+      
+      if (difference > 0) {
+        setCountdown({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      }
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    const timer = setInterval(updateCountdown, 1000);
+    updateCountdown();
 
-  // Return mobile home page if on mobile
-  if (isMobile) {
-    return (
-      <>
-        <Head>
-          <title>JEHUB - Centralized Academic Resources for Students</title>
-          <meta
-            name="description"
-            content="JEHUB is a student-focused ed-tech platform providing notes, tools, and discussions for diploma and BTech students."
-          />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        </Head>
-        <MobileHomePage user={user} notificationCount={3} />
-      </>
-    );
-  }
+    return () => clearInterval(timer);
+  }, []);
 
   const features = [
     {
@@ -111,18 +109,19 @@ const Home = () => {
     <>
 
       <Head>
-        <title>JEHUB Centralized Academic Resources for Students</title>
+        <title>JEHUB - Centralized Academic Resources for Students</title>
         <meta
           name="description"
           content="JEHUB is a student-focused ed-tech platform providing notes, tools, and discussions for diploma and BTech students."
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-teal-600 text-white py-20 px-4 sm:px-6 lg:px-8 overflow-hidden h-[100vh]">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative max-w-7xl mx-auto">
+          <div className="hidden"></div>
+<div className="relative max-w-7xl mx-auto bg-[#1c1c1f]">
             <div className="text-center">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 Empowering Students to

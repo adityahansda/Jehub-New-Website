@@ -1,4 +1,4 @@
-import Home from '../src/pages/Home'
+import Home from '../src/pages/Home_New'
 import ComingSoon from '../src/pages/ComingSoon'
 
 export default function HomePage() {
