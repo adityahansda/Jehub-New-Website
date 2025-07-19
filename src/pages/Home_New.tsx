@@ -290,7 +290,7 @@ const Home = () => {
                     height={32} 
                     className="h-8 w-auto transition-transform duration-300 group-hover:scale-110" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 -z-10"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#ef4444] to-[#fbbf24] rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 -z-10"></div>
                 </div>
               </Link>
               
@@ -310,7 +310,7 @@ const Home = () => {
                       onClick={(e) => handleNavClick(e, item.href)}
                       className={`relative transition-all duration-300 px-3 py-2 rounded-lg cursor-pointer ${
                         isActive 
-                          ? 'text-white bg-[#9333ea] shadow-lg' 
+                          ? 'text-white bg-[#f97316] shadow-lg' 
                           : 'text-white/80 hover:text-white hover:bg-[#1c1c1f]'
                       }`}
                     >
@@ -379,12 +379,12 @@ const Home = () => {
 
         {/* Hero Section */}
         <section id="home" className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1c1c1f] to-[#0e0e10] pt-16">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#9333ea]/10 via-transparent to-[#3b82f6]/10"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b]/10 via-transparent to-[#fb923c]/10"></div>
           <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
             <div className="animate-fade-in-up">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight">
                 Centralizing Academic Resources
-                <span className="block bg-gradient-to-r from-[#9333ea] to-[#3b82f6] bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-[#f59e0b] to-[#fb923c] bg-clip-text text-transparent">
                   for Every Student
                 </span>
               </h1>
@@ -395,7 +395,7 @@ const Home = () => {
                 <a 
                   href="#beta" 
                   onClick={(e) => handleNavClick(e, '#beta')}
-                  className="px-8 py-4 bg-[#9333ea] text-white rounded-lg font-semibold text-lg hover:bg-[#7c3aed] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+                  className="px-8 py-4 bg-[#f59e0b] text-white rounded-lg font-semibold text-lg hover:bg-[#f97316] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
                 >
                   Join Wishlist
                 </a>
