@@ -92,7 +92,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [heroSlides.length]);
+  }, []);
 
   const categories = [
     {
@@ -458,8 +458,8 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
         </div>
 
         {/* Announcement Section */}
-        <div className="py-4 mb-8">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white mb-4">
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white">
             <div className="flex items-center space-x-2 mb-2">
               <Megaphone className="h-5 w-5" />
               <h3 className="font-bold text-lg">Announcement</h3>
@@ -475,14 +475,14 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
         </div>
 
         {/* JEHUB Official Notices */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-xl font-bold text-gray-900">JEHUB Official Notices</h3>
             <button className="text-blue-600 text-sm font-medium">View all</button>
           </div>
 
-          <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+          <div className="space-y-2">
+            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
                 <div className="flex-1">
@@ -496,7 +496,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                 <div className="flex-1">
@@ -510,7 +510,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                 <div className="flex-1">
@@ -527,8 +527,8 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
         </div>
 
         {/* Latest Updates / Blogs */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-xl font-bold text-gray-900">Latest from JEHUB</h3>
             <Link href="/blog">
               <button className="text-blue-600 text-sm font-medium flex items-center space-x-1">
@@ -538,7 +538,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {latestBlogs.map((blog, index) => (
               <motion.div 
                 key={blog.id} 
@@ -546,14 +546,14 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
                 whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white rounded-2xl p-4 border border-gray-100 hover:shadow-lg transition-all duration-300"
+                className="bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex space-x-3">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="h-6 w-6 text-white" />
+                  <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center space-x-2 mb-1">
                       <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
                         {blog.category}
                       </span>
@@ -562,7 +562,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
                     <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
                       {blog.title}
                     </h4>
-                    <p className="text-gray-600 text-xs line-clamp-2 mb-2">
+                    <p className="text-gray-600 text-xs line-clamp-2 mb-1">
                       {blog.summary}
                     </p>
                     <motion.button 
@@ -581,10 +581,10 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
         </div>
 
         {/* Quick Stats */}
-        <div className="mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Your Progress</h3>
-            <div className="grid grid-cols-3 gap-4">
+        <div className="mb-6">
+          <div className="bg-white rounded-2xl p-4 border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Your Progress</h3>
+            <div className="grid grid-cols-3 gap-3">
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
                   <Download className="h-6 w-6 text-blue-600" />

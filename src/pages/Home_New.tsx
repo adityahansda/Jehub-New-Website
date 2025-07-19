@@ -76,17 +76,31 @@ const Home = () => {
 
   // Handle browser back/forward buttons
   useEffect(() => {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const handlePopState = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        smoothScrollTo(hash);
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      try {
+        const hash = window.location.hash;
+        if (hash) {
+          smoothScrollTo(hash);
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (error) {
+        console.warn('Error in popstate handler:', error);
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    try {
+      window.addEventListener('popstate', handlePopState);
+      return () => window.removeEventListener('popstate', handlePopState);
+    } catch (error) {
+      console.warn('Error setting up popstate listener:', error);
+      return () => {};
+    }
   }, []);
 
   // Handle click outside mobile menu
@@ -154,109 +168,171 @@ const Home = () => {
   
   // Parallax scroll effect and backup active section detection
   useEffect(() => {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined' || !document) {
+      return;
+    }
+
     const handleScroll = () => {
-      setScrollY(window.scrollY);
-      
-      // Backup method: dynamically get sections in DOM order
-      const sectionElements = Array.from(document.querySelectorAll('section[id]'))
-        .map(el => ({ 
-          id: el.id, 
-          offsetTop: (el as HTMLElement).offsetTop 
-        }))
-        .sort((a, b) => a.offsetTop - b.offsetTop);
-      
-      const scrollPosition = window.scrollY + 120; // Account for header
-      
-      // If we're at the very top, always show home as active
-      if (window.scrollY < 100) {
-        setActiveSection('home');
-        return;
-      }
-      
-      // Find the current section by checking which one we've scrolled past
-      let currentSection = 'home';
-      for (const section of sectionElements) {
-        if (section.offsetTop <= scrollPosition) {
-          currentSection = section.id;
-        } else {
-          break;
+      try {
+        setScrollY(window.scrollY);
+        
+        // Backup method: dynamically get sections in DOM order
+        const sectionElements = Array.from(document.querySelectorAll('section[id]'))
+          .map(el => ({ 
+            id: el.id, 
+            offsetTop: (el as HTMLElement).offsetTop 
+          }))
+          .sort((a, b) => a.offsetTop - b.offsetTop);
+        
+        const scrollPosition = window.scrollY + 120; // Account for header
+        
+        // If we're at the very top, always show home as active
+        if (window.scrollY < 100) {
+          setActiveSection('home');
+          return;
         }
+        
+        // Find the current section by checking which one we've scrolled past
+        let currentSection = 'home';
+        for (const section of sectionElements) {
+          if (section.offsetTop <= scrollPosition) {
+            currentSection = section.id;
+          } else {
+            break;
+          }
+        }
+        
+        setActiveSection(currentSection);
+      } catch (error) {
+        console.warn('Error in scroll handler:', error);
       }
-      
-      setActiveSection(currentSection);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    try {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleScroll);
+    } catch (error) {
+      console.warn('Error setting up scroll listener:', error);
+      return () => {};
+    }
   }, []);
 
   // Scroll reveal animation and active section tracking
   useEffect(() => {
-    // Intersection Observer for reveal animations
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const elementId = entry.target.getAttribute('data-reveal');
-            if (elementId) {
-              setRevealedElements(prev => {
-                const newSet = new Set(prev);
-                newSet.add(elementId);
-                return newSet;
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined' || !document) {
+      return;
+    }
+
+    // Wait a bit for DOM to be ready
+    const setupObservers = () => {
+      try {
+        // Intersection Observer for reveal animations
+        const revealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const elementId = entry.target.getAttribute('data-reveal');
+                if (elementId) {
+                  setRevealedElements(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(elementId);
+                    return newSet;
+                  });
+                }
+              }
+            });
+          },
+          {
+            threshold: 0.1,
+            rootMargin: '-50px 0px'
+          }
+        );
+
+        // Intersection Observer for active section tracking
+        const sectionObserver = new IntersectionObserver(
+          (entries) => {
+            try {
+              // Find the section that is most in view
+              let maxRatio = 0;
+              let currentSection = 'home';
+              
+              entries.forEach((entry) => {
+                if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+                  maxRatio = entry.intersectionRatio;
+                  const sectionId = entry.target.id;
+                  if (sectionId) {
+                    currentSection = sectionId;
+                  }
+                }
               });
+              
+              // Only update if we have a section with meaningful intersection
+              if (maxRatio > 0.1) {
+                setActiveSection(currentSection);
+                // Update URL hash without scrolling
+                if (isInitialized && window.history) {
+                  try {
+                    window.history.replaceState(null, '', `#${currentSection}`);
+                  } catch (historyError) {
+                    console.warn('Could not update URL hash:', historyError);
+                  }
+                }
+              }
+            } catch (sectionError) {
+              console.warn('Error in section observer:', sectionError);
             }
+          },
+          {
+            threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+            rootMargin: '-80px 0px -50% 0px'
           }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: '-50px 0px'
-      }
-    );
+        );
 
-    // Intersection Observer for active section tracking
-    const sectionObserver = new IntersectionObserver(
-      (entries) => {
-        // Find the section that is most in view
-        let maxRatio = 0;
-        let currentSection = 'home';
-        
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            const sectionId = entry.target.id;
-            if (sectionId) {
-              currentSection = sectionId;
+        // Observe all reveal elements
+        const revealElements = document.querySelectorAll('[data-reveal]');
+        if (revealElements.length > 0) {
+          revealElements.forEach((el) => {
+            try {
+              revealObserver.observe(el);
+            } catch (observeError) {
+              console.warn('Could not observe reveal element:', observeError);
             }
-          }
-        });
-        
-        // Only update if we have a section with meaningful intersection
-        if (maxRatio > 0.1) {
-          setActiveSection(currentSection);
-          // Update URL hash without scrolling
-          if (isInitialized) {
-            window.history.replaceState(null, '', `#${currentSection}`);
-          }
+          });
         }
-      },
-      {
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        rootMargin: '-80px 0px -50% 0px'
+
+        // Observe all sections
+        const sections = document.querySelectorAll('section[id]');
+        if (sections.length > 0) {
+          sections.forEach((section) => {
+            try {
+              sectionObserver.observe(section);
+            } catch (observeError) {
+              console.warn('Could not observe section:', observeError);
+            }
+          });
+        }
+
+        return () => {
+          try {
+            revealObserver.disconnect();
+            sectionObserver.disconnect();
+          } catch (disconnectError) {
+            console.warn('Error disconnecting observers:', disconnectError);
+          }
+        };
+      } catch (error) {
+        console.warn('Error setting up intersection observers:', error);
+        return () => {}; // Return empty cleanup function
       }
-    );
+    };
 
-    // Observe all reveal elements
-    const revealElements = document.querySelectorAll('[data-reveal]');
-    revealElements.forEach((el) => revealObserver.observe(el));
-
-    // Observe all sections
-    const sections = document.querySelectorAll('section[id]');
-    sections.forEach((section) => sectionObserver.observe(section));
-
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(setupObservers, 100);
+    
     return () => {
-      revealObserver.disconnect();
-      sectionObserver.disconnect();
+      clearTimeout(timeoutId);
     };
   }, [isInitialized]);
 
@@ -267,30 +343,44 @@ const Home = () => {
 
   // Smooth scroll function for navigation
   const smoothScrollTo = (elementId: string) => {
-    const element = document.getElementById(elementId.replace('#', ''));
-    if (element) {
-      const headerOffset = 80; // Account for fixed header height
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    try {
+      const element = document.getElementById(elementId.replace('#', ''));
+      if (element) {
+        const headerOffset = 80; // Account for fixed header height
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    } catch (error) {
+      console.warn('Error in smooth scroll:', error);
     }
   };
 
   // Handle navigation click
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    if (href.startsWith('#')) {
-      const sectionId = href.replace('#', '');
-      // Immediately update active section for instant feedback
-      setActiveSection(sectionId);
-      // Update URL without triggering page reload
-      window.history.pushState(null, '', href);
-      smoothScrollTo(href);
-      setIsMobileMenuOpen(false); // Close mobile menu if open
+    try {
+      e.preventDefault();
+      if (href.startsWith('#')) {
+        const sectionId = href.replace('#', '');
+        // Immediately update active section for instant feedback
+        setActiveSection(sectionId);
+        // Update URL without triggering page reload
+        if (window.history) {
+          try {
+            window.history.pushState(null, '', href);
+          } catch (historyError) {
+            console.warn('Could not update URL:', historyError);
+          }
+        }
+        smoothScrollTo(href);
+        setIsMobileMenuOpen(false); // Close mobile menu if open
+      }
+    } catch (error) {
+      console.warn('Error in navigation click:', error);
     }
   };
 
