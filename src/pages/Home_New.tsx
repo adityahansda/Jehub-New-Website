@@ -25,8 +25,100 @@ const Home = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   
-  // Remove wishlist form states - using button navigation instead
+  // Animated counter for waitlist
+  useEffect(() => {
+    // Animate counter when beta section is revealed
+    if (revealedElements.has('beta-section')) {
+      const duration = 2000; // 2 seconds
+      const steps = 60;
+      const increment = waitlistCount / steps;
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= waitlistCount) {
+          setDisplayCount(waitlistCount);
+          clearInterval(timer);
+        } else {
+          setDisplayCount(Math.floor(current));
+        }
+      }, duration / steps);
+      
+      return () => clearInterval(timer);
+    }
+  }, [revealedElements, waitlistCount]);
 
+  // Page initialization - scroll to top on load
+  useEffect(() => {
+    const handlePageLoad = () => {
+      // Clear any hash from URL and scroll to top
+      if (window.location.hash && !isInitialized) {
+        window.history.replaceState(null, '', window.location.pathname);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      
+      // Enable smooth scrolling after initialization
+      document.documentElement.classList.add('smooth-scroll');
+      setIsInitialized(true);
+    };
+
+    // Disable smooth scrolling initially
+    document.documentElement.classList.remove('smooth-scroll');
+
+    // Run immediately if page is already loaded
+    if (document.readyState === 'complete') {
+      handlePageLoad();
+    } else {
+      window.addEventListener('load', handlePageLoad);
+      return () => window.removeEventListener('load', handlePageLoad);
+    }
+  }, [isInitialized]);
+
+  // Handle browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        smoothScrollTo(hash);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Handle click outside mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      const mobileMenu = document.querySelector('[data-mobile-menu]');
+      const menuButton = document.querySelector('[data-menu-button]');
+      
+      if (isMobileMenuOpen && 
+          mobileMenu && 
+          !mobileMenu.contains(target) && 
+          menuButton && 
+          !menuButton.contains(target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+  
   // Countdown timer with proper error handling and timezone
   useEffect(() => {
     const targetDate = new Date('2025-08-15T12:00:00+05:30').getTime(); // IST timezone
@@ -67,7 +159,10 @@ const Home = () => {
       
       // Backup method: dynamically get sections in DOM order
       const sectionElements = Array.from(document.querySelectorAll('section[id]'))
-        .map(el => ({ id: el.id, offsetTop: el.offsetTop }))
+        .map(el => ({ 
+          id: el.id, 
+          offsetTop: (el as HTMLElement).offsetTop 
+        }))
         .sort((a, b) => a.offsetTop - b.offsetTop);
       
       const scrollPosition = window.scrollY + 120; // Account for header
@@ -165,55 +260,6 @@ const Home = () => {
     };
   }, [isInitialized]);
 
-  // Animated counter for waitlist
-  useEffect(() => {
-    // Animate counter when beta section is revealed
-    if (revealedElements.has('beta-container')) {
-      const duration = 2000; // 2 seconds
-      const steps = 60;
-      const increment = waitlistCount / steps;
-      let current = 0;
-      
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= waitlistCount) {
-          setDisplayCount(waitlistCount);
-          clearInterval(timer);
-        } else {
-          setDisplayCount(Math.floor(current));
-        }
-      }, duration / steps);
-      
-      return () => clearInterval(timer);
-    }
-  }, [revealedElements, waitlistCount]);
-
-  // Page initialization - scroll to top on load
-  useEffect(() => {
-    const handlePageLoad = () => {
-      // Clear any hash from URL and scroll to top
-      if (window.location.hash && !isInitialized) {
-        window.history.replaceState(null, '', window.location.pathname);
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      }
-      
-      // Enable smooth scrolling after initialization
-      document.documentElement.classList.add('smooth-scroll');
-      setIsInitialized(true);
-    };
-
-    // Disable smooth scrolling initially
-    document.documentElement.classList.remove('smooth-scroll');
-
-    // Run immediately if page is already loaded
-    if (document.readyState === 'complete') {
-      handlePageLoad();
-    } else {
-      window.addEventListener('load', handlePageLoad);
-      return () => window.removeEventListener('load', handlePageLoad);
-    }
-  }, [isInitialized]);
-
   // Navigation handler for wishlist registration
   const handleWishlistNavigation = () => {
     window.location.href = '/wishlist-register';
@@ -248,21 +294,6 @@ const Home = () => {
     }
   };
 
-  // Handle browser back/forward buttons
-  useEffect(() => {
-    const handlePopState = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        smoothScrollTo(hash);
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
   return (
     <>
       <Head>
@@ -277,7 +308,7 @@ const Home = () => {
       <div className="min-h-screen bg-[#0e0e10] text-[#d1d5db]">
 
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e10] border-b border-[#2d2d30] shadow-lg">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e10]/95 backdrop-blur-md border-b border-[#2d2d30] shadow-lg">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               {/* Logo */}
@@ -292,10 +323,11 @@ const Home = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#ef4444] to-[#fbbf24] rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 -z-10"></div>
                 </div>
+                <span className="text-xl font-bold text-white hidden sm:block">JEHUB</span>
               </Link>
               
               {/* Desktop Navigation */}
-              <nav className="hidden md:flex space-x-8">
+              <nav className="hidden md:flex items-center space-x-1">
                 {[
                   { href: '#home', label: 'Home' },
                   { href: '#features', label: 'Features' },
@@ -308,13 +340,16 @@ const Home = () => {
                       key={item.href}
                       href={item.href} 
                       onClick={(e) => handleNavClick(e, item.href)}
-                      className={`relative transition-all duration-300 px-3 py-2 rounded-lg cursor-pointer ${
+                      className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer group ${
                         isActive 
-                          ? 'text-white bg-[#f97316] shadow-lg' 
-                          : 'text-white/80 hover:text-white hover:bg-[#1c1c1f]'
+                          ? 'text-white bg-gradient-to-r from-[#f59e0b] to-[#fb923c] shadow-lg shadow-[#f59e0b]/25' 
+                          : 'text-white/80 hover:text-white hover:bg-[#1c1c1f]/80'
                       }`}
                     >
                       <span className="relative z-10">{item.label}</span>
+                      {!isActive && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      )}
                     </a>
                   );
                 })}
@@ -323,15 +358,20 @@ const Home = () => {
               {/* Mobile Menu Button */}
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden relative p-2 rounded-lg bg-[#1c1c1f] border border-[#2d2d30] hover:bg-[#2d2d30] transition-all duration-300"
+                className="md:hidden relative p-3 rounded-xl bg-[#1c1c1f]/80 backdrop-blur-sm border border-[#2d2d30] hover:bg-[#2d2d30]/80 hover:border-[#f59e0b]/50 transition-all duration-300 group"
                 aria-label="Toggle mobile menu"
+                data-menu-button
               >
-                <div className="relative w-6 h-6">
+                <div className="relative w-5 h-5">
                   <Menu 
-                    className={`absolute inset-0 h-6 w-6 text-white transition-all duration-300 transform ${isMobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`} 
+                    className={`absolute inset-0 h-5 w-5 text-white transition-all duration-300 transform ${
+                      isMobileMenuOpen ? 'rotate-90 opacity-0 scale-75' : 'rotate-0 opacity-100 scale-100'
+                    } group-hover:text-[#f59e0b]`} 
                   />
                   <X 
-                    className={`absolute inset-0 h-6 w-6 text-white transition-all duration-300 transform ${isMobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'}`} 
+                    className={`absolute inset-0 h-5 w-5 text-white transition-all duration-300 transform ${
+                      isMobileMenuOpen ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-75'
+                    } group-hover:text-[#f59e0b]`} 
                   />
                 </div>
               </button>
@@ -339,80 +379,237 @@ const Home = () => {
           </div>
           
           {/* Mobile Menu */}
-          <div className={`md:hidden transition-all duration-500 ease-in-out overflow-hidden ${
+          <div className={`md:hidden absolute top-full left-0 right-0 transition-all duration-300 ease-in-out z-40 ${
             isMobileMenuOpen 
-              ? 'max-h-96 opacity-100' 
-              : 'max-h-0 opacity-0'
+              ? 'opacity-100 visible transform translate-y-0' 
+              : 'opacity-0 invisible transform -translate-y-4'
           }`}>
-            <div className="bg-[#1c1c1f] border-t border-[#2d2d30]">
-              <nav className="px-4 py-6 space-y-4">
-                {[
-                  { href: '#home', label: 'Home' },
-                  { href: '#features', label: 'Features' },
-                  { href: '#beta', label: 'Beta' },
-                  { href: '#community', label: 'Community' }
-                ].map((item, index) => {
-                  const isActive = activeSection === item.href.replace('#', '');
-                  return (
-                    <a 
-                      key={item.href}
-                      href={item.href}
-                      onClick={(e) => handleNavClick(e, item.href)}
-                      className={`block px-4 py-3 rounded-xl border transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg cursor-pointer ${
-                        isActive 
-                          ? 'text-white bg-[#9333ea] border-[#9333ea] shadow-lg' 
-                          : 'text-white/80 hover:text-white bg-[#0e0e10] hover:bg-[#2d2d30] border-[#2d2d30] hover:border-[#9333ea]'
-                      }`}
-                      style={{
-                        animationDelay: `${index * 100}ms`,
-                        animation: isMobileMenuOpen ? 'slideInFromRight 0.3s ease-out forwards' : 'none'
-                      }}
-                    >
-                      <span className="font-medium">{item.label}</span>
-                    </a>
-                  );
-                })}
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
+            
+            <div className="relative bg-[#0e0e10]/95 backdrop-blur-2xl border border-[#2d2d30]/80 border-t-0 shadow-2xl" data-mobile-menu>
+              {/* Additional background layer for better opacity */}
+              <div className="absolute inset-0 bg-[#1a1a1d]/90 backdrop-blur-xl rounded-b-lg"></div>
+              
+              <nav className="relative px-4 py-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
+                <div className="space-y-2">
+                  {[
+                    { href: '#home', label: 'Home', icon: '🏠' },
+                    { href: '#features', label: 'Features', icon: '⚡' },
+                    { href: '#beta', label: 'Beta', icon: '🚀' },
+                    { href: '#community', label: 'Community', icon: '👥' }
+                  ].map((item, index) => {
+                    const isActive = activeSection === item.href.replace('#', '');
+                    return (
+                      <a 
+                        key={item.href}
+                        href={item.href}
+                        onClick={(e) => handleNavClick(e, item.href)}
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer group ${
+                          isActive 
+                            ? 'text-white bg-gradient-to-r from-[#f59e0b] to-[#fb923c] shadow-lg shadow-[#f59e0b]/25' 
+                            : 'text-white/90 hover:text-white hover:bg-[#2d2d30] hover:bg-opacity-80 border border-transparent hover:border-[#f59e0b]/30'
+                        }`}
+                        style={{
+                          animationDelay: `${index * 50}ms`,
+                          animation: isMobileMenuOpen ? 'slideInFromRight 0.3s ease-out forwards' : 'none'
+                        }}
+                      >
+                        <span className="text-base">{item.icon}</span>
+                        <span className="font-medium text-sm flex-1">{item.label}</span>
+                        {isActive && (
+                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
+                
+                {/* Mobile CTA Button */}
+                <div className="pt-4 mt-4 border-t border-[#2d2d30]">
+                  <button 
+                    onClick={() => {
+                      handleWishlistNavigation();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-4 bg-gradient-to-r from-[#f59e0b] to-[#fb923c] text-white rounded-xl font-bold text-base transition-all duration-300 hover:shadow-xl hover:shadow-[#f59e0b]/30 active:scale-95 transform hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center justify-center space-x-2">
+                      <span>🚀</span>
+                      <span>Join Beta Wishlist</span>
+                    </div>
+                  </button>
+                </div>
               </nav>
             </div>
           </div>
         </header>
 
-        {/* Hero Section */}
-        <section id="home" className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1c1c1f] to-[#0e0e10] pt-16">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b]/10 via-transparent to-[#fb923c]/10"></div>
-          <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        {/* Enhanced Hero Section */}
+        <section id="home" className="relative flex items-center justify-center min-h-screen pt-20 pb-16">
+          {/* Enhanced Background with Multiple Layers */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0b] via-[#1a1a1d] to-[#0e0e10] -z-10"></div>
+          
+          {/* Animated Background Orbs */}
+          <div className="absolute inset-0 overflow-hidden -z-10">
+            <div 
+              className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-radial from-[#f59e0b]/20 via-[#f59e0b]/5 to-transparent rounded-full blur-3xl animate-pulse" 
+              style={{animationDelay: '0s', animationDuration: '4s'}}
+            ></div>
+            <div 
+              className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-radial from-[#3b82f6]/25 via-[#3b82f6]/5 to-transparent rounded-full blur-2xl animate-pulse" 
+              style={{animationDelay: '2s', animationDuration: '6s'}}
+            ></div>
+            <div 
+              className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-gradient-radial from-[#8b5cf6]/20 via-[#8b5cf6]/5 to-transparent rounded-full blur-3xl animate-pulse" 
+              style={{animationDelay: '1s', animationDuration: '5s'}}
+            ></div>
+          </div>
+          
+          {/* Floating Elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
+            <div 
+              className="absolute top-24 left-10 w-4 h-4 bg-[#f59e0b] rounded-full animate-float" 
+              style={{animationDelay: '0s'}}
+            ></div>
+            <div 
+              className="absolute top-40 right-20 w-6 h-6 bg-[#3b82f6] rounded-full animate-float" 
+              style={{animationDelay: '1s'}}
+            ></div>
+            <div 
+              className="absolute bottom-40 left-20 w-3 h-3 bg-[#8b5cf6] rounded-full animate-float" 
+              style={{animationDelay: '2s'}}
+            ></div>
+            <div 
+              className="absolute bottom-20 right-10 w-5 h-5 bg-[#f59e0b] rounded-full animate-float" 
+              style={{animationDelay: '0.5s'}}
+            ></div>
+          </div>
+          
+          <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
             <div className="animate-fade-in-up">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight">
-                Centralizing Academic Resources
-                <span className="block bg-gradient-to-r from-[#f59e0b] to-[#fb923c] bg-clip-text text-transparent">
+              {/* Enhanced Badge */}
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8">
+                <span className="text-[#f59e0b] text-sm font-medium mr-2">🚀</span>
+                <span className="text-white text-sm font-medium">Launching Soon - Join 431+ Students</span>
+                <div className="ml-2 w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></div>
+              </div>
+              
+              {/* Enhanced Main Title */}
+              <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-white mb-8 leading-none tracking-tight">
+                <span 
+                  className="block animate-slide-in-left" 
+                  style={{animationDelay: '0.2s'}}
+                >
+                  Centralizing
+                </span>
+                <span 
+                  className="block bg-gradient-to-r from-[#f59e0b] via-[#fb923c] to-[#ef4444] bg-clip-text text-transparent animate-slide-in-right" 
+                  style={{animationDelay: '0.4s'}}
+                >
+                  Academic Resources
+                </span>
+                <span 
+                  className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left" 
+                  style={{animationDelay: '0.6s'}}
+                >
                   for Every Student
                 </span>
               </h1>
-              <p className="text-xl sm:text-2xl mb-8 text-[#d1d5db] max-w-3xl mx-auto">
-                Upload, explore, and earn from your class notes. Built by students, for students.
+              
+              {/* Enhanced Subtitle */}
+              <p 
+                className="text-xl sm:text-2xl lg:text-3xl mb-12 text-[#d1d5db] max-w-4xl mx-auto leading-relaxed animate-fade-in" 
+                style={{animationDelay: '0.8s'}}
+              >
+                <span className="font-semibold text-white">Upload, explore, and earn</span> from your class notes.
+                <br className="hidden sm:block" />
+                <span className="text-[#f59e0b]">Built by students, for students.</span>
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              
+              {/* Enhanced CTA Buttons */}
+              <div 
+                className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in-up" 
+                style={{animationDelay: '1s'}}
+              >
                 <a 
                   href="#beta" 
                   onClick={(e) => handleNavClick(e, '#beta')}
-                  className="px-8 py-4 bg-[#f59e0b] text-white rounded-lg font-semibold text-lg hover:bg-[#f97316] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+                  className="group relative px-10 py-5 bg-gradient-to-r from-[#f59e0b] via-[#fb923c] to-[#ef4444] text-white rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 shadow-2xl hover:shadow-[#f59e0b]/25 transform hover:-translate-y-2 hover:scale-105 cursor-pointer"
                 >
-                  Join Wishlist
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#fb923c] via-[#ef4444] to-[#f59e0b] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center space-x-2">
+                    <Zap className="h-6 w-6" />
+                    <span>Join Beta Wishlist</span>
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </a>
+                
                 <a 
                   href="#community" 
                   onClick={(e) => handleNavClick(e, '#community')}
-                  className="px-8 py-4 bg-transparent border-2 border-[#3b82f6] text-[#3b82f6] rounded-lg font-semibold text-lg hover:bg-[#3b82f6] hover:text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+                  className="group relative px-10 py-5 bg-transparent border-2 border-[#3b82f6] text-[#3b82f6] rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 shadow-2xl hover:shadow-[#3b82f6]/25 transform hover:-translate-y-2 hover:scale-105 cursor-pointer backdrop-blur-sm"
                 >
-                  Join Community
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative flex items-center space-x-2 group-hover:text-white transition-colors duration-300">
+                    <Users className="h-6 w-6" />
+                    <span>Join Community</span>
+                  </div>
                 </a>
+              </div>
+              
+              {/* Enhanced Statistics */}
+              <div 
+                className="flex flex-wrap justify-center gap-8 mt-16 animate-fade-in" 
+                style={{animationDelay: '1.2s'}}
+              >
+                <div className="flex items-center space-x-2 text-[#d1d5db]">
+                  <div className="w-2 h-2 bg-[#10b981] rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">431+ Students Joined</span>
+                </div>
+                <div className="flex items-center space-x-2 text-[#d1d5db]">
+                  <div className="w-2 h-2 bg-[#3b82f6] rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">50+ Colleges Connected</span>
+                </div>
+                <div className="flex items-center space-x-2 text-[#d1d5db]">
+                  <div className="w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">1000+ Notes Shared</span>
+                </div>
               </div>
             </div>
           </div>
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <ChevronDown className="h-8 w-8 text-[#d1d5db]" />
-          </div>
+          
+          {/* Enhanced Scroll Indicator - Responsive & Clickable */}
+          <button 
+            onClick={() => smoothScrollTo('#features')}
+            className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce-slow cursor-pointer focus:outline-none group"
+            aria-label="Scroll to features section"
+          >
+            <div className="flex flex-col items-center space-y-1 sm:space-y-2">
+              {/* Text - hide on mobile, show on tablet+ */}
+              <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300">
+                Scroll to explore
+              </span>
+              
+              {/* Mouse indicator - responsive sizing */}
+              <div className="relative">
+                <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-[#d1d5db]/50 rounded-full flex justify-center transition-all duration-300 group-hover:border-[#f59e0b] group-hover:shadow-lg group-hover:shadow-[#f59e0b]/20 group-active:scale-95">
+                  <div className="w-1 h-2 sm:h-3 bg-[#f59e0b] rounded-full mt-1.5 sm:mt-2 animate-bounce transition-all duration-300 group-hover:bg-[#fb923c]"></div>
+                </div>
+                
+                {/* Glow effect on hover */}
+                <div className="absolute inset-0 w-5 h-8 sm:w-6 sm:h-10 border-2 border-[#f59e0b]/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                
+                {/* Ripple effect on click */}
+                <div className="absolute inset-0 w-5 h-8 sm:w-6 sm:h-10 bg-[#f59e0b]/10 rounded-full opacity-0 group-active:opacity-100 transition-all duration-150 scale-0 group-active:scale-150"></div>
+              </div>
+              
+              {/* Mobile-only simple text */}
+              <span className="sm:hidden text-[#d1d5db] text-[10px] font-medium tracking-wider opacity-80 group-hover:text-[#f59e0b] group-hover:opacity-100 transition-all duration-300">
+                SCROLL
+              </span>
+            </div>
+          </button>
         </section>
 
         {/* About JEHUB with Reveal Animation */}
@@ -658,9 +855,6 @@ const Home = () => {
           </div>
         </section>
 
-
-
-
         {/* Beta Wishlist Section */}
         <section id="beta" className="py-20 bg-gradient-to-br from-[#1c1c1f] to-[#0e0e10] relative overflow-hidden">
           {/* Background effects */}
@@ -819,8 +1013,82 @@ const Home = () => {
           }
         }
         
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes slide-in-left {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slide-in-right {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+        
+        @keyframes bounce-slow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+        
         .animate-fade-in-up {
           animation: fade-in-up 0.8s ease-out;
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
+        }
+        
+        .animate-slide-in-left {
+          animation: slide-in-left 0.8s ease-out;
+        }
+        
+        .animate-slide-in-right {
+          animation: slide-in-right 0.8s ease-out;
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-bounce-slow {
+          animation: bounce-slow 3s ease-in-out infinite;
+        }
+        
+        /* Gradient radial utility */
+        .bg-gradient-radial {
+          background: radial-gradient(circle, var(--tw-gradient-stops));
         }
         
         /* Mobile menu slide animation */
