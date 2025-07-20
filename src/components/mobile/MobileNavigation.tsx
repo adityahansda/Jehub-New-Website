@@ -1,62 +1,92 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { 
-  Home, 
-  Download, 
-  Trophy, 
-  HelpCircle, 
-  Users
+  Menu,
+  X,
+  Home
 } from 'lucide-react';
 
 const MobileNavigation = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  const mainNavItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/notes-download', label: 'Download', icon: Download },
-    { path: '/groups', label: 'Groups', icon: Users },
-    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { path: '/notes-request', label: 'Request', icon: HelpCircle },
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/services', label: 'Services' },
+    { href: '/contact', label: 'Contact' },
+    { href: '/blog', label: 'Blog' },
   ];
-
-  const isActive = (path: string) => router.pathname === path;
 
   return (
     <>
-      {/* Bottom Tab Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg md:hidden">
-        <div className="flex items-center justify-around py-2">
-          {mainNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`flex flex-col items-center py-2 px-3 min-w-0 flex-1 ${
-                  isActive(item.path)
-                    ? 'text-blue-600'
-                    : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
+      {/* Mobile Menu Toggle Button */}
+      <div className="md:hidden fixed top-4 right-4 z-50">
+        <button
+          onClick={toggleMenu}
+          className="p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+          aria-label="Toggle Menu"
+        >
+          {isMenuOpen ? (
+            <X className="h-6 w-6 text-gray-700" />
+          ) : (
+            <Menu className="h-6 w-6 text-gray-700" />
+          )}
+        </button>
       </div>
 
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50" onClick={toggleMenu} />
+      )}
 
-      {/* Add bottom padding to main content to account for bottom tab bar */}
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          main {
-            padding-bottom: 70px;
-          }
-        }
-      `}</style>
+      {/* Mobile Menu Sidebar */}
+      <div className={`md:hidden fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="p-6 pt-20">
+          {/* Home Icon */}
+          <div className="flex items-center mb-8">
+            <Home className="h-8 w-8 text-blue-600 mr-3" />
+            <h2 className="text-xl font-bold text-gray-800">Jehub</h2>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block py-3 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors font-medium"
+                onClick={toggleMenu}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Additional Actions */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <Link
+              href="/login"
+              className="block py-2 px-4 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium mb-3"
+              onClick={toggleMenu}
+            >
+              Login
+            </Link>
+            <Link
+              href="/signup"
+              className="block py-2 px-4 text-center border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+              onClick={toggleMenu}
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

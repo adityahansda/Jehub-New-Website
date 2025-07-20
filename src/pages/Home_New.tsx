@@ -20,7 +20,6 @@ const Home = () => {
   const [displayCount, setDisplayCount] = useState(0);
   const [revealedElements, setRevealedElements] = useState(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
 
   // Animated counter for waitlist
   useEffect(() => {
@@ -153,55 +152,6 @@ const Home = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Parallax scroll effect and backup active section detection
-  useEffect(() => {
-    // Check if we're in the browser environment
-    if (typeof window === 'undefined' || !document) {
-      return;
-    }
-
-    const handleScroll = () => {
-      try {
-        // Backup method: dynamically get sections in DOM order
-        const sectionElements = Array.from(document.querySelectorAll('section[id]'))
-          .map(el => ({
-            id: el.id,
-            offsetTop: (el as HTMLElement).offsetTop
-          }))
-          .sort((a, b) => a.offsetTop - b.offsetTop);
-
-        const scrollPosition = window.scrollY + 120; // Account for header
-
-        // If we're at the very top, always show home as active
-        if (window.scrollY < 100) {
-          setActiveSection('home');
-          return;
-        }
-
-        // Find the current section by checking which one we've scrolled past
-        let currentSection = 'home';
-        for (const section of sectionElements) {
-          if (section.offsetTop <= scrollPosition) {
-            currentSection = section.id;
-          } else {
-            break;
-          }
-        }
-
-        setActiveSection(currentSection);
-      } catch (error) {
-        console.warn('Error in scroll handler:', error);
-      }
-    };
-
-    try {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleScroll);
-    } catch (error) {
-      console.warn('Error setting up scroll listener:', error);
-      return () => { };
-    }
-  }, []);
 
   // Scroll reveal animation and active section tracking
   useEffect(() => {
@@ -235,45 +185,6 @@ const Home = () => {
           }
         );
 
-        // Intersection Observer for active section tracking
-        const sectionObserver = new IntersectionObserver(
-          (entries) => {
-            try {
-              // Find the section that is most in view
-              let maxRatio = 0;
-              let currentSection = 'home';
-
-              entries.forEach((entry) => {
-                if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-                  maxRatio = entry.intersectionRatio;
-                  const sectionId = entry.target.id;
-                  if (sectionId) {
-                    currentSection = sectionId;
-                  }
-                }
-              });
-
-              // Only update if we have a section with meaningful intersection
-              if (maxRatio > 0.1) {
-                setActiveSection(currentSection);
-                // Update URL hash without scrolling
-                if (isInitialized && window.history) {
-                  try {
-                    window.history.replaceState(null, '', `#${currentSection}`);
-                  } catch (historyError) {
-                    console.warn('Could not update URL hash:', historyError);
-                  }
-                }
-              }
-            } catch (sectionError) {
-              console.warn('Error in section observer:', sectionError);
-            }
-          },
-          {
-            threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-            rootMargin: '-80px 0px -50% 0px'
-          }
-        );
 
         // Observe all reveal elements
         const revealElements = document.querySelectorAll('[data-reveal]');
@@ -287,22 +198,10 @@ const Home = () => {
           });
         }
 
-        // Observe all sections
-        const sections = document.querySelectorAll('section[id]');
-        if (sections.length > 0) {
-          sections.forEach((section) => {
-            try {
-              sectionObserver.observe(section);
-            } catch (observeError) {
-              console.warn('Could not observe section:', observeError);
-            }
-          });
-        }
 
         return () => {
           try {
             revealObserver.disconnect();
-            sectionObserver.disconnect();
           } catch (disconnectError) {
             console.warn('Error disconnecting observers:', disconnectError);
           }
@@ -326,28 +225,7 @@ const Home = () => {
     window.location.href = '/wishlist-register';
   };
 
-  // Handle navigation click
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    try {
-      e.preventDefault();
-      if (href.startsWith('#')) {
-        const sectionId = href.replace('#', '');
-        // Immediately update active section for instant feedback
-        setActiveSection(sectionId);
-        // Update URL without triggering page reload
-        if (window.history) {
-          try {
-            window.history.pushState(null, '', href);
-          } catch (historyError) {
-            console.warn('Could not update URL:', historyError);
-          }
-        }
-        smoothScrollTo(href);
-      }
-    } catch (error) {
-      console.warn('Error in navigation click:', error);
-    }
-  };
+
 
   return (
     <>
@@ -361,57 +239,7 @@ const Home = () => {
       </Head>
 
       <div className="min-h-screen bg-[#0e0e10] text-[#d1d5db]">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e10]/95 backdrop-blur-md border-b border-[#2d2d30] shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              {/* Logo */}
-              <Link href="/" className="flex items-center space-x-2 group">
-                <div className="relative">
-                  <Image
-                    src="/images/whitelogo.svg"
-                    alt="JEHUB"
-                    width={32}
-                    height={32}
-                    className="h-8 w-auto transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#ef4444] to-[#fbbf24] rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300 -z-10"></div>
-                </div>
-                <span className="text-xl font-bold text-white hidden sm:block">JEHUB</span>
-              </Link>
 
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center space-x-1">
-                {[
-                  { href: '#home', label: 'Home' },
-                  { href: '#features', label: 'Features' },
-                  { href: '#beta', label: 'Beta' },
-                  { href: '#community', label: 'Community' }
-                ].map((item) => {
-                  const isActive = activeSection === item.href.replace('#', '');
-                  return (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      onClick={(e) => handleNavClick(e, item.href)}
-                      className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer group ${isActive
-                        ? 'text-white bg-gradient-to-r from-[#f59e0b] to-[#fb923c] shadow-lg shadow-[#f59e0b]/25'
-                        : 'text-white/80 hover:text-white hover:bg-[#1c1c1f]/80'
-                        }`}
-                    >
-                      <span className="relative z-10">{item.label}</span>
-                      {!isActive && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      )}
-                    </a>
-                  );
-                })}
-              </nav>
-
-            </div>
-          </div>
-
-        </header>
 
         {/* Enhanced Hero Section */}
         <section id="home" className="relative flex items-center justify-center min-h-screen pt-16 pb-16">
@@ -500,9 +328,8 @@ const Home = () => {
                 className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in-up"
                 style={{ animationDelay: '1s' }}
               >
-                <a
-                  href="#beta"
-                  onClick={(e) => handleNavClick(e, '#beta')}
+                <button
+                  onClick={handleWishlistNavigation}
                   className="group relative px-10 py-5 bg-gradient-to-r from-[#f59e0b] via-[#fb923c] to-[#ef4444] text-white rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 shadow-2xl hover:shadow-[#f59e0b]/25 transform hover:-translate-y-2 hover:scale-105 cursor-pointer"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#fb923c] via-[#ef4444] to-[#f59e0b] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -511,11 +338,10 @@ const Home = () => {
                     <span>Join Beta Wishlist</span>
                   </div>
                   <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </a>
+                </button>
 
-                <a
-                  href="#community"
-                  onClick={(e) => handleNavClick(e, '#community')}
+                <button
+                  onClick={() => window.scrollTo({ top: document.getElementById('community')?.offsetTop || 0, behavior: 'smooth' })}
                   className="group relative px-10 py-5 bg-transparent border-2 border-[#3b82f6] text-[#3b82f6] rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 shadow-2xl hover:shadow-[#3b82f6]/25 transform hover:-translate-y-2 hover:scale-105 cursor-pointer backdrop-blur-sm"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -523,7 +349,7 @@ const Home = () => {
                     <Users className="h-6 w-6" />
                     <span>Join Community</span>
                   </div>
-                </a>
+                </button>
               </div>
 
               {/* Enhanced Statistics */}
@@ -1074,17 +900,6 @@ const Home = () => {
           background: radial-gradient(circle, var(--tw-gradient-stops));
         }
         
-        /* Mobile menu slide animation */
-        @keyframes slideInFromRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
         
         /* Smooth scrolling - only after page is initialized */
         html {
