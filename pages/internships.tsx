@@ -44,7 +44,7 @@ const Internships = () => {
       duration: '4 months',
       stipend: '₹18,000/month',
       type: 'Full-time',
-      skills: ['Flutter', 'Dart', 'Firebase', 'Mobile UI/UX'],
+      skills: ['Flutter', 'Dart', 'Mobile UI/UX', 'REST APIs'],
       description: 'Develop cross-platform mobile applications and contribute to our growing portfolio of mobile solutions.',
       postedDate: '2024-07-12',
       deadline: '2024-08-25',

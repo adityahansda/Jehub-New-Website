@@ -47,30 +47,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ url, fileName, onDownload }) => {
   const convertGithubUrlToPdfUrl = (githubUrl: string): string => {
     if (!githubUrl) return '';
 
-    console.log('Converting GitHub URL for PDF.js:', githubUrl);
+    // console.log('Converting GitHub URL for PDF.js:', githubUrl); // Suppressed for production
 
     // Handle raw.githubusercontent.com URLs (already viewable)
     if (githubUrl.includes('raw.githubusercontent.com')) {
-      console.log('Already raw.githubusercontent.com URL:', githubUrl);
+      // console.log('Already raw.githubusercontent.com URL:', githubUrl); // Suppressed for production
       return githubUrl;
     }
 
     // Handle github.com/user/repo/blob/ URLs (convert to raw)
     if (githubUrl.includes('github.com') && githubUrl.includes('/blob/')) {
       const rawUrl = githubUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-      console.log('Converted blob to raw.githubusercontent.com:', rawUrl);
+      // console.log('Converted blob to raw.githubusercontent.com:', rawUrl); // Suppressed for production
       return rawUrl;
     }
 
     // Handle github.com/user/repo/raw/ URLs (convert to raw.githubusercontent.com)
     if (githubUrl.includes('github.com') && githubUrl.includes('/raw/')) {
       const rawUrl = githubUrl.replace('github.com', 'raw.githubusercontent.com').replace('/raw/', '/');
-      console.log('Converted raw to raw.githubusercontent.com:', rawUrl);
+      // console.log('Converted raw to raw.githubusercontent.com:', rawUrl); // Suppressed for production
       return rawUrl;
     }
 
     // Default fallback
-    console.log('Using original URL:', githubUrl);
+    // console.log('Using original URL:', githubUrl); // Suppressed for production
     return githubUrl;
   };
 
@@ -86,7 +86,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ url, fileName, onDownload }) => {
 
   // PDF.js event handlers
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    console.log('PDF loaded successfully. Number of pages:', numPages);
+    // console.log('PDF loaded successfully. Number of pages:', numPages); // Suppressed for production
     setNumPages(numPages);
     setIsLoading(false);
     setError(null);
@@ -100,11 +100,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ url, fileName, onDownload }) => {
   };
 
   const onPageLoadSuccess = () => {
-    console.log('Page loaded successfully');
+    // console.log('Page loaded successfully'); // Suppressed for production
   };
 
   const onPageLoadError = (error: Error) => {
-    console.error('Error loading page:', error);
+    // console.error('Error loading page:', error); // Suppressed for production
   };
 
   // Retry loading

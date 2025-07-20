@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Star, CheckCircle } from 'lucide-react';
-// import { db } from '../lib/firebase';
-// import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { uploadToGitHub, validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
 // Database operations now handled through API route
