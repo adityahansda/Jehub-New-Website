@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth navigation transitions */
+@layer utilities {
+  .nav-smooth {
+    transition: all 0.3s ease-in-out;
+    will-change: transform;
+  }
+}
