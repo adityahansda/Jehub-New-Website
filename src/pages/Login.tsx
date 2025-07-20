@@ -21,23 +21,10 @@ const Login = () => {
   const router = useRouter();
   const { user, refreshAuth } = useAuth();
 
-  // Redirect if already logged in
+  // Authentication disabled - no redirect logic needed
   React.useEffect(() => {
-    if (user) {
-      // Get user role and redirect to appropriate page
-      const redirectUser = async () => {
-        try {
-          const userRole = await getUserRole(user);
-          const redirectPath = getRoleBasedRedirectPath(userRole);
-          router.push(redirectPath);
-        } catch (error) {
-          console.error('Error redirecting user:', error);
-          router.push('/'); // Fallback to home page
-        }
-      };
-      redirectUser();
-    }
-  }, [user, router]);
+    console.log('Login: Authentication system disabled - no user redirect');
+  }, []);
 
   // Form validation
   const validateEmail = (email: string) => {
@@ -77,63 +64,15 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      setError(validationErrors[0]);
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      await AuthService.login({
-        email: formData.email,
-        password: formData.password
-      });
-      
-      // Refresh the auth context to get updated user data
-      await refreshAuth();
-      
-      // Get the current user and role
-      const currentUser = await AuthService.getCurrentUser();
-      const userRole = await getUserRole(currentUser);
-
-      // Check for redirect parameter from URL
-      const redirectTo = router.query.redirect as string || getRoleBasedRedirectPath(userRole);
-
-      setSuccess(getWelcomeMessage(userRole));
-
-      // Redirect after successful login - reduced timeout for better UX
-      setTimeout(() => {
-        router.push(redirectTo);
-      }, 1000);
-    } catch (error: any) {
-      setError(error.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Authentication system is disabled
+    setError('Authentication system is currently disabled. Login functionality is not available.');
+    return;
   };
 
   const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setError('Please enter your email address first.');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      await AuthService.recoverPassword(formData.email);
-      setSuccess('Password recovery email sent! Check your inbox.');
-    } catch (error: any) {
-      setError(error.message || 'Failed to send recovery email.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Authentication system is disabled
+    setError('Authentication system is currently disabled. Password recovery is not available.');
+    return;
   };
 
   return (

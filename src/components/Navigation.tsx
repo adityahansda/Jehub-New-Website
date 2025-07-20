@@ -97,7 +97,10 @@ const Navigation = () => {
 
           {/* Mobile Menu Button */}
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={() => {
+              console.log('Menu button clicked, current state:', isMenuOpen);
+              setIsMenuOpen(!isMenuOpen);
+            }}
             className="md:hidden relative p-3 rounded-xl bg-[#1c1c1f]/80 backdrop-blur-sm border border-[#2d2d30] hover:bg-[#2d2d30]/80 hover:border-[#f59e0b]/50 transition-all duration-300 group"
             aria-label="Toggle mobile menu"
             data-menu-button
