@@ -6,7 +6,7 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Login functionality has been disabled.');
+    alert('Login form submitted! Authentication system has been removed.');
   };
 
   return (

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, LogOut, Loader2 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { User, Edit2, Download, Upload, MessageSquare, Trophy, Star, Calendar, Mail, GraduationCap, AlertCircle } from 'lucide-react';
 import MobileProfilePage from '../components/mobile/MobileProfilePage';
 
 
 const Profile = () => {
-  const { user, logout, loading } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -35,53 +33,28 @@ const Profile = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Update profile with user data when user is loaded
+  // Show demo profile data
   useEffect(() => {
-    if (user) {
+    if (isClient) {
       setProfile(prev => ({
         ...prev,
-        name: user.name || 'User',
-        email: user.email || 'user@email.com',
-        joinDate: user.$createdAt ? new Date(user.$createdAt).toLocaleDateString() : '2023-08-15'
-      }));
-    } else if (isMobile && isClient) {
-      // For mobile users without authentication, show default profile data
-      setProfile(prev => ({
-        ...prev,
-        name: 'Guest User',
-        email: 'guest@example.com',
+        name: 'Demo User',
+        email: 'demo@example.com',
         joinDate: new Date().toLocaleDateString()
       }));
     }
-  }, [user, isMobile, isClient]);
+  }, [isClient]);
 
-  // Redirect to login if not authenticated (only for desktop)
-  useEffect(() => {
-    if (!isClient) return;
-    
-    // Only redirect to login for desktop users when not authenticated
-    if (!loading && !user && !isMobile) {
-      router.push('/login');
-      return;
-    }
-  }, [user, loading, router, isMobile, isClient]);
-
-  // Show loading state while checking authentication or client-side rendering
-  if (!isClient || (loading && !isMobile)) {
+  // Show loading state while client-side rendering
+  if (!isClient) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
     );
-  }
-
-  // For mobile users, always show profile (even without authentication)
-  // For desktop users, only show if authenticated
-  if (!user && !isMobile) {
-    return null;
   }
 
   const stats = {
@@ -135,12 +108,12 @@ const Profile = () => {
   ];
 
   const mobileUserData = {
-    id: user?.$id || '1',
+    id: '1',
     name: profile.name,
     email: profile.email,
-    avatar: (user as any)?.avatar,
-    phone: (user as any)?.phone,
-    location: (user as any)?.location,
+    avatar: undefined,
+    phone: undefined,
+    location: undefined,
     college: profile.college,
     course: profile.branch,
     semester: profile.semester,
@@ -169,13 +142,8 @@ const Profile = () => {
     // Handle save logic
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+  const handleDemoLogout = () => {
+    alert('This is a demo profile. Authentication system has been removed.');
   };
 
   return (
@@ -322,14 +290,13 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Logout Button */}
-            <button 
-              onClick={handleLogout}
-              className="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
+            {/* Demo Notice */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+                <span className="text-sm text-yellow-700">This is a demo profile. Authentication system has been removed.</span>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Activity */}
