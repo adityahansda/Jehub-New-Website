@@ -12,7 +12,7 @@ import UniversalSidebar from '../components/UniversalSidebar';
 function convertToDownloadUrl(url: string): string {
   if (!url) return url;
 
-  console.log('Converting URL to download:', url);
+  // console.log('Converting URL to download:', url); // Suppressed for production
 
   // Handle raw.githubusercontent.com URLs
   if (url.includes('raw.githubusercontent.com')) {
@@ -25,26 +25,26 @@ function convertToDownloadUrl(url: string): string {
       const branch = parts[2];
       const filePath = parts.slice(3).join('/');
       const downloadUrl = `https://github.com/${user}/${repo}/raw/${branch}/${filePath}`;
-      console.log('Converted to download URL:', downloadUrl);
+      // console.log('Converted to download URL:', downloadUrl); // Suppressed for production
       return downloadUrl;
     }
   }
 
   // Handle github.com/user/repo/raw/ URLs
   if (url.includes('github.com') && url.includes('/raw/')) {
-    console.log('Already a GitHub raw URL for download:', url);
+    // console.log('Already a GitHub raw URL for download:', url); // Suppressed for production
     return url;
   }
 
   // Handle github.com/user/repo/blob/ URLs (convert to raw for download)
   if (url.includes('github.com') && url.includes('/blob/')) {
     const downloadUrl = url.replace('/blob/', '/raw/');
-    console.log('Converted blob to raw URL:', downloadUrl);
+    // console.log('Converted blob to raw URL:', downloadUrl); // Suppressed for production
     return downloadUrl;
   }
 
   // If it's already a download URL or other format, return as is
-  console.log('URL unchanged:', url);
+  // console.log('URL unchanged:', url); // Suppressed for production
   return url;
 }
 

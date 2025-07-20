@@ -1,3 +1,4 @@
+import React from 'react'
 import Home from '../src/pages/Home_New'
 import ComingSoon from '../src/pages/ComingSoon'
 

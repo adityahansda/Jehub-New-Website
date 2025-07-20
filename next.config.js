@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable strict mode to reduce Fast Refresh issues
-  reactStrictMode: false,
-  
-  // Optimize build output
-  swcMinify: true,
+  // Enable strict mode for better development experience
+  reactStrictMode: true,
   
   webpack: (config, { isServer, dev }) => {
     // Handle PDF.js worker
@@ -24,16 +21,17 @@ const nextConfig = {
       };
     }
 
-    // Optimize for development
-    if (dev) {
-      config.devtool = 'eval-cheap-module-source-map';
-    }
+    // Optimize for development - remove problematic devtool override
+    // Next.js handles devtool configuration optimally by default
+    // if (dev) {
+    //   config.devtool = 'cheap-module-source-map';
+    // }
 
     return config;
   },
   
+  // External packages for server components
   experimental: {
-    // Enable server components
     serverComponentsExternalPackages: ['pdfjs-dist'],
   },
   
