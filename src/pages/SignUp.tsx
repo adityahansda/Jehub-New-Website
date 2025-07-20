@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { User, Mail, Lock, Eye, EyeOff, GraduationCap, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { AuthService } from '../lib/authService';
-import { useAuth } from '../contexts/AuthContext';
-import { getUserRole } from '../lib/authUtils';
-import { getRoleBasedRedirectPath, getWelcomeMessage } from '../utils/roleRedirect';
+import { User, Mail, Lock, Eye, EyeOff, GraduationCap, AlertCircle } from 'lucide-react';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -19,79 +15,18 @@ const SignUp = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [touched, setTouched] = useState({
-    name: false,
-    email: false,
-    password: false,
-    confirmPassword: false
-  });
 
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
   const router = useRouter();
-  const { user, refreshAuth } = useAuth();
-
-  // Authentication disabled - no redirect logic needed
-  React.useEffect(() => {
-    console.log('SignUp: Authentication system disabled - no user redirect');
-  }, []);
-
-  // Form validation
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validateForm = () => {
-    const errors = [];
-    
-    if (!formData.name.trim()) {
-      errors.push('Full name is required');
-    } else if (formData.name.trim().length < 2) {
-      errors.push('Name must be at least 2 characters long');
-    }
-    
-    if (!formData.email) {
-      errors.push('Email is required');
-    } else if (!validateEmail(formData.email)) {
-      errors.push('Please enter a valid email address');
-    }
-    
-    if (!formData.password) {
-      errors.push('Password is required');
-    } else if (formData.password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
-    }
-    
-    if (!formData.confirmPassword) {
-      errors.push('Please confirm your password');
-    } else if (formData.password !== formData.confirmPassword) {
-      errors.push('Passwords do not match');
-    }
-    
-    return errors;
-  };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear errors when user starts typing
-    if (error) setError(null);
-    if (success) setSuccess(null);
-  };
-
-  const handleInputBlur = (field: keyof typeof touched) => {
-    setTouched(prev => ({ ...prev, [field]: true }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Authentication system is disabled
-    setError('Authentication system is currently disabled. Registration functionality is not available.');
-    return;
+    alert('Sign up form submitted! Authentication system has been removed.');
   };
 
   return (
@@ -107,6 +42,12 @@ const SignUp = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-700">Authentication system has been removed. This is a demo form only.</span>
+            </div>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -121,12 +62,7 @@ const SignUp = () => {
                   required
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  onBlur={() => handleInputBlur('name')}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
-                    touched.name && (!formData.name.trim() || formData.name.trim().length < 2)
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blue-500'
-                  }`}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="John Doe"
                 />
               </div>
@@ -144,12 +80,7 @@ const SignUp = () => {
                   required
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  onBlur={() => handleInputBlur('email')}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
-                    touched.email && (!formData.email || !validateEmail(formData.email))
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blue-500'
-                  }`}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="you@example.com"
                 />
               </div>
@@ -167,12 +98,7 @@ const SignUp = () => {
                   required
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  onBlur={() => handleInputBlur('password')}
-                  className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
-                    touched.password && (!formData.password || formData.password.length < 8)
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blue-500'
-                  }`}
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="Create a password"
                 />
                 <button
@@ -197,12 +123,7 @@ const SignUp = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  onBlur={() => handleInputBlur('confirmPassword')}
-                  className={`w-full pl-10 pr-12 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
-                    touched.confirmPassword && (!formData.confirmPassword || formData.password !== formData.confirmPassword)
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blue-500'
-                  }`}
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="Confirm your password"
                 />
                 <button
@@ -288,35 +209,12 @@ const SignUp = () => {
               </label>
             </div>
 
-            {/* Display error message */}
-            {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                <span className="text-sm text-red-700">{error}</span>
-              </div>
-            )}
-
-            {/* Display success message */}
-            {success && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm text-green-700">{success}</span>
-              </div>
-            )}
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                'Create Account'
-              )}
+              Create Account (Demo)
             </button>
           </form>
 
