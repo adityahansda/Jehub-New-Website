@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { 
   Upload, Download, Search, Gift, Trophy, Smartphone,
   DollarSign, Award, Crown, Star, Zap, Target,
-  Terminal, Users, MessageCircle, Camera, ChevronDown, Github, Menu, X
+  Terminal, Users, MessageCircle, Camera, ChevronDown, Github
 } from 'lucide-react';
 
 const Home = () => {
@@ -21,7 +21,6 @@ const Home = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [revealedElements, setRevealedElements] = useState(new Set());
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   
@@ -103,35 +102,6 @@ const Home = () => {
     }
   }, []);
 
-  // Handle click outside mobile menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      const mobileMenu = document.querySelector('[data-mobile-menu]');
-      const menuButton = document.querySelector('[data-menu-button]');
-      
-      if (isMobileMenuOpen && 
-          mobileMenu && 
-          !mobileMenu.contains(target) && 
-          menuButton && 
-          !menuButton.contains(target)) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    if (isMobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileMenuOpen]);
   
   // Countdown timer with proper error handling and timezone
   useEffect(() => {
@@ -377,7 +347,6 @@ const Home = () => {
           }
         }
         smoothScrollTo(href);
-        setIsMobileMenuOpen(false); // Close mobile menu if open
       }
     } catch (error) {
       console.warn('Error in navigation click:', error);
@@ -445,94 +414,9 @@ const Home = () => {
                 })}
               </nav>
               
-              {/* Mobile Menu Button */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden relative p-3 rounded-xl bg-[#1c1c1f]/80 backdrop-blur-sm border border-[#2d2d30] hover:bg-[#2d2d30]/80 hover:border-[#f59e0b]/50 transition-all duration-300 group"
-                aria-label="Toggle mobile menu"
-                data-menu-button
-              >
-                <div className="relative w-5 h-5">
-                  <Menu 
-                    className={`absolute inset-0 h-5 w-5 text-white transition-all duration-300 transform ${
-                      isMobileMenuOpen ? 'rotate-90 opacity-0 scale-75' : 'rotate-0 opacity-100 scale-100'
-                    } group-hover:text-[#f59e0b]`} 
-                  />
-                  <X 
-                    className={`absolute inset-0 h-5 w-5 text-white transition-all duration-300 transform ${
-                      isMobileMenuOpen ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-75'
-                    } group-hover:text-[#f59e0b]`} 
-                  />
-                </div>
-              </button>
             </div>
           </div>
           
-          {/* Mobile Menu */}
-          <div className={`md:hidden absolute top-full left-0 right-0 transition-all duration-300 ease-in-out z-40 ${
-            isMobileMenuOpen 
-              ? 'opacity-100 visible transform translate-y-0' 
-              : 'opacity-0 invisible transform -translate-y-4'
-          }`}>
-            {/* Backdrop */}
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
-            
-            <div className="relative bg-[#0e0e10]/95 backdrop-blur-2xl border border-[#2d2d30]/80 border-t-0 shadow-2xl" data-mobile-menu>
-              {/* Additional background layer for better opacity */}
-              <div className="absolute inset-0 bg-[#1a1a1d]/90 backdrop-blur-xl rounded-b-lg"></div>
-              
-              <nav className="relative px-4 py-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
-                <div className="space-y-2">
-                  {[
-                    { href: '#home', label: 'Home', icon: '🏠' },
-                    { href: '#features', label: 'Features', icon: '⚡' },
-                    { href: '#beta', label: 'Beta', icon: '🚀' },
-                    { href: '#community', label: 'Community', icon: '👥' }
-                  ].map((item, index) => {
-                    const isActive = activeSection === item.href.replace('#', '');
-                    return (
-                      <a 
-                        key={item.href}
-                        href={item.href}
-                        onClick={(e) => handleNavClick(e, item.href)}
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer group ${
-                          isActive 
-                            ? 'text-white bg-gradient-to-r from-[#f59e0b] to-[#fb923c] shadow-lg shadow-[#f59e0b]/25' 
-                            : 'text-white/90 hover:text-white hover:bg-[#2d2d30] hover:bg-opacity-80 border border-transparent hover:border-[#f59e0b]/30'
-                        }`}
-                        style={{
-                          animationDelay: `${index * 50}ms`,
-                          animation: isMobileMenuOpen ? 'slideInFromRight 0.3s ease-out forwards' : 'none'
-                        }}
-                      >
-                        <span className="text-base">{item.icon}</span>
-                        <span className="font-medium text-sm flex-1">{item.label}</span>
-                        {isActive && (
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        )}
-                      </a>
-                    );
-                  })}
-                </div>
-                
-                {/* Mobile CTA Button */}
-                <div className="pt-4 mt-4 border-t border-[#2d2d30]">
-                  <button 
-                    onClick={() => {
-                      handleWishlistNavigation();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full px-4 py-4 bg-gradient-to-r from-[#f59e0b] to-[#fb923c] text-white rounded-xl font-bold text-base transition-all duration-300 hover:shadow-xl hover:shadow-[#f59e0b]/30 active:scale-95 transform hover:-translate-y-0.5"
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>🚀</span>
-                      <span>Join Beta Wishlist</span>
-                    </div>
-                  </button>
-                </div>
-              </nav>
-            </div>
-          </div>
         </header>
 
         {/* Enhanced Hero Section */}

@@ -37,15 +37,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkUser = async () => {
     try {
-      const userData = await account.get();
-      setUser(userData);
-      const role = await getUserRole(userData);
-      setUserRole(role);
+      // Authentication disabled - always return null user
+      console.log('AuthContext: Authentication system disabled');
+      setUser(null);
+      setUserRole(null);
     } catch (error: any) {
-      // 401 errors are expected for anonymous users - don't log them
-      if (error.code !== 401 && error.code !== 403) {
-        console.error('Error checking user session:', error);
-      }
+      console.log('AuthContext: Authentication disabled, ignoring error');
       setUser(null);
       setUserRole(null);
     } finally {
@@ -54,30 +51,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshUserRole = async () => {
-    if (user) {
-      try {
-        const role = await getUserRole(user);
-        setUserRole(role);
-      } catch (error) {
-        console.error('Error refreshing user role:', error);
-      }
-    }
+    console.log('AuthContext: Authentication disabled - refreshUserRole called');
+    // Always set null since authentication is disabled
+    setUserRole(null);
   };
 
   const refreshAuth = async () => {
-    await checkUser();
+    console.log('AuthContext: Authentication disabled - refreshAuth called');
+    setUser(null);
+    setUserRole(null);
   };
 
   const logout = async () => {
-    try {
-      setError(null);
-      await account.deleteSession('current');
-      setUser(null);
-      setUserRole(null);
-    } catch (error: any) {
-      setError(error.message || 'Logout failed');
-      throw error;
-    }
+    console.log('AuthContext: Authentication disabled - logout called');
+    setError(null);
+    setUser(null);
+    setUserRole(null);
+    // No error thrown for logout
   };
 
   const value = {

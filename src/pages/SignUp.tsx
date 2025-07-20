@@ -34,23 +34,10 @@ const SignUp = () => {
   const router = useRouter();
   const { user, refreshAuth } = useAuth();
 
-  // Redirect if already logged in
+  // Authentication disabled - no redirect logic needed
   React.useEffect(() => {
-    if (user) {
-      // Get user role and redirect to appropriate page
-      const redirectUser = async () => {
-        try {
-          const userRole = await getUserRole(user);
-          const redirectPath = getRoleBasedRedirectPath(userRole);
-          router.push(redirectPath);
-        } catch (error) {
-          console.error('Error redirecting user:', error);
-          router.push('/'); // Fallback to home page
-        }
-      };
-      redirectUser();
-    }
-  }, [user, router]);
+    console.log('SignUp: Authentication system disabled - no user redirect');
+  }, []);
 
   // Form validation
   const validateEmail = (email: string) => {
@@ -102,48 +89,9 @@ const SignUp = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      setError(validationErrors[0]);
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      await AuthService.signup({
-        name: formData.name.trim(),
-        email: formData.email,
-        password: formData.password,
-        college: formData.college.trim(),
-        branch: formData.branch,
-        semester: formData.semester
-      });
-      
-      // Refresh the auth context to get updated user data
-      await refreshAuth();
-      
-      // Get the current user and role
-      const currentUser = await AuthService.getCurrentUser();
-      const userRole = await getUserRole(currentUser);
-
-      // Determine redirect path based on role
-      const redirectTo = getRoleBasedRedirectPath(userRole);
-
-      setSuccess(getWelcomeMessage(userRole));
-
-      // Redirect after successful signup - reduced timeout for better UX
-      setTimeout(() => {
-        router.push(redirectTo);
-      }, 1000);
-    } catch (error: any) {
-      setError(error.message || 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Authentication system is disabled
+    setError('Authentication system is currently disabled. Registration functionality is not available.');
+    return;
   };
 
   return (

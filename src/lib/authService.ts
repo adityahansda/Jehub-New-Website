@@ -17,113 +17,51 @@ export interface SignupData {
 }
 
 export class AuthService {
-  // Login user
+  // Login user - DISABLED
   static async login(data: LoginData) {
-    try {
-      const session = await account.createEmailPasswordSession(data.email, data.password);
-      return session;
-    } catch (error: any) {
-      console.error('Login error:', error);
-      throw new Error(error.message || 'Login failed');
-    }
+    console.log('Authentication disabled - Login attempt for:', data.email);
+    throw new Error('Authentication system is currently disabled');
   }
 
-  // Register new user
+  // Register new user - DISABLED  
   static async signup(data: SignupData) {
-    try {
-      // Create user account
-      const user = await account.create(
-        ID.unique(),
-        data.email,
-        data.password,
-        data.name
-      );
-
-      // Automatically log in the user after registration
-      await account.createEmailPasswordSession(data.email, data.password);
-
-      // Create user profile in database
-      const userProfile = await createUserProfile({
-        userId: user.$id,
-        name: data.name,
-        email: data.email,
-        college: data.college,
-        branch: data.branch,
-        semester: data.semester
-      });
-
-      return { user, userProfile };
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      throw new Error(error.message || 'Registration failed');
-    }
+    console.log('Authentication disabled - Signup attempt for:', data.email);
+    throw new Error('Authentication system is currently disabled');
   }
 
-  // Get current user
+  // Get current user - DISABLED
   static async getCurrentUser() {
-    try {
-      const user = await account.get();
-      return user;
-    } catch (error: any) {
-      if (error.code === 401) {
-        // User not logged in
-        return null;
-      }
-      console.error('Get current user error:', error);
-      throw new Error(error.message || 'Failed to get user');
-    }
+    console.log('Authentication disabled - getCurrentUser called');
+    return null;
   }
 
-  // Logout user
+  // Logout user - DISABLED
   static async logout() {
-    try {
-      await account.deleteSession('current');
-    } catch (error: any) {
-      console.error('Logout error:', error);
-      throw new Error(error.message || 'Logout failed');
-    }
+    console.log('Authentication disabled - Logout called');
+    // No error thrown for logout to prevent issues
   }
 
-  // Send password recovery email
+  // Send password recovery email - DISABLED
   static async recoverPassword(email: string) {
-    try {
-      await account.createRecovery(
-        email,
-        `${window.location.origin}/reset-password`
-      );
-    } catch (error: any) {
-      console.error('Password recovery error:', error);
-      throw new Error(error.message || 'Password recovery failed');
-    }
+    console.log('Authentication disabled - Password recovery attempt for:', email);
+    throw new Error('Authentication system is currently disabled');
   }
 
-  // Update password
+  // Update password - DISABLED
   static async updatePassword(password: string, oldPassword?: string) {
-    try {
-      await account.updatePassword(password, oldPassword);
-    } catch (error: any) {
-      console.error('Update password error:', error);
-      throw new Error(error.message || 'Password update failed');
-    }
+    console.log('Authentication disabled - Password update attempt');
+    throw new Error('Authentication system is currently disabled');
   }
 
-  // Verify email
+  // Verify email - DISABLED
   static async verifyEmail(userId: string, secret: string) {
-    try {
-      await account.updateVerification(userId, secret);
-    } catch (error: any) {
-      console.error('Email verification error:', error);
-      throw new Error(error.message || 'Email verification failed');
-    }
+    console.log('Authentication disabled - Email verification attempt');
+    throw new Error('Authentication system is currently disabled');
   }
 
-  // Send verification email
+  // Send verification email - DISABLED
   static async sendVerificationEmail() {
-    try {
-      await account.createVerification(`${window.location.origin}/verify-email`);
-    } catch (error: any) {
-      console.error('Send verification error:', error);
-      throw new Error(error.message || 'Failed to send verification email');
-    }
+    console.log('Authentication disabled - Send verification email attempt');
+    throw new Error('Authentication system is currently disabled');
   }
 }
