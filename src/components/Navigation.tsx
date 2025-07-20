@@ -1,6 +1,7 @@
 import React, {
   useState,
   useEffect,
+  useMemo,
   createContext,
   useContext,
   Dispatch,
@@ -16,18 +17,18 @@ const Navigation = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
 
-  const navItems = [
+  const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
     { path: '/#features', label: 'Features', icon: Star },
     { path: '/#beta', label: 'Join Beta', icon: FlaskConical },
     { path: '/#groups', label: 'Join Group', icon: Users },
     { path: '/notes-upload', label: 'Upload', icon: Upload },
-  ];
+  ], []);
 
   useEffect(() => {
     const currentIndex = navItems.findIndex(item => item.path.startsWith('/#') ? router.asPath.includes(item.path) : item.path === router.pathname);
     setActiveIndex(currentIndex === -1 ? 0 : currentIndex);
-  }, [router.pathname, router.asPath]);
+  }, [router.pathname, router.asPath, navItems]);
 
   const handleNavClick = (index: number, path: string) => {
     setActiveIndex(index);

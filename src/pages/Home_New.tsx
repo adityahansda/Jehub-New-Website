@@ -85,7 +85,7 @@ const Home = () => {
         });
       }
     } catch (error) {
-      console.warn('Error in smooth scroll:', error);
+      // console.warn('Error in smooth scroll:', error); // Suppressed for production logging cleanliness
     }
   };
 
@@ -105,7 +105,7 @@ const Home = () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       } catch (error) {
-        console.warn('Error in popstate handler:', error);
+        // console.warn('Error in popstate handler:', error); // Suppressed for production
       }
     };
 
@@ -113,7 +113,7 @@ const Home = () => {
       window.addEventListener('popstate', handlePopState);
       return () => window.removeEventListener('popstate', handlePopState);
     } catch (error) {
-      console.warn('Error setting up popstate listener:', error);
+      // console.warn('Error setting up popstate listener:', error); // Suppressed for production
       return () => { };
     }
   }, []);
@@ -193,7 +193,7 @@ const Home = () => {
             try {
               revealObserver.observe(el);
             } catch (observeError) {
-              console.warn('Could not observe reveal element:', observeError);
+              // console.warn('Could not observe reveal element:', observeError); // Suppressed for production
             }
           });
         }
