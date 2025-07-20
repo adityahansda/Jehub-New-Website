@@ -242,7 +242,7 @@ const Home = () => {
 
 
         {/* Enhanced Hero Section */}
-        <section id="home" className="relative flex items-center justify-center min-h-screen pt-16 pb-16">
+        <section id="home" className="relative flex items-center justify-center min-h-screen pt-16 pb-16 flex-col">
           {/* Enhanced Background with Multiple Layers */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0b] via-[#1a1a1d] to-[#0e0e10] -z-10"></div>
 
@@ -285,7 +285,7 @@ const Home = () => {
           <div className="relative z-10 w-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto text-center animate-fade-in-up w-full">
               {/* Enhanced Badge */}
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8 mt-8">
                 <span className="text-[#f59e0b] text-sm font-medium mr-2">🚀</span>
                 <span className="text-white text-sm font-medium">Launching Soon - Join 431+ Students</span>
                 <div className="ml-2 w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></div>
@@ -304,9 +304,9 @@ const Home = () => {
                   style={{ animationDelay: '0.4s' }}
                 >
                   Academic Resources
-                </span>
+                </span> 
                 <span
-                  className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left"
+                  className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left pb-3"
                   style={{ animationDelay: '0.6s' }}
                 >
                   for Every Student
@@ -374,14 +374,15 @@ const Home = () => {
           </div>
 
           {/* Enhanced Scroll Indicator - Down Arrow Design */}
+          <div className=' w-full flex justify-center'>
           <button
             onClick={() => smoothScrollTo('#features')}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce-slow cursor-pointer focus:outline-none group z-20"
+            className=" animate-bounce-slow cursor-pointer focus:outline-none group z-20"
             aria-label="Scroll to features section"
           >
-            <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 w-full">
+            <div className="flex flex-col items-center justify-center sm:space-y-3 w-full m-auto">
               {/* Text - hide on mobile, show on tablet+ */}
-              <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300 text-center">
+              <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300">
                 Scroll to explore
               </span>
 
@@ -404,6 +405,7 @@ const Home = () => {
               </span>
             </div>
           </button>
+          </div>
         </section>
 
         {/* About JEHUB with Reveal Animation */}
@@ -513,7 +515,7 @@ const Home = () => {
                   {
                     icon: Trophy,
                     title: "Leaderboard System",
-                    description: "Compete with peers and climb the rankings.",
+                    description: "Challenge your peers and rise to the top of the leaderboard",
                     gradient: "from-[#FCA5A5] to-[#F59E0B]",
                     id: "feature-leaderboard"
                   },
@@ -608,7 +610,7 @@ const Home = () => {
                   {
                     icon: Crown,
                     title: "Weekly/Monthly Leaderboards",
-                    description: "Climb rankings and compare with fellow students.",
+                    description: "Boost your rank and see how you stack up against others",
                     gradient: "from-[#FBBF24] to-[#F97316]",
                     id: "gamification-leaderboard"
                   },
@@ -629,7 +631,7 @@ const Home = () => {
                   {
                     icon: Target,
                     title: "College Rank System",
-                    description: "Compete on a college level and gain recognition.",
+                    description: "Compete at the college level and earn the recognition you deserve",
                     gradient: "from-[#10B981] to-[#059669]",
                     id: "gamification-college"
                   }
