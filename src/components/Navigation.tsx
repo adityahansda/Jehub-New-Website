@@ -74,7 +74,7 @@ const Navigation = () => {
                   height={32}
                   className="h-8 w-auto transition-transform duration-300 group-hover:scale-110"
                 />
-                <span className="text-xl font-bold text-white hidden sm:block">JEHUB</span>
+                {/* <span className="text-xl font-bold text-white hidden sm:block">JEHUB</span> */}
               </Link>
             </div>
 
