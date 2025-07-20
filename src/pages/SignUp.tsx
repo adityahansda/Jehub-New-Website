@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { User, Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, GraduationCap, AlertCircle } from 'lucide-react';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -20,15 +20,13 @@ const SignUp = () => {
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
   const router = useRouter();
 
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match.');
-      return;
-    }
-
-    alert('Registration functionality has been disabled.');
+    alert('Sign up form submitted! Authentication system has been removed.');
   };
 
   return (
@@ -44,6 +42,12 @@ const SignUp = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+              <span className="text-sm text-yellow-700">Authentication system has been removed. This is a demo form only.</span>
+            </div>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -57,8 +61,8 @@ const SignUp = () => {
                   id="name"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="John Doe"
                 />
               </div>
@@ -75,8 +79,8 @@ const SignUp = () => {
                   id="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="you@example.com"
                 />
               </div>
@@ -93,8 +97,8 @@ const SignUp = () => {
                   id="password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="Create a password"
                 />
                 <button
@@ -118,8 +122,8 @@ const SignUp = () => {
                   id="confirmPassword"
                   required
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   placeholder="Confirm your password"
                 />
                 <button
@@ -142,7 +146,7 @@ const SignUp = () => {
                   type="text"
                   id="college"
                   value={formData.college}
-                  onChange={(e) => setFormData({ ...formData, college: e.target.value })}
+                  onChange={(e) => handleInputChange('college', e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Your college or university"
                 />
@@ -157,7 +161,7 @@ const SignUp = () => {
                 <select
                   id="branch"
                   value={formData.branch}
-                  onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                  onChange={(e) => handleInputChange('branch', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select Branch</option>
@@ -174,7 +178,7 @@ const SignUp = () => {
                 <select
                   id="semester"
                   value={formData.semester}
-                  onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
+                  onChange={(e) => handleInputChange('semester', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select Semester</option>
@@ -205,11 +209,12 @@ const SignUp = () => {
               </label>
             </div>
 
+
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Create Account
+              Create Account (Demo)
             </button>
           </form>
 

@@ -346,7 +346,7 @@ const NotesDownload = () => {
       {/* Universal Sidebar */}
       <UniversalSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="max-w-[1400px] mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-10 pt-20">
         {/* Description */}
         <motion.div 
           className="text-center mb-8"
@@ -497,7 +497,11 @@ const NotesDownload = () => {
             {/* Notes Grid/List */}
             <motion.div 
               key={`${searchTerm}-${filters.branch}-${filters.semester}-${filters.subject}-${filters.degree}-${viewMode}`}
-              className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}`}
+              className={`${
+                viewMode === 'grid' 
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8' 
+                  : 'space-y-4'
+              }`}
               initial="hidden"
               animate="visible"
               variants={{
@@ -515,7 +519,7 @@ const NotesDownload = () => {
                 {filteredNotes.map((note, index) => (
                   <motion.div 
                     key={note.id} 
-                    className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                    className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 min-h-[360px] lg:min-h-[380px] flex flex-col"
                     variants={{
                       hidden: { 
                         opacity: 0, 
@@ -541,41 +545,44 @@ const NotesDownload = () => {
                     }}
                     layout
                   >
-                  <div className="p-4 sm:p-6">
+                  <div className="p-4 sm:p-5 flex flex-col h-full">
+                    {/* Header Section */}
                     <motion.div 
                       className="flex items-start justify-between mb-4"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
                     >
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
                           {note.title}
                         </h3>
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <User className="h-4 w-4 mr-1" />
-                          <span className="mr-4">{note.uploader}</span>
-                          <Calendar className="h-4 w-4 mr-1" />
-                          <span>{new Date(note.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        <div className="flex items-center text-sm text-gray-600 gap-2">
+                          <User className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{note.uploader}</span>
+                          <Calendar className="h-4 w-4 mx-2 flex-shrink-0" />
+                          <span className="truncate">{new Date(note.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                         </div>
                       </div>
-                      <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
                         {note.points} pts
                       </div>
                     </motion.div>
 
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    {/* Description */}
+                    <p className="text-gray-600 mb-4 text-sm leading-relaxed">
                       {note.description}
                     </p>
 
+                    {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                         {note.branch}
                       </span>
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                        {note.semester} Semester
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                        {note.semester} Sem
                       </span>
-                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
+                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
                         {note.subject}
                       </span>
                       <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-semibold">
@@ -583,9 +590,13 @@ const NotesDownload = () => {
                       </span>
                     </div>
 
-                    <div className="flex flex-col space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-4">
+                    {/* Spacer to push content to bottom */}
+                    <div className="flex-grow"></div>
+                    
+                    <div className="flex flex-col space-y-2">
+                      {/* Stats Row */}
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <div className="flex items-center space-x-3">
                           <div className="flex items-center text-gray-600">
                             <Download className="h-4 w-4 mr-1" />
                             <span>{note.downloads}</span>
@@ -610,33 +621,48 @@ const NotesDownload = () => {
                             <span className="ml-1 hidden sm:inline text-gray-600">likes</span>
                           </button>
                         </div>
-                        <div className="flex items-center space-x-2 pr-2">
-                          <Link
-                            href={`/notes-preview/${note.id}`}
-                            className="flex items-center px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Preview
-                          </Link>
-                          <button
-                            onClick={() => handleDownload(note.id)}
-                            className="flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-medium"
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleShare(note)}
+                          className="flex items-center px-2 py-1 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
+                          title="Share note"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </button>
                       </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mt-4">
-                      {note.tags.map((tag, index) => (
-                        <span key={index} className="flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                          <Tag className="h-3 w-3 mr-1" />
-                          {tag}
-                        </span>
-                      ))}
+                      
+                      {/* Action Buttons Row */}
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Link
+                          href={`/notes-preview/${note.id}`}
+                          className="flex-1 flex items-center justify-center px-3 py-2 text-blue-600 border-2 border-blue-300 hover:bg-blue-50 hover:border-blue-400 rounded-lg transition-all duration-200 text-sm font-semibold"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Preview
+                        </Link>
+                        <button
+                          onClick={() => handleDownload(note.id)}
+                          className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-xl"
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </button>
+                      </div>
+                      {/* Extra Tags */}
+                      {note.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {note.tags.slice(0, 3).map((tag, index) => (
+                            <span key={index} className="flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                              <Tag className="h-3 w-3 mr-0.5" />
+                              {tag}
+                            </span>
+                          ))}
+                          {note.tags.length > 3 && (
+                            <span className="text-gray-500 text-xs px-2 py-1">
+                              +{note.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -721,6 +747,52 @@ const NotesDownload = () => {
           </div>
         )}
       </div>
+      
+      {/* Custom Styles */}
+      <style jsx>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 640px) {
+          .min-h-\\[480px\\] {
+            min-height: auto;
+          }
+          .lg\\:min-h-\\[520px\\] {
+            min-height: auto;
+          }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .min-h-\\[480px\\] {
+            min-height: 450px;
+          }
+        }
+        
+        /* Desktop enhancements */
+        @media (min-width: 1024px) {
+          .grid {
+            grid-auto-rows: 1fr;
+          }
+        }
+        
+        /* Smooth hover transitions */
+        .transform {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+      `}</style>
     </div>
   );
 };
