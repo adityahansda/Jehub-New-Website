@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { serverDatabases } from '../../src/lib/appwrite-server';
 import { ID } from 'appwrite';
-import { withManagerProtection } from '../../src/lib/serverAuth';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -78,5 +77,5 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-// Export with manager protection - only managers and above can upload notes
-export default withManagerProtection(handler);
+// Export handler without authentication protection
+export default handler;
