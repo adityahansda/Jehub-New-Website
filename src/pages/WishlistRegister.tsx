@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { 
-  ArrowLeft, User, Mail, CheckCircle, AlertCircle, 
-  Rocket, School, Star, Trophy 
+import {
+  ArrowLeft, User, Mail, CheckCircle, AlertCircle,
+  Rocket, School, Star, Trophy
 } from 'lucide-react';
 
 const WishlistRegister = () => {
@@ -13,10 +13,10 @@ const WishlistRegister = () => {
     collegeName: '',
     yearOfStudy: ''
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   // Validate college email
   const validateCollegeEmail = (email: string) => {
@@ -32,21 +32,21 @@ const WishlistRegister = () => {
 
     // Validation
     const newErrors: any = {};
-    
+
     if (!formData.studentName.trim()) {
       newErrors.studentName = 'Student name is required';
     }
-    
+
     if (!formData.collegeEmail.trim()) {
-      newErrors.collegeEmail = 'College email is required';
+      newErrors.collegeEmail = 'Your email is required';
     } else if (!validateCollegeEmail(formData.collegeEmail)) {
-      newErrors.collegeEmail = 'Please enter a valid college email (.edu, .ac.in, .edu.in)';
+      newErrors.collegeEmail = 'Please enter a valid email (.gmail.com, .outlook.com)';
     }
-    
+
     if (!formData.collegeName.trim()) {
       newErrors.collegeName = 'College name is required';
     }
-    
+
     if (!formData.yearOfStudy) {
       newErrors.yearOfStudy = 'Year of study is required';
     }
@@ -62,7 +62,7 @@ const WishlistRegister = () => {
       console.log('Wishlist registration:', formData);
       // Here you would typically make an API call
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       setIsSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -75,7 +75,7 @@ const WishlistRegister = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -97,15 +97,15 @@ const WishlistRegister = () => {
               <div className="bg-gradient-to-r from-[#10b981] to-[#059669] rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="h-10 w-10 text-white" />
               </div>
-              
+
               <h1 className="text-2xl font-bold text-white mb-4">
                 🎉 Welcome to the Wishlist!
               </h1>
-              
+
               <p className="text-[#d1d5db] mb-6">
                 Thank you for joining JEHUB&apos;s beta wishlist! You&apos;ll be among the first to access our platform when we launch.
               </p>
-              
+
               <div className="bg-[#0e0e10] rounded-lg p-4 mb-6">
                 <p className="text-sm text-[#81e6d9] mb-2">What&apos;s next?</p>
                 <ul className="text-sm text-[#d1d5db] space-y-1 text-left">
@@ -115,8 +115,8 @@ const WishlistRegister = () => {
                   <li>• Shape the future of student collaboration</li>
                 </ul>
               </div>
-              
-              <Link 
+
+              <Link
                 href="/"
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white rounded-lg font-semibold hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
               >
@@ -141,14 +141,14 @@ const WishlistRegister = () => {
       <div className="min-h-screen bg-gradient-to-br from-[#0e0e10] to-[#1c1c1f] py-8 px-4">
         {/* Header */}
         <div className="max-w-2xl mx-auto mb-8">
-          <Link 
+          <Link
             href="/"
             className="inline-flex items-center text-[#81e6d9] hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Home
           </Link>
-          
+
           <div className="text-center">
             <div className="bg-gradient-to-r from-[#9333ea] to-[#3b82f6] rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Rocket className="h-8 w-8 text-white" />
@@ -177,9 +177,8 @@ const WishlistRegister = () => {
                 name="studentName"
                 value={formData.studentName}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${
-                  errors.studentName ? 'border-red-500' : 'border-[#2d2d30]'
-                } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
+                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${errors.studentName ? 'border-red-500' : 'border-[#2d2d30]'
+                  } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
                 placeholder="Enter your full name"
               />
               {errors.studentName && (
@@ -202,9 +201,8 @@ const WishlistRegister = () => {
                 name="collegeEmail"
                 value={formData.collegeEmail}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${
-                  errors.collegeEmail ? 'border-red-500' : 'border-[#2d2d30]'
-                } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
+                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${errors.collegeEmail ? 'border-red-500' : 'border-[#2d2d30]'
+                  } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
                 placeholder="your.email@college.edu"
               />
               {errors.collegeEmail && (
@@ -230,9 +228,8 @@ const WishlistRegister = () => {
                 name="collegeName"
                 value={formData.collegeName}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${
-                  errors.collegeName ? 'border-red-500' : 'border-[#2d2d30]'
-                } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
+                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${errors.collegeName ? 'border-red-500' : 'border-[#2d2d30]'
+                  } text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors`}
                 placeholder="Enter your college/university name"
               />
               {errors.collegeName && (
@@ -254,9 +251,8 @@ const WishlistRegister = () => {
                 name="yearOfStudy"
                 value={formData.yearOfStudy}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${
-                  errors.yearOfStudy ? 'border-red-500' : 'border-[#2d2d30]'
-                } text-white focus:outline-none focus:border-[#9333ea] transition-colors`}
+                className={`w-full px-4 py-3 rounded-lg bg-[#0e0e10] border ${errors.yearOfStudy ? 'border-red-500' : 'border-[#2d2d30]'
+                  } text-white focus:outline-none focus:border-[#9333ea] transition-colors`}
               >
                 <option value="">Select your year</option>
                 <option value="1st Year">1st Year</option>
