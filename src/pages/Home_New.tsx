@@ -285,7 +285,7 @@ const Home = () => {
           <div className="relative z-10 w-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto text-center animate-fade-in-up w-full">
               {/* Enhanced Badge */}
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8 mt-8">
                 <span className="text-[#f59e0b] text-sm font-medium mr-2">🚀</span>
                 <span className="text-white text-sm font-medium">Launching Soon - Join 431+ Students</span>
                 <div className="ml-2 w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></div>
@@ -513,7 +513,7 @@ const Home = () => {
                   {
                     icon: Trophy,
                     title: "Leaderboard System",
-                    description: "Compete with peers and climb the rankings.",
+                    description: "Challenge your peers and rise to the top of the leaderboard",
                     gradient: "from-[#FCA5A5] to-[#F59E0B]",
                     id: "feature-leaderboard"
                   },
@@ -608,7 +608,7 @@ const Home = () => {
                   {
                     icon: Crown,
                     title: "Weekly/Monthly Leaderboards",
-                    description: "Climb rankings and compare with fellow students.",
+                    description: "Boost your rank and see how you stack up against others",
                     gradient: "from-[#FBBF24] to-[#F97316]",
                     id: "gamification-leaderboard"
                   },
@@ -629,7 +629,7 @@ const Home = () => {
                   {
                     icon: Target,
                     title: "College Rank System",
-                    description: "Compete on a college level and gain recognition.",
+                    description: "Compete at the college level and earn the recognition you deserve",
                     gradient: "from-[#10B981] to-[#059669]",
                     id: "gamification-college"
                   }
