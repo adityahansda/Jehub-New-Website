@@ -21,16 +21,19 @@ const nextConfig = {
       };
     }
 
-    // Optimize for development
-    if (dev) {
-      config.devtool = 'eval-cheap-module-source-map';
-    }
+    // Optimize for development - remove problematic devtool override
+    // Next.js handles devtool configuration optimally by default
+    // if (dev) {
+    //   config.devtool = 'cheap-module-source-map';
+    // }
 
     return config;
   },
   
-  // External packages for server components (moved from experimental in Next.js 15)
-  serverExternalPackages: ['pdfjs-dist'],
+  // External packages for server components
+  experimental: {
+    serverComponentsExternalPackages: ['pdfjs-dist'],
+  },
   
   images: {
     remotePatterns: [
