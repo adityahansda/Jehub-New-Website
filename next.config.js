@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable strict mode to reduce Fast Refresh issues
-  reactStrictMode: false,
-  
-  // Optimize build output
-  swcMinify: true,
+  // Enable strict mode for better development experience
+  reactStrictMode: true,
   
   webpack: (config, { isServer, dev }) => {
     // Handle PDF.js worker
@@ -32,10 +29,8 @@ const nextConfig = {
     return config;
   },
   
-  experimental: {
-    // Enable server components
-    serverComponentsExternalPackages: ['pdfjs-dist'],
-  },
+  // External packages for server components (moved from experimental in Next.js 15)
+  serverExternalPackages: ['pdfjs-dist'],
   
   images: {
     remotePatterns: [
