@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
+import GoogleDocsPDFViewer from '../../components/GoogleDocsPDFViewer';
 import {
   Download,
   Eye,
@@ -14,35 +15,23 @@ import {
   Tag,
   Star,
   ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  FileText,
   ThumbsUp,
   MessageCircle,
   CheckCircle,
   X,
   XCircle,
   AlertCircle,
-  Loader,
-  FileText,
-  Palette
+  Loader
 } from 'lucide-react';
 import { databases } from '../../lib/appwrite';
 import { Query } from 'appwrite';
 import { checkUrlStatus } from '../../lib/pdfValidation';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import GoogleDocsPDFViewer from '../../components/GoogleDocsPDFViewer';
-import EnhancedCommentsSection from '../../components/EnhancedCommentsSection';
-import ReportModal from '../../components/ReportModal';
-import ReportsSection from '../../components/ReportsSection';
-
-// Format file size in human-readable format
-function formatFileSize(bytes: number | null): string {
-  if (!bytes || bytes === 0) return 'Unknown';
-  
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const size = bytes / Math.pow(1024, i);
-  
-  return `${Math.round(size * 100) / 100} ${sizes[i]}`;
-}
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -85,6 +74,74 @@ function convertToDownloadUrl(url: string): string {
 }
 
 
+// Transform download URLs to viewable URLs
+function transformUrlForViewing(url: string): string {
+  if (!url) return url;
+
+  // console.log('Transforming URL for viewing:', url); // Suppressed for production
+
+  // Handle GitHub URLs
+  if (url.includes('github.com')) {
+    // Convert GitHub blob URL to raw URL for viewing
+    if (url.includes('/blob/')) {
+      const rawUrl = url.replace('/blob/', '/raw/');
+      // console.log('Converted blob to raw for viewing:', rawUrl); // Suppressed for production
+      return rawUrl;
+    }
+    // If it's already a raw URL, return as is
+    if (url.includes('/raw/')) {
+      // console.log('Already a raw URL for viewing:', url); // Suppressed for production
+      return url;
+    }
+  }
+
+  // Handle raw.githubusercontent.com URLs (already good for viewing)
+  if (url.includes('raw.githubusercontent.com')) {
+    // console.log('Raw githubusercontent URL for viewing:', url); // Suppressed for production
+    return url;
+  }
+
+  // Handle Google Drive URLs
+  if (url.includes('drive.google.com')) {
+    // Extract file ID from various Google Drive URL formats
+    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) ||
+      url.match(/id=([a-zA-Z0-9-_]+)/) ||
+      url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+
+    if (fileIdMatch && fileIdMatch[1]) {
+      const fileId = fileIdMatch[1];
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+  }
+
+  // Handle Dropbox URLs
+  if (url.includes('dropbox.com')) {
+    // Convert Dropbox share URL to direct link
+    if (url.includes('?dl=0')) {
+      return url.replace('?dl=0', '?dl=1');
+    }
+    if (!url.includes('?dl=')) {
+      return url + '?dl=1';
+    }
+  }
+
+  // Handle OneDrive URLs
+  if (url.includes('1drv.ms') || url.includes('onedrive.live.com')) {
+    // OneDrive requires specific embedding format
+    if (url.includes('1drv.ms')) {
+      // For shortened OneDrive URLs, we'll try to use them directly
+      return url;
+    }
+  }
+
+  // Add CORS proxy for external URLs if needed
+  if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
+    // Try to load directly first, fallback to CORS proxy if needed
+    return url;
+  }
+
+  return url;
+}
 
 
 type Note = {
@@ -102,17 +159,7 @@ type Note = {
   downloads: number;
   likes: number;
   points: number;
-  views: number;
-  reports: number;
-  fileSize: number | null;
-  noteType: 'free' | 'premium';
   degree: string;
-  uploaderDetails?: {
-    name: string;
-    notesUploaded: number;
-    totalPoints: number;
-    memberSince: string;
-  };
 };
 
 const NotesPreview = () => {
@@ -146,24 +193,27 @@ const NotesPreview = () => {
     noteTitle: string;
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
+  const [pdfViewerModal, setPdfViewerModal] = useState<{
+    show: boolean;
+    pdfUrl: string;
+    fileName: string;
+  }>({ show: false, pdfUrl: '', fileName: '' });
 
-  // PDF validation function
-  const validatePdfUrl = async (url: string) => {
-    if (!url) return;
-    
-    setPdfValidationStatus('checking');
-    try {
-      const validation = await checkUrlStatus(url);
-      setPdfValidationStatus(validation.status);
-      
-      if (validation.status === 'deleted') {
-        setShowDeletedMessage(true);
-      }
-    } catch (error) {
-      console.error('PDF validation error:', error);
-      setPdfValidationStatus('error');
+  // PDF-related state
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pdfUrl) {
+      fetch(`/api/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`)
+        .then(response => response.blob())
+        .then(blob => {
+          const objectUrl = URL.createObjectURL(blob);
+          setBlobUrl(objectUrl);
+        })
+        .catch(error => console.error('Error fetching PDF blob:', error));
     }
-  };
+  }, [pdfUrl]);
 
   // Fetch note data from database
   useEffect(() => {
@@ -172,8 +222,6 @@ const NotesPreview = () => {
 
       try {
         setLoading(true);
-        setError(''); // Clear any previous errors
-        
         const response = await databases.getDocument(
           process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
           process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
@@ -194,54 +242,25 @@ const NotesPreview = () => {
           fileName: response.fileName,
           downloads: response.downloads,
           likes: response.likes,
-          points: response.points || 50,
-          views: response.views || 0,
-          reports: response.reports || 0,
-          fileSize: response.fileSize || null,
-          noteType: response.noteType || 'free',
-          degree: response.degree,
-          uploaderDetails: {
-            name: response.authorName,
-            notesUploaded: response.uploaderNotesCount || 0,
-            totalPoints: response.uploaderTotalPoints || 0,
-            memberSince: response.uploaderMemberSince || response.uploadDate
-          }
+          points: response.points || 0,
+          degree: response.degree
         };
 
         setNote(fetchedNote);
 
-        // Track view - increment view count
-        try {
-          await fetch(`/api/notes/${id}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ action: 'increment_view' })
-          });
-          // Update local state with new view count
-          setNote(prev => prev ? { ...prev, views: prev.views + 1 } : null);
-        } catch (viewError) {
-          console.warn('Failed to track view:', viewError);
-        }
-
-        // Validate PDF URL if available
+        // Set PDF URL if available and transform for viewing
         if (fetchedNote.githubUrl) {
-          validatePdfUrl(fetchedNote.githubUrl);
+          const viewableUrl = transformUrlForViewing(fetchedNote.githubUrl);
+          // console.log('Original URL:', fetchedNote.githubUrl); // Suppressed for production
+          // console.log('Transformed URL:', viewableUrl); // Suppressed for production
+          setPdfUrl(viewableUrl);
+
+          // Validate PDF URL
+          checkUrlStatus(fetchedNote.githubUrl);
         }
-      } catch (err: any) {
+      } catch (err) {
+        setError('Failed to fetch note details. Please try again later.');
         console.error('Error fetching note:', err);
-        
-        // Provide more specific error messages
-        if (err.code === 404) {
-          setError('Note not found. It may have been removed or the link is incorrect.');
-        } else if (err.code === 500) {
-          setError('Server error. Please try again in a few moments.');
-        } else if (err.message?.includes('Network')) {
-          setError('Network error. Please check your connection and try again.');
-        } else {
-          setError('Failed to fetch note details. Please try again later.');
-        }
       } finally {
         setLoading(false);
       }
@@ -251,97 +270,25 @@ const NotesPreview = () => {
   }, [id]);
 
 
-  // Comments state
-  const [comments, setComments] = useState<any[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [submittingComment, setSubmittingComment] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showUserForm, setShowUserForm] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    name: '',
-    email: ''
-  });
-
-  // Report modal and reports state
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reports, setReports] = useState<any[]>([]);
-  const [loadingReports, setLoadingReports] = useState(false);
-  const [submittingReport, setSubmittingReport] = useState(false);
-  const [showReports, setShowReports] = useState(false);
-
-  // For now, allow anyone to comment (no login required)
-  useEffect(() => {
-    // Set to true to allow anyone to comment
-    setIsLoggedIn(true);
-    
-    // Load user info from localStorage
-    const savedUserInfo = localStorage.getItem('guestUserInfo');
-    if (savedUserInfo) {
-      try {
-        setUserInfo(JSON.parse(savedUserInfo));
-      } catch (error) {
-        console.error('Error parsing saved user info:', error);
-      }
+  // Mock comments
+  const comments = [
+    {
+      id: '1',
+      user: 'Sarah Chen',
+      avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+      content: 'These notes are incredibly detailed! Really helped me understand the concepts better.',
+      timestamp: '2 hours ago',
+      likes: 5
+    },
+    {
+      id: '2',
+      user: 'Mike Davis',
+      avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+      content: 'Perfect for exam preparation. The examples are very clear.',
+      timestamp: '1 day ago',
+      likes: 3
     }
-  }, []);
-
-  // Fetch comments for the current note
-  const fetchComments = async () => {
-    if (!note?.id) return;
-
-    try {
-      setLoadingComments(true);
-      const response = await fetch(`/api/comments?noteId=${note.id}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch comments');
-      }
-
-      const data = await response.json();
-      setComments(data.comments || []);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      // Optionally show error toast or notification
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  // Fetch comments when note is loaded
-  useEffect(() => {
-    if (note?.id) {
-      fetchComments();
-      fetchReports();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note?.id]);
-
-  // Fetch reports for the current note
-  const fetchReports = async () => {
-    if (!note?.id) return;
-
-    try {
-      setLoadingReports(true);
-      const response = await fetch(`/api/reports?noteId=${note.id}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch reports');
-      }
-
-      const data = await response.json();
-      // Map Appwrite document format to component format
-      const formattedReports = data.map((report: any) => ({
-        ...report,
-        id: report.$id || report.id
-      }));
-      setReports(formattedReports || []);
-    } catch (error) {
-      console.error('Error fetching reports:', error);
-    } finally {
-      setLoadingReports(false);
-    }
-  };
+  ];
 
   // Related notes state
   const [relatedNotes, setRelatedNotes] = useState<Note[]>([]);
@@ -377,10 +324,6 @@ const NotesPreview = () => {
           downloads: doc.downloads,
           likes: doc.likes,
           points: doc.points || 0,
-          views: doc.views || 0,
-          reports: doc.reports || 0,
-          fileSize: doc.fileSize || null,
-          noteType: doc.noteType || 'free',
           degree: doc.degree
         }));
 
@@ -529,204 +472,36 @@ const NotesPreview = () => {
   };
 
   const handleReport = () => {
-    setShowReportModal(true);
-  };
-
-  // Handle report submission
-  const handleReportSubmit = async (reportData: {
-    reason: string;
-    description: string;
-    reporterName: string;
-    reporterEmail?: string;
-  }) => {
     if (!note) return;
 
-    try {
-      setSubmittingReport(true);
-      
-      const response = await fetch('/api/reports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          noteId: note.id,
-          ...reportData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit report');
-      }
-
-      const result = await response.json();
-      
-      // Refresh reports to get updated list
-      await fetchReports();
-      
-      // Update note's report count
-      setNote(prev => prev ? { ...prev, reports: (prev.reports || 0) + 1 } : null);
-      
-      setShowReportModal(false);
-      
-      console.log('Report submitted successfully!');
-      
-    } catch (error) {
-      console.error('Error submitting report:', error);
-      throw error; // Let the modal handle the error display
-    } finally {
-      setSubmittingReport(false);
-    }
+    console.log('Reporting note:', note.id);
+    alert('Thank you for your report. We will review this content.');
   };
 
-  // Handle report voting
-  const handleReportVote = async (reportId: string, voteType: 'up' | 'down') => {
-    try {
-      const apiVoteType = voteType === 'up' ? 'upvote' : 'downvote';
-      const response = await fetch('/api/reports', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reportId,
-          action: apiVoteType
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to vote on report');
-      }
-
-      // Refresh reports to get updated vote counts
-      await fetchReports();
-      
-    } catch (error) {
-      console.error('Error voting on report:', error);
-      throw error;
-    }
-  };
-
-  // Enhanced comment submit with reply support
-  const handleEnhancedCommentSubmit = async (content: string, parentCommentId?: string) => {
-    if (!note?.id) return;
-
-    // Check if user info is available
-    if (!userInfo.name) {
-      setShowUserForm(true);
-      return;
-    }
-
-    try {
-      setSubmittingComment(true);
-      
-      // Use provided user info or generate default
-      const currentUser = {
-        userId: 'guest_' + Date.now(),
-        userName: userInfo.name || 'Anonymous User',
-        userAvatar: getAvatarUrl(userInfo.name || userInfo.email)
-      };
-
-      const response = await fetch('/api/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          noteId: note.id,
-          userId: currentUser.userId,
-          userName: currentUser.userName,
-          userAvatar: currentUser.userAvatar,
-          content: content.trim(),
-          parentCommentId: parentCommentId || null
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit comment');
-      }
-
-      const data = await response.json();
-      
-      // Refresh comments to get updated threaded structure
-      await fetchComments();
-      
-      console.log('Comment submitted successfully!');
-      
-    } catch (error) {
-      console.error('Error submitting comment:', error);
-      alert('Failed to submit comment. Please try again.');
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
-
-  // Handle comment likes
-  const handleCommentLike = async (commentId: string, isLiked: boolean) => {
-    try {
-      console.log('Liking comment with ID:', commentId, 'Action:', isLiked ? 'like' : 'unlike');
-      
-      const response = await fetch('/api/comments', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          commentId: commentId,
-          action: isLiked ? 'like' : 'unlike'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        throw new Error(`Failed to update comment like: ${errorData.error || response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log('Like update successful:', result);
-
-      // Refresh comments to get updated like counts
-      await fetchComments();
-      
-    } catch (error) {
-      console.error('Error updating comment like:', error);
-      throw error; // Re-throw to allow component to handle optimistic update rollback
-    }
-  };
-
-  // Keep original for backward compatibility
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
-    await handleEnhancedCommentSubmit(newComment.trim());
-    setNewComment('');
+    if (newComment.trim()) {
+      console.log('New comment:', newComment);
+      setNewComment('');
+    }
   };
 
   const closePopup = () => {
     setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
   };
 
-  // Generate avatar URL based on name or email
-  const getAvatarUrl = (identifier: string) => {
-    if (!identifier) return 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop';
-    
-    // Generate a simple avatar using DiceBear API or use a default
-    const seed = identifier.toLowerCase().replace(/\s+/g, '');
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4&size=150`;
+  const openPDFViewer = () => {
+    if (note && note.githubUrl) {
+      setPdfViewerModal({
+        show: true,
+        pdfUrl: note.githubUrl,
+        fileName: note.fileName
+      });
+    }
   };
 
-  // Handle user form submission
-  const handleUserFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userInfo.name.trim()) return;
-    
-    // Save to localStorage
-    localStorage.setItem('guestUserInfo', JSON.stringify(userInfo));
-    setShowUserForm(false);
-    
-    // Now submit the comment
-    handleCommentSubmit(e);
+  const closePDFViewer = () => {
+    setPdfViewerModal({ show: false, pdfUrl: '', fileName: '' });
   };
 
   // Show loading state
@@ -805,14 +580,14 @@ const NotesPreview = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Preview Area */}
           <div className="lg:col-span-3">
             {/* Note Header */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mb-4 lg:mb-6">
-              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4 gap-4">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
                     {note.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
@@ -836,14 +611,8 @@ const NotesPreview = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="h-4 w-4" />
-                      <span>{note.views} views</span>
+                      <span>1,234 views</span>
                     </div>
-                    {note.fileSize && note.fileSize > 0 && (
-                      <div className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        <span>{formatFileSize(note.fileSize)}</span>
-                      </div>
-                    )}
                   </div>
                   <p className="text-gray-700 mb-4">{note.description}</p>
                   <div className="flex flex-wrap gap-2">
@@ -866,49 +635,58 @@ const NotesPreview = () => {
                     ))}
                   </div>
                 </div>
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-lg font-bold">
                   {note.points} pts
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={handleDownload}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <Download className="h-5 w-5" />
-                  <span className="hidden sm:inline">Download Notes</span>
-                  <span className="sm:hidden">Download</span>
+                  Download Notes
                 </button>
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={handleLike}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 flex-1 sm:flex-initial ${isLiked
-                      ? 'bg-red-100 text-red-700 border border-red-200'
-                      : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
-                      }`}
-                  >
-                    <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                    <span className="hidden sm:inline">{isLiked ? 'Liked' : 'Like'}</span>
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-gray-200 flex-1 sm:flex-initial"
-                  >
-                    <Share2 className="h-5 w-5" />
-                    <span className="hidden sm:inline">Share</span>
-                  </button>
-                  <button
-                    onClick={handleReport}
-                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-gray-200 flex-1 sm:flex-initial"
-                  >
-                    <Flag className="h-5 w-5" />
-                    <span className="hidden sm:inline">Report</span>
-                  </button>
-                </div>
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isLiked
+                    ? 'bg-red-100 text-red-700 border border-red-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
+                    }`}
+                >
+                  <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                  {isLiked ? 'Liked' : 'Like'}
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-gray-200"
+                >
+                  <Share2 className="h-5 w-5" />
+                  Share
+                </button>
+                <button
+                  onClick={handleReport}
+                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-gray-200"
+                >
+                  <Flag className="h-5 w-5" />
+                  Report
+                </button>
               </div>
             </div>
+
+            {/* Debug Info */}
+            {note && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h4 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info:</h4>
+                <div className="text-xs text-yellow-700 space-y-1">
+                  <p><strong>Original GitHub URL:</strong> <span className="break-all">{note.githubUrl}</span></p>
+                  <p><strong>PDF URL for viewing:</strong> <span className="break-all">{pdfUrl}</span></p>
+                  <p><strong>Download URL would be:</strong> <span className="break-all">{note.githubUrl ? convertToDownloadUrl(note.githubUrl) : 'N/A'}</span></p>
+                </div>
+              </div>
+            )}
 
             {/* Deleted PDF Message */}
             {showDeletedMessage && (
@@ -947,16 +725,18 @@ const NotesPreview = () => {
             {pdfValidationStatus === 'checking' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">
-                  <Loader className="animate-spin h-5 w-5 text-blue-600 mr-2" />
+                  <LoadingSpinner size="small" className="mr-2" />
                   <span className="text-blue-800">Validating PDF availability...</span>
                 </div>
               </div>
             )}
 
             {/* PDF Preview */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mb-4 lg:mb-6">
-              <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
-              {pdfValidationStatus === 'deleted' ? (
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
+              {blobUrl ? (
+                <GoogleDocsPDFViewer pdfUrl={blobUrl} />
+              ) : pdfValidationStatus === 'deleted' ? (
                 <div className="text-center py-8 text-red-500">
                   <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <XCircle className="h-8 w-8 text-red-600" />
@@ -965,16 +745,10 @@ const NotesPreview = () => {
                   <p className="text-red-700 mb-4">This PDF file has been deleted from GitHub and cannot be previewed.</p>
                   <p className="text-sm text-red-600">Contact the administrator for assistance.</p>
                 </div>
-              ) : note && note.githubUrl ? (
-                <GoogleDocsPDFViewer
-                  pdfUrl={note.githubUrl}
-                  fileName={note.fileName}
-                  onDownload={handleDownload}
-                />
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <Loader className="animate-spin h-8 w-8 text-gray-400" />
+                    <FileText className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading PDF...</h3>
                   <p className="text-gray-600">Please wait while we load the PDF.</p>
@@ -982,36 +756,8 @@ const NotesPreview = () => {
               )}
             </div>
 
-            {/* Reports Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mt-4 lg:mt-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Reports ({reports.length})</h3>
-                <button
-                  onClick={() => setShowReports(!showReports)}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  {showReports ? 'Hide' : 'Show'} Reports
-                </button>
-              </div>
-
-              {showReports && (
-                loadingReports ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
-                    <span className="text-gray-600">Loading reports...</span>
-                  </div>
-                ) : (
-                  <ReportsSection
-                    reports={reports}
-                    onVoteReport={handleReportVote}
-                    loading={loadingReports}
-                  />
-                )
-              )}
-            </div>
-
-            {/* Enhanced Comments Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mt-4 lg:mt-6">
+            {/* Comments Section */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mt-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Comments ({comments.length})</h3>
                 <button
@@ -1023,42 +769,68 @@ const NotesPreview = () => {
               </div>
 
               {showComments && (
-                isLoggedIn ? (
-                  loadingComments ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
-                      <span className="text-gray-600">Loading comments...</span>
-                    </div>
-                  ) : (
-                    <EnhancedCommentsSection
-                      comments={comments}
-                      onCommentSubmit={handleEnhancedCommentSubmit}
-                      onCommentLike={handleCommentLike}
-                      submittingComment={submittingComment}
-                      userInfo={userInfo}
+                <div className="space-y-6">
+                  {/* Add Comment Form */}
+                  <form onSubmit={handleCommentSubmit} className="border-b border-gray-200 pb-6">
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Add a comment..."
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                  )
-                ) : (
-                  <div className="border border-gray-200 rounded-lg p-6 text-center bg-gray-50">
-                    <User className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Login to Comment</h3>
-                    <p className="text-gray-600 mb-4">You need to be logged in to post comments on this note.</p>
-                    <button
-                      onClick={() => setShowLoginPrompt(true)}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Login to Comment
-                    </button>
+                    <div className="flex justify-end mt-3">
+                      <button
+                        type="submit"
+                        disabled={!newComment.trim()}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Post Comment
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Comments List */}
+                  <div className="space-y-4">
+                    {comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <Image
+                          src={comment.avatar}
+                          alt={comment.user}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded-full border-2 border-white shadow-md"
+                        />
+                        <div className="flex-1">
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900">{comment.user}</h4>
+                              <span className="text-sm text-gray-500">{comment.timestamp}</span>
+                            </div>
+                            <p className="text-gray-700">{comment.content}</p>
+                          </div>
+                          <div className="flex items-center gap-4 mt-2">
+                            <button className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
+                              <ThumbsUp className="h-4 w-4" />
+                              <span className="text-sm">{comment.likes}</span>
+                            </button>
+                            <button className="text-gray-600 hover:text-blue-600 transition-colors text-sm">
+                              Reply
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )
+                </div>
               )}
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+          <div className="lg:col-span-1 space-y-6">
             {/* Quick Stats */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -1067,7 +839,7 @@ const NotesPreview = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Views</span>
-                  <span className="font-semibold">{note.views || 0}</span>
+                  <span className="font-semibold">1,234</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Likes</span>
@@ -1077,15 +849,11 @@ const NotesPreview = () => {
                   <span className="text-gray-600">Comments</span>
                   <span className="font-semibold">{comments.length}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Reports</span>
-                  <span className="font-semibold text-red-600">{note.reports || 0}</span>
-                </div>
               </div>
             </div>
 
             {/* Uploader Info */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Uploader</h3>
               <div className="flex items-center gap-3 mb-4">
                 <Image
@@ -1120,7 +888,7 @@ const NotesPreview = () => {
             </div>
 
             {/* Related Notes */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Related Notes</h3>
               <div className="space-y-4">
                 {relatedNotes.map((relatedNote) => (
@@ -1152,139 +920,6 @@ const NotesPreview = () => {
           </div>
         </div>
       </div>
-
-      {/* User Info Form Popup */}
-      {showUserForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Tell us about yourself</h3>
-              <button
-                onClick={() => setShowUserForm(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleUserFormSubmit}>
-              <div className="mb-4">
-                <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Name *
-                </label>
-                <input
-                  id="userName"
-                  type="text"
-                  value={userInfo.name}
-                  onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                  placeholder="Enter your name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              
-              <div className="mb-6">
-                <label htmlFor="userEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email (optional)
-                </label>
-                <input
-                  id="userEmail"
-                  type="email"
-                  value={userInfo.email}
-                  onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
-                  placeholder="Enter your email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  We&apos;ll use this to generate a unique avatar for you.
-                </p>
-              </div>
-              
-              <div className="mb-4">
-                <Link
-                  href="/avatar-customizer"
-                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center"
-                  onClick={() => setShowUserForm(false)}
-                >
-                  <Palette className="h-4 w-4 mr-1" />
-                  Want to create a custom avatar?
-                </Link>
-              </div>
-              
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowUserForm(false)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Save & Comment
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Login Popup */}
-      {showLoginPrompt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Login Required</h3>
-              <button
-                onClick={() => setShowLoginPrompt(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="flex items-center mb-4">
-              <User className="h-8 w-8 text-blue-600 mr-3" />
-              <div>
-                <p className="text-gray-700 mb-2">
-                  You need to be logged in to comment on this note.
-                </p>
-                <p className="text-sm text-gray-600">
-                  Please log in to join the discussion.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <Link
-                href="/login"
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center"
-                onClick={() => setShowLoginPrompt(false)}
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors text-center"
-                onClick={() => setShowLoginPrompt(false)}
-              >
-                Sign Up
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report Modal */}
-      <ReportModal
-        isOpen={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        onSubmit={handleReportSubmit}
-        submitting={submittingReport}
-        noteTitle={note?.title || ''}
-      />
 
       {/* Download Popup */}
       {downloadPopup.show && (
@@ -1342,6 +977,29 @@ const NotesPreview = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {pdfViewerModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-6xl w-full max-h-[90vh] mx-4 overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{pdfViewerModal.fileName}</h3>
+              <button
+                onClick={closePDFViewer}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[calc(90vh-8rem)]">
+              <GoogleDocsPDFViewer
+                pdfUrl={transformUrlForViewing(pdfViewerModal.pdfUrl)}
+                fileName={pdfViewerModal.fileName}
+              />
+            </div>
           </div>
         </div>
       )}

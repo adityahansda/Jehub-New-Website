@@ -222,7 +222,7 @@ const Home = () => {
 
   // Navigation handler for wishlist registration
   const handleWishlistNavigation = () => {
-    window.location.href = '/wishlist-register';
+    window.location.href = '../pages/wishlist'; // Navigate to wishlist page
   };
 
 
@@ -304,7 +304,7 @@ const Home = () => {
                   style={{ animationDelay: '0.4s' }}
                 >
                   Academic Resources
-                </span> 
+                </span>
                 <span
                   className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left pb-3"
                   style={{ animationDelay: '0.6s' }}
@@ -375,36 +375,36 @@ const Home = () => {
 
           {/* Enhanced Scroll Indicator - Down Arrow Design */}
           <div className=' w-full flex justify-center'>
-          <button
-            onClick={() => smoothScrollTo('#features')}
-            className=" animate-bounce-slow cursor-pointer focus:outline-none group z-20"
-            aria-label="Scroll to features section"
-          >
-            <div className="flex flex-col items-center justify-center sm:space-y-3 w-full m-auto">
-              {/* Text - hide on mobile, show on tablet+ */}
-              <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300">
-                Scroll to explore
-              </span>
+            <button
+              onClick={() => smoothScrollTo('#features')}
+              className=" animate-bounce-slow cursor-pointer focus:outline-none group z-20"
+              aria-label="Scroll to features section"
+            >
+              <div className="flex flex-col items-center justify-center sm:space-y-3 w-full m-auto">
+                {/* Text - hide on mobile, show on tablet+ */}
+                <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300">
+                  Scroll to explore
+                </span>
 
-              {/* Down Arrow indicator - responsive sizing */}
-              <div className="relative flex items-center justify-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-[#d1d5db]/50 flex items-center justify-center transition-all duration-300 group-hover:border-[#f59e0b] group-hover:shadow-lg group-hover:shadow-[#f59e0b]/20 group-active:scale-95">
-                  <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#f59e0b] animate-bounce transition-all duration-300 group-hover:text-[#fb923c]" />
+                {/* Down Arrow indicator - responsive sizing */}
+                <div className="relative flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-[#d1d5db]/50 flex items-center justify-center transition-all duration-300 group-hover:border-[#f59e0b] group-hover:shadow-lg group-hover:shadow-[#f59e0b]/20 group-active:scale-95">
+                    <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#f59e0b] animate-bounce transition-all duration-300 group-hover:text-[#fb923c]" />
+                  </div>
+
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 border-2 border-[#f59e0b]/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+
+                  {/* Ripple effect on click */}
+                  <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 bg-[#f59e0b]/10 rounded-full opacity-0 group-active:opacity-100 transition-all duration-150 scale-0 group-active:scale-150"></div>
                 </div>
 
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 border-2 border-[#f59e0b]/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-
-                {/* Ripple effect on click */}
-                <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 bg-[#f59e0b]/10 rounded-full opacity-0 group-active:opacity-100 transition-all duration-150 scale-0 group-active:scale-150"></div>
+                {/* Mobile-only simple text */}
+                <span className="sm:hidden text-[#d1d5db] text-[10px] font-medium tracking-wider opacity-80 group-hover:text-[#f59e0b] group-hover:opacity-100 transition-all duration-300 text-center">
+                  SCROLL
+                </span>
               </div>
-
-              {/* Mobile-only simple text */}
-              <span className="sm:hidden text-[#d1d5db] text-[10px] font-medium tracking-wider opacity-80 group-hover:text-[#f59e0b] group-hover:opacity-100 transition-all duration-300 text-center">
-                SCROLL
-              </span>
-            </div>
-          </button>
+            </button>
           </div>
         </section>
 
