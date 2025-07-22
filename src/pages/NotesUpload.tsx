@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Upload, FileText, Star, CheckCircle } from 'lucide-react';
-import { uploadToGitHub, validateFile } from '../lib/github';
+import React, { useState, useEffect } from 'react';
+import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { uploadWithFallback, checkUploadStatus } from '../lib/uploadService';
+import { validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
 // Database operations now handled through API route
 
@@ -24,6 +25,26 @@ const NotesUpload = () => {
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [githubUrl, setGithubUrl] = useState('');
+  const [uploadStatus, setUploadStatus] = useState({ github: false, local: true, message: '' });
+  const [uploadMethod, setUploadMethod] = useState<string>('');
+
+  // Check upload status on component mount
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const status = await checkUploadStatus();
+        setUploadStatus(status);
+      } catch (error) {
+        console.error('Failed to check upload status:', error);
+        setUploadStatus({ 
+          github: false, 
+          local: true, 
+          message: 'Unable to check upload status. Using fallback service.' 
+        });
+      }
+    };
+    checkStatus();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,11 +93,19 @@ const NotesUpload = () => {
         setUploadProgress(progress);
       }, 200);
 
-      // Upload file to GitHub
+      // Upload file using fallback service
       const fileExtension = formData.file.name.split('.').pop();
       const sanitizedTitle = formData.title.replace(/\s+/g, '_');
       const githubPath = `notes/${formData.branch}/${formData.semester}/${sanitizedTitle}.${fileExtension}`;
-      const newGithubUrl = await uploadToGitHub(formData.file, githubPath);
+      
+      const uploadResult = await uploadWithFallback(formData.file, githubPath);
+      
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Upload failed');
+      }
+      
+      const newGithubUrl = uploadResult.url!;
+      setUploadMethod(uploadResult.method || 'unknown');
 
       if (progressIntervalId) clearInterval(progressIntervalId);
       setUploadProgress(100);
@@ -167,9 +196,19 @@ const NotesUpload = () => {
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
             Upload Your Notes
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 mb-4">
             Share your knowledge with others and earn points - No login required!
           </p>
+          
+          {/* Upload Status Indicator */}
+          <div className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-50 border border-gray-200">
+            {uploadStatus.github ? (
+              <Wifi className="h-4 w-4 text-green-500 mr-2" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-orange-500 mr-2" />
+            )}
+            <span className="text-sm text-gray-600">{uploadStatus.message}</span>
+          </div>
         </div>
 
         {/* Failure Message */}
@@ -214,7 +253,17 @@ const NotesUpload = () => {
             <div className="bg-white rounded-lg p-8 shadow-2xl max-w-sm w-full text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Successful!</h2>
-              <p className="text-gray-600 mb-4">Your notes have been uploaded to GitHub.</p>
+              <p className="text-gray-600 mb-4">
+                Your notes have been uploaded successfully{uploadMethod === 'github' ? ' to GitHub' : ' using our secure service'}.
+              </p>
+              {uploadMethod === 'local' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 text-blue-500 mr-2" />
+                    <span className="text-sm text-blue-700">Note: Using fallback upload service due to GitHub connectivity issues.</span>
+                  </div>
+                </div>
+              )}
               <div className="bg-gray-100 rounded-lg p-3 mb-4">
                 <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
                   {githubUrl}
