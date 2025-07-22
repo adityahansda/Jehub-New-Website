@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
@@ -63,6 +63,10 @@ type Note = {
   downloads: number;
   likes: number;
   points: number;
+  views: number;
+  reports: number;
+  fileSize: number | null;
+  noteType: 'free' | 'premium';
   degree: string;
 };
 
@@ -77,6 +81,15 @@ const NotesDownload = () => {
     subject: '',
     degree: ''
   });
+
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [downloadPopup, setDownloadPopup] = useState<{
     show: boolean;
@@ -319,17 +332,24 @@ const NotesDownload = () => {
   };
 
   const handleShare = (note: Note) => {
+    const shareUrl = `${window.location.origin}/notes-preview/${note.id}/${encodeURIComponent(note.title)}`;
+    const shareText = `${note.title}\n\nThis note is downloaded from Jharkhand Engineer's Hub. You can join the amazing community:\n• Telegram Group: [Link]\n• WhatsApp Group: [Link]\n\nCheck it out: ${shareUrl}`;
+    
     if (navigator.share) {
       navigator.share({
         title: note.title,
-        text: note.description,
-        url: `${window.location.origin}/notes-preview/${note.id}`,
+        text: shareText,
+        url: shareUrl,
       });
     } else {
       // Fallback: copy to clipboard
-      const shareUrl = `${window.location.origin}/notes-preview/${note.id}`;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Link copied to clipboard!');
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Link with message copied to clipboard!');
+      }).catch(() => {
+        // If clipboard fails, just copy the URL
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Link copied to clipboard!');
+        });
       });
     }
   };
@@ -551,39 +571,57 @@ const NotesDownload = () => {
                     }}
                     layout
                   >
-                  <div className="p-4 sm:p-5 flex flex-col h-full">
+                  <div className="p-4 sm:p-5 flex flex-col h-full relative">
+                    {/* Badges - Top Corner */}
+                    <div className="absolute top-2 right-2 z-10 flex gap-2">
+                      {/* Note Type Badge */}
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        note.noteType === 'premium' 
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {note.noteType || 'FREE'}
+                      </span>
+                      {/* Points Badge */}
+                      <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        {note.points} PTS
+                      </span>
+                    </div>
+
                     {/* Header Section */}
                     <motion.div 
-                      className="flex items-start justify-between mb-4"
+                      className="mb-4 pr-20"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                          {note.title}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-600 gap-2">
-                          <User className="h-4 w-4 mr-1 flex-shrink-0" />
-                          <span className="truncate">{note.uploader}</span>
-                          <Calendar className="h-4 w-4 mx-2 flex-shrink-0" />
-                          <span className="truncate">{new Date(note.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                        {note.title}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-600 gap-2 mb-1">
+                        <User className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="truncate">{note.uploader}</span>
+                        <Calendar className="h-4 w-4 mx-2 flex-shrink-0" />
+                        <span className="truncate">{new Date(note.uploadDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      </div>
+                      {/* File Size */}
+                      {note.fileSize && note.fileSize > 0 && (
+                        <div className="flex items-center text-xs text-gray-500">
+                          <FileText className="h-3 w-3 mr-1" />
+                          <span>{formatFileSize(note.fileSize)}</span>
                         </div>
-                      </div>
-                      <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                        {note.points} pts
-                      </div>
+                      )}
                     </motion.div>
 
-                    {/* Description */}
-                    <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                      {note.description}
-                    </p>
+                      {/* Description */}
+                      <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                        {note.description}
+                      </p>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                        {note.branch}
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                          {note.branch}
                       </span>
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
                         {note.semester} Sem

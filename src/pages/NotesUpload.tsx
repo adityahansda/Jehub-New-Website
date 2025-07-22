@@ -15,6 +15,7 @@ const NotesUpload = () => {
     tags: '',
     authorName: '',
     degree: '',
+    noteType: 'free', // Default to free
     file: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +37,15 @@ const NotesUpload = () => {
         e.target.value = ''; // Reset file input
       }
     }
+  };
+
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,6 +96,8 @@ const NotesUpload = () => {
         authorName: formData.authorName,
         githubUrl: newGithubUrl,
         fileName: formData.file.name,
+        fileSize: formData.file.size,
+        noteType: formData.noteType,
         userIp: ip,
         degree: formData.degree
       };
@@ -117,6 +129,7 @@ const NotesUpload = () => {
         tags: '',
         authorName: '',
         degree: '',
+        noteType: 'free',
         file: null
       });
 
@@ -328,6 +341,43 @@ const NotesUpload = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Describe what your notes cover, key topics, and any special features"
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="noteType" className="block text-sm font-medium text-gray-700 mb-2">
+                    Note Type
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="noteType"
+                        value="free"
+                        checked={formData.noteType === 'free'}
+                        onChange={(e) => setFormData({ ...formData, noteType: e.target.value as 'free' | 'premium' })}
+                        className="mr-2"
+                      />
+                      <span className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                        🆓 FREE
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="noteType"
+                        value="premium"
+                        checked={formData.noteType === 'premium'}
+                        onChange={(e) => setFormData({ ...formData, noteType: e.target.value as 'free' | 'premium' })}
+                        className="mr-2"
+                      />
+                      <span className="flex items-center bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        ⭐ PREMIUM
+                      </span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Free notes are accessible to everyone. Premium notes may have additional features.
+                  </p>
                 </div>
 
                 <div>
