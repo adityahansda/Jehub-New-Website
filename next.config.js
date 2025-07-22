@@ -3,36 +3,16 @@ const nextConfig = {
   // Enable strict mode for better development experience
   reactStrictMode: true,
   
+  // Allow cross-origin requests from specific origins in development
+  allowedDevOrigins: ['10.67.121.140'],
+  
   webpack: (config, { isServer, dev }) => {
-    // Handle PDF.js worker
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        canvas: false,
-        encoding: false,
-        fs: false,
-        path: false,
-        os: false,
-        crypto: false,
-        stream: false,
-        util: false,
-        url: false,
-        zlib: false,
-      };
-    }
-
-    // Optimize for development - remove problematic devtool override
-    // Next.js handles devtool configuration optimally by default
-    // if (dev) {
-    //   config.devtool = 'cheap-module-source-map';
-    // }
-
     return config;
   },
   
   // External packages for server components
   experimental: {
-    serverComponentsExternalPackages: ['pdfjs-dist'],
+    serverComponentsExternalPackages: [],
   },
   
   images: {
@@ -71,6 +51,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+
 };
 
 module.exports = nextConfig;

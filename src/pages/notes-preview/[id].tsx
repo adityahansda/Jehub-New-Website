@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-
-const PDFViewer = dynamic(() => import('../../components/PDFViewer'), {
-  ssr: false,
-  loading: () => <p>Loading PDF viewer...</p>
-});
 import {
   Download,
   Eye,
@@ -20,29 +14,26 @@ import {
   Tag,
   Star,
   ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  FileText,
   ThumbsUp,
   MessageCircle,
   CheckCircle,
   X,
   XCircle,
   AlertCircle,
-  Loader
+  Loader,
+  FileText
 } from 'lucide-react';
 import { databases } from '../../lib/appwrite';
 import { Query } from 'appwrite';
 import { checkUrlStatus } from '../../lib/pdfValidation';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import GoogleDocsPDFViewer from '../../components/GoogleDocsPDFViewer';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
   if (!url) return url;
 
-  console.log('Converting URL to download:', url);
+  // console.log('Converting URL to download:', url); // Suppressed for production
 
   // Handle raw.githubusercontent.com URLs
   if (url.includes('raw.githubusercontent.com')) {
@@ -55,98 +46,30 @@ function convertToDownloadUrl(url: string): string {
       const branch = parts[2];
       const filePath = parts.slice(3).join('/');
       const downloadUrl = `https://github.com/${user}/${repo}/raw/${branch}/${filePath}`;
-      console.log('Converted to download URL:', downloadUrl);
+      // console.log('Converted to download URL:', downloadUrl); // Suppressed for production
       return downloadUrl;
     }
   }
 
   // Handle github.com/user/repo/raw/ URLs
   if (url.includes('github.com') && url.includes('/raw/')) {
-    console.log('Already a GitHub raw URL for download:', url);
+    // console.log('Already a GitHub raw URL for download:', url); // Suppressed for production
     return url;
   }
 
   // Handle github.com/user/repo/blob/ URLs (convert to raw for download)
   if (url.includes('github.com') && url.includes('/blob/')) {
     const downloadUrl = url.replace('/blob/', '/raw/');
-    console.log('Converted blob to raw URL:', downloadUrl);
+    // console.log('Converted blob to raw URL:', downloadUrl); // Suppressed for production
     return downloadUrl;
   }
 
   // If it's already a download URL or other format, return as is
-  console.log('URL unchanged:', url);
+  // console.log('URL unchanged:', url); // Suppressed for production
   return url;
 }
 
 
-// Transform download URLs to viewable URLs
-function transformUrlForViewing(url: string): string {
-  if (!url) return url;
-
-  console.log('Transforming URL for viewing:', url);
-
-  // Handle GitHub URLs
-  if (url.includes('github.com')) {
-    // Convert GitHub blob URL to raw URL for viewing
-    if (url.includes('/blob/')) {
-      const rawUrl = url.replace('/blob/', '/raw/');
-      console.log('Converted blob to raw for viewing:', rawUrl);
-      return rawUrl;
-    }
-    // If it's already a raw URL, return as is
-    if (url.includes('/raw/')) {
-      console.log('Already a raw URL for viewing:', url);
-      return url;
-    }
-  }
-
-  // Handle raw.githubusercontent.com URLs (already good for viewing)
-  if (url.includes('raw.githubusercontent.com')) {
-    console.log('Raw githubusercontent URL for viewing:', url);
-    return url;
-  }
-
-  // Handle Google Drive URLs
-  if (url.includes('drive.google.com')) {
-    // Extract file ID from various Google Drive URL formats
-    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) ||
-      url.match(/id=([a-zA-Z0-9-_]+)/) ||
-      url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-
-    if (fileIdMatch && fileIdMatch[1]) {
-      const fileId = fileIdMatch[1];
-      return `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-  }
-
-  // Handle Dropbox URLs
-  if (url.includes('dropbox.com')) {
-    // Convert Dropbox share URL to direct link
-    if (url.includes('?dl=0')) {
-      return url.replace('?dl=0', '?dl=1');
-    }
-    if (!url.includes('?dl=')) {
-      return url + '?dl=1';
-    }
-  }
-
-  // Handle OneDrive URLs
-  if (url.includes('1drv.ms') || url.includes('onedrive.live.com')) {
-    // OneDrive requires specific embedding format
-    if (url.includes('1drv.ms')) {
-      // For shortened OneDrive URLs, we'll try to use them directly
-      return url;
-    }
-  }
-
-  // Add CORS proxy for external URLs if needed
-  if (url.startsWith('http') && !url.includes('localhost') && !url.includes('127.0.0.1')) {
-    // Try to load directly first, fallback to CORS proxy if needed
-    return url;
-  }
-
-  return url;
-}
 
 
 type Note = {
@@ -199,17 +122,16 @@ const NotesPreview = () => {
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
 
-  // PDF-related state
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  
-  // Function to validate PDF URL
+  // PDF validation function
   const validatePdfUrl = async (url: string) => {
+    if (!url) return;
+    
     setPdfValidationStatus('checking');
     try {
-      const result = await checkUrlStatus(url);
-      setPdfValidationStatus(result.status);
+      const validation = await checkUrlStatus(url);
+      setPdfValidationStatus(validation.status);
       
-      if (result.status === 'deleted') {
+      if (validation.status === 'deleted') {
         setShowDeletedMessage(true);
       }
     } catch (error) {
@@ -225,6 +147,8 @@ const NotesPreview = () => {
 
       try {
         setLoading(true);
+        setError(''); // Clear any previous errors
+        
         const response = await databases.getDocument(
           process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
           process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
@@ -251,19 +175,23 @@ const NotesPreview = () => {
 
         setNote(fetchedNote);
 
-        // Set PDF URL if available and transform for viewing
+        // Validate PDF URL if available
         if (fetchedNote.githubUrl) {
-          const viewableUrl = transformUrlForViewing(fetchedNote.githubUrl);
-          console.log('Original URL:', fetchedNote.githubUrl);
-          console.log('Transformed URL:', viewableUrl);
-          setPdfUrl(viewableUrl);
-          
-          // Validate PDF URL
           validatePdfUrl(fetchedNote.githubUrl);
         }
-      } catch (err) {
-        setError('Failed to fetch note details. Please try again later.');
+      } catch (err: any) {
         console.error('Error fetching note:', err);
+        
+        // Provide more specific error messages
+        if (err.code === 404) {
+          setError('Note not found. It may have been removed or the link is incorrect.');
+        } else if (err.code === 500) {
+          setError('Server error. Please try again in a few moments.');
+        } else if (err.message?.includes('Network')) {
+          setError('Network error. Please check your connection and try again.');
+        } else {
+          setError('Failed to fetch note details. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
@@ -569,14 +497,14 @@ const NotesPreview = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
           {/* Main Preview Area */}
           <div className="lg:col-span-3">
             {/* Note Header */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
-              <div className="flex items-start justify-between mb-4">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mb-4 lg:mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4 gap-4">
                 <div className="flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
                     {note.title}
                   </h1>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
@@ -624,58 +552,49 @@ const NotesPreview = () => {
                     ))}
                   </div>
                 </div>
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-lg font-bold">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start">
                   {note.points} pts
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={handleDownload}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto"
                 >
                   <Download className="h-5 w-5" />
-                  Download Notes
+                  <span className="hidden sm:inline">Download Notes</span>
+                  <span className="sm:hidden">Download</span>
                 </button>
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isLiked
-                    ? 'bg-red-100 text-red-700 border border-red-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
-                    }`}
-                >
-                  <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                  {isLiked ? 'Liked' : 'Like'}
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-gray-200"
-                >
-                  <Share2 className="h-5 w-5" />
-                  Share
-                </button>
-                <button
-                  onClick={handleReport}
-                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-gray-200"
-                >
-                  <Flag className="h-5 w-5" />
-                  Report
-                </button>
-              </div>
-            </div>
-
-            {/* Debug Info */}
-            {note && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h4 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info:</h4>
-                <div className="text-xs text-yellow-700 space-y-1">
-                  <p><strong>Original GitHub URL:</strong> <span className="break-all">{note.githubUrl}</span></p>
-                  <p><strong>PDF URL for viewing:</strong> <span className="break-all">{pdfUrl}</span></p>
-                  <p><strong>Download URL would be:</strong> <span className="break-all">{note.githubUrl ? convertToDownloadUrl(note.githubUrl) : 'N/A'}</span></p>
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={handleLike}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 flex-1 sm:flex-initial ${isLiked
+                      ? 'bg-red-100 text-red-700 border border-red-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200'
+                      }`}
+                  >
+                    <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                    <span className="hidden sm:inline">{isLiked ? 'Liked' : 'Like'}</span>
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 border border-gray-200 flex-1 sm:flex-initial"
+                  >
+                    <Share2 className="h-5 w-5" />
+                    <span className="hidden sm:inline">Share</span>
+                  </button>
+                  <button
+                    onClick={handleReport}
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-gray-200 flex-1 sm:flex-initial"
+                  >
+                    <Flag className="h-5 w-5" />
+                    <span className="hidden sm:inline">Report</span>
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Deleted PDF Message */}
             {showDeletedMessage && (
@@ -714,15 +633,15 @@ const NotesPreview = () => {
             {pdfValidationStatus === 'checking' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">
-                  <LoadingSpinner size="small" className="mr-2" />
+                  <Loader className="animate-spin h-5 w-5 text-blue-600 mr-2" />
                   <span className="text-blue-800">Validating PDF availability...</span>
                 </div>
               </div>
             )}
 
             {/* PDF Preview */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mb-4 lg:mb-6">
+              <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
               {pdfValidationStatus === 'deleted' ? (
                 <div className="text-center py-8 text-red-500">
                   <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -732,25 +651,25 @@ const NotesPreview = () => {
                   <p className="text-red-700 mb-4">This PDF file has been deleted from GitHub and cannot be previewed.</p>
                   <p className="text-sm text-red-600">Contact the administrator for assistance.</p>
                 </div>
-              ) : pdfUrl ? (
-                <PDFViewer
-                  url={pdfUrl}
+              ) : note && note.githubUrl ? (
+                <GoogleDocsPDFViewer
+                  pdfUrl={note.githubUrl}
                   fileName={note.fileName}
                   onDownload={handleDownload}
                 />
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <FileText className="h-8 w-8 text-gray-400" />
+                    <Loader className="animate-spin h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No PDF Available</h3>
-                  <p className="text-gray-600">This note doesn&apos;t have a PDF file attached.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading PDF...</h3>
+                  <p className="text-gray-600">Please wait while we load the PDF.</p>
                 </div>
               )}
             </div>
 
             {/* Comments Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mt-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mt-4 lg:mt-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Comments ({comments.length})</h3>
                 <button
@@ -821,9 +740,9 @@ const NotesPreview = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 lg:space-y-6">
             {/* Quick Stats */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -846,7 +765,7 @@ const NotesPreview = () => {
             </div>
 
             {/* Uploader Info */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Uploader</h3>
               <div className="flex items-center gap-3 mb-4">
                 <Image
@@ -881,7 +800,7 @@ const NotesPreview = () => {
             </div>
 
             {/* Related Notes */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">Related Notes</h3>
               <div className="space-y-4">
                 {relatedNotes.map((relatedNote) => (
