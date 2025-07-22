@@ -334,6 +334,12 @@ const NotesDownload = () => {
     }
   };
 
+  const handleViewPDF = (note: Note) => {
+    // Redirect to notes preview page
+    window.open(`/notes-preview/${note.id}`, '_blank');
+  };
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Page Header */}
@@ -594,7 +600,7 @@ const NotesDownload = () => {
                     <div className="flex-grow"></div>
                     
                     <div className="flex flex-col space-y-2">
-                      {/* Stats Row */}
+{/* Stats Row */}
                       <div className="flex items-center justify-between text-sm mb-2">
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center text-gray-600">
@@ -632,13 +638,13 @@ const NotesDownload = () => {
                       
                       {/* Action Buttons Row */}
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <Link
-                          href={`/notes-preview/${note.id}`}
+                        <button
+                          onClick={() => handleViewPDF(note)}
                           className="flex-1 flex items-center justify-center px-3 py-2 text-blue-600 border-2 border-blue-300 hover:bg-blue-50 hover:border-blue-400 rounded-lg transition-all duration-200 text-sm font-semibold"
                         >
                           <Eye className="h-4 w-4 mr-1" />
                           Preview
-                        </Link>
+                        </button>
                         <button
                           onClick={() => handleDownload(note.id)}
                           className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-xl"
@@ -746,6 +752,7 @@ const NotesDownload = () => {
             </div>
           </div>
         )}
+
       </div>
       
       {/* Custom Styles */}
