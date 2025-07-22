@@ -47,7 +47,7 @@ export const checkGitHubCredentials = async (): Promise<boolean> => {
     if (!token) return false;
     
     const testOctokit = new Octokit({ auth: token });
-    await testOctokit.rest.user.getAuthenticated();
+    await testOctokit.rest.users.getAuthenticated();
     return true;
   } catch (error) {
     console.error('GitHub credentials check failed:', error);
