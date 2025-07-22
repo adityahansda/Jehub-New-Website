@@ -41,10 +41,19 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
     // Optimization settings
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
+    // Allow SVG images from DiceBear
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   // Reduce bundle size
