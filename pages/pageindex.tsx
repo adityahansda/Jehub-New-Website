@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { GetStaticProps } from 'next';
+import fs from 'fs';
+import path from 'path';
 import { 
   Home, 
   User, 
@@ -19,49 +22,138 @@ import {
   ExternalLink,
   Globe,
   MessageSquare,
-  Briefcase
+  Briefcase,
+  Code,
+  Database,
+  Monitor,
+  Book,
+  Star,
+  Package,
+  Search
 } from 'lucide-react';
 
-const pages = [
-  // Core Pages
-  { id: 1, name: 'Home', path: '/', category: 'Core', description: 'Main landing page with latest updates', icon: Home, status: 'Active' },
-  { id: 2, name: 'About', path: '/about', category: 'Core', description: 'Learn about JEHUB and our mission', icon: User, status: 'Active' },
-  { id: 3, name: 'Blog', path: '/blog', category: 'Content', description: 'Latest articles and updates', icon: FileText, status: 'Active' },
-  
-  // Academic Pages
-  { id: 4, name: 'Notes Download', path: '/notes-download', category: 'Academic', description: 'Download study materials and notes', icon: Download, status: 'Active' },
-  { id: 5, name: 'Notes Upload', path: '/notes-upload', category: 'Academic', description: 'Upload notes and study materials', icon: Upload, status: 'Active' },
-  { id: 6, name: 'Notes Request', path: '/notes-request', category: 'Academic', description: 'Request specific study materials', icon: HelpCircle, status: 'Active' },
-  
-  // Community Pages
-  { id: 7, name: 'Groups', path: '/groups', category: 'Community', description: 'Join college groups and communities', icon: Users, status: 'Active' },
-  { id: 8, name: 'Events', path: '/events', category: 'Community', description: 'Upcoming events and activities', icon: Calendar, status: 'Active' },
-  { id: 9, name: 'Team', path: '/team', category: 'Community', description: 'Meet our team members', icon: Users, status: 'Active' },
-  { id: 10, name: 'Leaderboard', path: '/leaderboard', category: 'Community', description: 'Top contributors and achievers', icon: Trophy, status: 'Active' },
-  
-  // User Management
-  { id: 11, name: 'Login', path: '/login', category: 'Auth', description: 'User login page', icon: LogIn, status: 'Active' },
-  { id: 12, name: 'Sign Up', path: '/signup', category: 'Auth', description: 'Create new account', icon: UserCheck, status: 'Active' },
-  { id: 13, name: 'Profile', path: '/profile', category: 'User', description: 'User profile and settings', icon: User, status: 'Active' },
-  { id: 14, name: 'Join Team', path: '/join-team', category: 'User', description: 'Apply to join the JEHUB team', icon: UserPlus, status: 'Active' },
-  
-  // Career Pages
-  { id: 15, name: 'Internships', path: '/internships', category: 'Career', description: 'Find internship opportunities', icon: Briefcase, status: 'Active' },
-  { id: 16, name: 'Wishlist Register', path: '/wishlist-register', category: 'Career', description: 'Register for opportunity updates', icon: MessageSquare, status: 'Active' },
-  
-  // Admin Pages
-  { id: 17, name: 'Admin Dashboard', path: '/admin-dashboard', category: 'Admin', description: 'Administrative dashboard', icon: Shield, status: 'Restricted' },
-  { id: 18, name: 'Admin PDF Validation', path: '/admin-pdf-validation', category: 'Admin', description: 'PDF validation and management', icon: FileText, status: 'Restricted' },
-  { id: 19, name: 'Team Dashboard', path: '/team-dashboard', category: 'Admin', description: 'Team management dashboard', icon: Settings, status: 'Restricted' },
-  { id: 20, name: 'Old Team Members', path: '/old-team-members', category: 'Admin', description: 'Former team members archive', icon: Users, status: 'Restricted' },
-  
-  // Demo/Test Pages
-  { id: 21, name: 'Mobile Demo', path: '/mobile-demo', category: 'Demo', description: 'Mobile interface demonstration', icon: Globe, status: 'Demo' },
-  { id: 22, name: 'Mobile Test', path: '/mobile-test', category: 'Demo', description: 'Mobile testing interface', icon: Globe, status: 'Demo' },
-  { id: 23, name: 'Coming Soon', path: '/coming-soon', category: 'Demo', description: 'Coming soon placeholder page', icon: Globe, status: 'Demo' },
-];
 
-const PageIndex = () => {
+// Category mapping for different page types
+const getCategoryForPage = (pageName: string, path: string) => {
+  const name = pageName.toLowerCase();
+  const pathLower = path.toLowerCase();
+  
+  // API routes
+  if (pathLower.includes('/api/')) return 'API';
+  
+  // Admin pages
+  if (name.includes('admin') || name.includes('dashboard') || name.includes('validation')) return 'Admin';
+  
+  // Auth pages
+  if (name.includes('login') || name.includes('signup') || name.includes('verification') || name.includes('access-denied')) return 'Auth';
+  
+  // User pages
+  if (name.includes('profile') || name.includes('avatar') || name.includes('join')) return 'User';
+  
+  // Academic pages
+  if (name.includes('notes') || name.includes('pdf')) return 'Academic';
+  
+  // Community pages
+  if (name.includes('team') || name.includes('groups') || name.includes('events') || name.includes('leaderboard')) return 'Community';
+  
+  // Career pages
+  if (name.includes('internship') || name.includes('wishlist')) return 'Career';
+  
+  // Content pages
+  if (name.includes('blog') || name.includes('preview')) return 'Content';
+  
+  // Demo/Test pages
+  if (name.includes('demo') || name.includes('test') || name.includes('mobile') || name.includes('coming')) return 'Demo';
+  
+  // Core pages
+  if (name === 'home' || name.includes('about') || name.includes('index')) return 'Core';
+  
+  return 'Other';
+};
+
+// Status mapping for different page types
+const getStatusForPage = (pageName: string, path: string) => {
+  const name = pageName.toLowerCase();
+  
+  if (name.includes('admin') || name.includes('dashboard')) return 'Restricted';
+  if (name.includes('demo') || name.includes('test') || name.includes('coming') || name.includes('mobile')) return 'Demo';
+  if (name.includes('verification') && name.includes('failed')) return 'Error';
+  if (name.includes('access') && name.includes('denied')) return 'Error';
+  
+  return 'Active';
+};
+
+// Description mapping for different page types
+const getDescriptionForPage = (pageName: string, path: string) => {
+  const name = pageName.toLowerCase();
+  const pathLower = path.toLowerCase();
+  
+  // Specific descriptions
+  const descriptions: { [key: string]: string } = {
+    'home': 'Main landing page with latest updates',
+    'about': 'Learn about JEHUB and our mission',
+    'blog': 'Latest articles and updates',
+    'login': 'User login page',
+    'signup': 'Create new account',
+    'profile': 'User profile and settings',
+    'team': 'Meet our team members',
+    'join-team': 'Apply to join the JEHUB team',
+    'events': 'Upcoming events and activities',
+    'groups': 'Join college groups and communities',
+    'notes-download': 'Download study materials and notes',
+    'notes-upload': 'Upload notes and study materials',
+    'notes-request': 'Request specific study materials',
+    'internships': 'Find internship opportunities',
+    'leaderboard': 'Top contributors and achievers',
+    'admin-pdf-validation': 'PDF validation and management',
+    'team-dashboard': 'Team management dashboard',
+    'old-team-members': 'Former team members archive',
+    'mobile-demo': 'Mobile interface demonstration',
+    'mobile-test': 'Mobile testing interface',
+    'coming-soon': 'Coming soon placeholder page',
+    'avatar-customizer': 'Customize your profile avatar',
+    'wishlist-register': 'Register for opportunity updates',
+    'pageindex': 'Complete directory of all pages',
+    'access-denied': 'Access denied error page',
+    'verification-failed': 'Verification failed error page'
+  };
+  
+  // Check for exact matches first
+  const exactMatch = descriptions[name] || descriptions[path.substring(1)];
+  if (exactMatch) return exactMatch;
+  
+  // API routes
+  if (pathLower.includes('/api/')) {
+    if (name.includes('notes')) return 'API endpoint for notes management';
+    if (name.includes('comments')) return 'API endpoint for comments';
+    if (name.includes('upload')) return 'API endpoint for file uploads';
+    if (name.includes('ip')) return 'API endpoint for IP information';
+    return 'API endpoint';
+  }
+  
+  // Generic descriptions based on patterns
+  if (name.includes('preview')) return 'Preview content and documents';
+  if (name.includes('test')) return 'Testing and development page';
+  if (name.includes('pdf')) return 'PDF document management';
+  
+  return `${pageName} page - automatically indexed`;
+};
+
+interface PageData {
+  id: number;
+  name: string;
+  path: string;
+  category: string;
+  description: string;
+icon: string;
+  status: string;
+}
+
+interface PageIndexProps {
+  pages: PageData[];
+}
+
+const PageIndex: React.FC<PageIndexProps> = ({ pages }) => {
   const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState('All');
 
@@ -97,7 +189,9 @@ const PageIndex = () => {
     }
   };
 
-  const categories = ['All', 'Core', 'Academic', 'Community', 'Auth', 'User', 'Career', 'Admin', 'Demo', 'Content'];
+  // Dynamically generate categories from the pages
+  const allCategories = Array.from(new Set(pages.map(p => p.category))).sort();
+  const categories = ['All', ...allCategories];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -158,7 +252,7 @@ const PageIndex = () => {
         {/* Pages Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPages.map((page) => {
-            const IconComponent = page.icon;
+const IconComponent = iconMap[page.icon] || Package;
             return (
               <div key={page.id} className="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300 group overflow-hidden">
                 <div className="p-6">
@@ -241,6 +335,188 @@ const PageIndex = () => {
       </div>
     </div>
   );
+};
+
+// Map of icon keys to icon components
+const iconMap: Record<string, any> = {
+  home: Home,
+  user: User,
+  settings: Settings,
+  fileText: FileText,
+  calendar: Calendar,
+  users: Users,
+  download: Download,
+  upload: Upload,
+  helpCircle: HelpCircle,
+  userPlus: UserPlus,
+  trophy: Trophy,
+  logIn: LogIn,
+  userCheck: UserCheck,
+  shield: Shield,
+  eye: Eye,
+  externalLink: ExternalLink,
+  globe: Globe,
+  messageSquare: MessageSquare,
+  briefcase: Briefcase,
+  code: Code,
+  database: Database,
+  monitor: Monitor,
+  book: Book,
+  star: Star,
+  package: Package,
+  search: Search
+};
+
+// Function to get icon key for different page types
+const getIconKeyForPage = (pageName: string, path: string) => {
+  const name = pageName.toLowerCase();
+  const pathLower = path.toLowerCase();
+  
+  // Specific page mappings
+  if (name === 'home' || path === '/') return 'home';
+  if (name.includes('about')) return 'user';
+  if (name.includes('blog')) return 'fileText';
+  if (name.includes('login')) return 'logIn';
+  if (name.includes('signup') || name.includes('sign up')) return 'userCheck';
+  if (name.includes('profile')) return 'user';
+  if (name.includes('team') && !name.includes('join')) return 'users';
+  if (name.includes('join')) return 'userPlus';
+  if (name.includes('events')) return 'calendar';
+  if (name.includes('groups')) return 'users';
+  if (name.includes('notes') && name.includes('download')) return 'download';
+  if (name.includes('notes') && name.includes('upload')) return 'upload';
+  if (name.includes('notes') && name.includes('request')) return 'helpCircle';
+  if (name.includes('internship')) return 'briefcase';
+  if (name.includes('leaderboard') || name.includes('trophy')) return 'trophy';
+  if (name.includes('admin') || name.includes('dashboard')) return 'shield';
+  if (name.includes('mobile') || name.includes('demo')) return 'monitor';
+  if (name.includes('coming') || name.includes('soon')) return 'globe';
+  if (name.includes('avatar') || name.includes('customizer')) return 'user';
+  if (name.includes('wishlist')) return 'messageSquare';
+  if (name.includes('pdf') || name.includes('validation')) return 'fileText';
+  if (name.includes('test')) return 'code';
+  if (name.includes('access') && name.includes('denied')) return 'shield';
+  if (name.includes('verification') && name.includes('failed')) return 'shield';
+  if (name.includes('preview')) return 'eye';
+  if (name.includes('pageindex')) return 'search';
+  
+  // Default icon based on category inference
+  if (pathLower.includes('/api/')) return 'database';
+  return 'package'; // Default icon
+};
+
+// Get static props to scan pages directory at build time
+export const getStaticProps: GetStaticProps = async () => {
+  const pagesDirectory = path.join(process.cwd(), 'pages');
+  
+  const scanDirectory = (dir: string, basePath: string = ''): PageData[] => {
+    const items = fs.readdirSync(dir, { withFileTypes: true });
+    const pages: PageData[] = [];
+    let idCounter = 1;
+    
+    for (const item of items) {
+      const itemPath = path.join(dir, item.name);
+      const relativePath = path.join(basePath, item.name);
+      
+      if (item.isDirectory()) {
+        // Skip certain directories
+        if (['api'].includes(item.name)) {
+          // For API directory, we'll handle it separately
+          if (item.name === 'api') {
+            const apiFiles = fs.readdirSync(itemPath, { withFileTypes: true });
+            for (const apiFile of apiFiles) {
+              if (apiFile.isFile() && apiFile.name.endsWith('.ts')) {
+                const apiName = apiFile.name.replace('.ts', '');
+                const apiPath = `/api/${apiName}`;
+                const pageName = apiName.split('-').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ') + ' API';
+                
+                pages.push({
+                  id: idCounter++,
+                  name: pageName,
+                  path: apiPath,
+                  category: getCategoryForPage(pageName, apiPath),
+                  description: getDescriptionForPage(apiName, apiPath),
+icon: getIconKeyForPage(pageName, apiPath),
+                  status: getStatusForPage(pageName, apiPath)
+                });
+              }
+            }
+          }
+          continue;
+        }
+        // Recursively scan subdirectories
+        const subPages = scanDirectory(itemPath, relativePath);
+        pages.push(...subPages);
+      } else if (item.isFile()) {
+        // Process TypeScript/JavaScript files
+        if (item.name.endsWith('.tsx') || item.name.endsWith('.ts')) {
+          // Skip special Next.js files
+          if (['_app.tsx', '_document.tsx', '404.tsx', '500.tsx'].includes(item.name)) {
+            continue;
+          }
+          
+          const fileName = item.name.replace(/\.(tsx|ts)$/, '');
+          let pageName = fileName;
+          let pagePath = '';
+          
+          // Handle special cases
+          if (fileName === 'index') {
+            if (basePath === '') {
+              pageName = 'Home';
+              pagePath = '/';
+            } else {
+              pageName = basePath.split('/').pop() || 'Index';
+              pagePath = `/${basePath}`;
+            }
+          } else if (fileName.startsWith('[') && fileName.endsWith(']')) {
+            // Dynamic route
+            const paramName = fileName.slice(1, -1);
+            pageName = `Dynamic ${paramName.charAt(0).toUpperCase() + paramName.slice(1)}`;
+            pagePath = basePath ? `/${basePath}/${fileName}` : `/${fileName}`;
+          } else {
+            // Regular page
+            pageName = fileName.split('-').map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            pagePath = basePath ? `/${basePath}/${fileName}` : `/${fileName}`;
+          }
+          
+          pages.push({
+            id: idCounter++,
+            name: pageName,
+            path: pagePath,
+            category: getCategoryForPage(pageName, pagePath),
+            description: getDescriptionForPage(fileName, pagePath),
+icon: getIconKeyForPage(pageName, pagePath),
+            status: getStatusForPage(pageName, pagePath)
+          });
+        }
+      }
+    }
+    
+    return pages;
+  };
+  
+  const pages = scanDirectory(pagesDirectory);
+  
+  // Sort pages by category and then by name
+  pages.sort((a, b) => {
+    if (a.category === b.category) {
+      return a.name.localeCompare(b.name);
+    }
+    return a.category.localeCompare(b.category);
+  });
+  
+  return {
+    props: {
+      pages
+    },
+    // Regenerate the page every 60 seconds in development
+    // Remove this in production or adjust the interval as needed
+    revalidate: process.env.NODE_ENV === 'development' ? 60 : false
+  };
 };
 
 export default PageIndex;

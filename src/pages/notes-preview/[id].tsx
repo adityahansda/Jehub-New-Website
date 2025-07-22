@@ -21,13 +21,28 @@ import {
   XCircle,
   AlertCircle,
   Loader,
-  FileText
+  FileText,
+  Palette
 } from 'lucide-react';
 import { databases } from '../../lib/appwrite';
 import { Query } from 'appwrite';
 import { checkUrlStatus } from '../../lib/pdfValidation';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import GoogleDocsPDFViewer from '../../components/GoogleDocsPDFViewer';
+import EnhancedCommentsSection from '../../components/EnhancedCommentsSection';
+import ReportModal from '../../components/ReportModal';
+import ReportsSection from '../../components/ReportsSection';
+
+// Format file size in human-readable format
+function formatFileSize(bytes: number | null): string {
+  if (!bytes || bytes === 0) return 'Unknown';
+  
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const size = bytes / Math.pow(1024, i);
+  
+  return `${Math.round(size * 100) / 100} ${sizes[i]}`;
+}
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -87,7 +102,17 @@ type Note = {
   downloads: number;
   likes: number;
   points: number;
+  views: number;
+  reports: number;
+  fileSize: number | null;
+  noteType: 'free' | 'premium';
   degree: string;
+  uploaderDetails?: {
+    name: string;
+    notesUploaded: number;
+    totalPoints: number;
+    memberSince: string;
+  };
 };
 
 const NotesPreview = () => {
@@ -169,11 +194,36 @@ const NotesPreview = () => {
           fileName: response.fileName,
           downloads: response.downloads,
           likes: response.likes,
-          points: response.points || 0,
-          degree: response.degree
+          points: response.points || 50,
+          views: response.views || 0,
+          reports: response.reports || 0,
+          fileSize: response.fileSize || null,
+          noteType: response.noteType || 'free',
+          degree: response.degree,
+          uploaderDetails: {
+            name: response.authorName,
+            notesUploaded: response.uploaderNotesCount || 0,
+            totalPoints: response.uploaderTotalPoints || 0,
+            memberSince: response.uploaderMemberSince || response.uploadDate
+          }
         };
 
         setNote(fetchedNote);
+
+        // Track view - increment view count
+        try {
+          await fetch(`/api/notes/${id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ action: 'increment_view' })
+          });
+          // Update local state with new view count
+          setNote(prev => prev ? { ...prev, views: prev.views + 1 } : null);
+        } catch (viewError) {
+          console.warn('Failed to track view:', viewError);
+        }
 
         // Validate PDF URL if available
         if (fetchedNote.githubUrl) {
@@ -201,25 +251,97 @@ const NotesPreview = () => {
   }, [id]);
 
 
-  // Mock comments
-  const comments = [
-    {
-      id: '1',
-      user: 'Sarah Chen',
-      avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      content: 'These notes are incredibly detailed! Really helped me understand the concepts better.',
-      timestamp: '2 hours ago',
-      likes: 5
-    },
-    {
-      id: '2',
-      user: 'Mike Davis',
-      avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      content: 'Perfect for exam preparation. The examples are very clear.',
-      timestamp: '1 day ago',
-      likes: 3
+  // Comments state
+  const [comments, setComments] = useState<any[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [userInfo, setUserInfo] = useState({
+    name: '',
+    email: ''
+  });
+
+  // Report modal and reports state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reports, setReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [submittingReport, setSubmittingReport] = useState(false);
+  const [showReports, setShowReports] = useState(false);
+
+  // For now, allow anyone to comment (no login required)
+  useEffect(() => {
+    // Set to true to allow anyone to comment
+    setIsLoggedIn(true);
+    
+    // Load user info from localStorage
+    const savedUserInfo = localStorage.getItem('guestUserInfo');
+    if (savedUserInfo) {
+      try {
+        setUserInfo(JSON.parse(savedUserInfo));
+      } catch (error) {
+        console.error('Error parsing saved user info:', error);
+      }
     }
-  ];
+  }, []);
+
+  // Fetch comments for the current note
+  const fetchComments = async () => {
+    if (!note?.id) return;
+
+    try {
+      setLoadingComments(true);
+      const response = await fetch(`/api/comments?noteId=${note.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+
+      const data = await response.json();
+      setComments(data.comments || []);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      // Optionally show error toast or notification
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  // Fetch comments when note is loaded
+  useEffect(() => {
+    if (note?.id) {
+      fetchComments();
+      fetchReports();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note?.id]);
+
+  // Fetch reports for the current note
+  const fetchReports = async () => {
+    if (!note?.id) return;
+
+    try {
+      setLoadingReports(true);
+      const response = await fetch(`/api/reports?noteId=${note.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports');
+      }
+
+      const data = await response.json();
+      // Map Appwrite document format to component format
+      const formattedReports = data.map((report: any) => ({
+        ...report,
+        id: report.$id || report.id
+      }));
+      setReports(formattedReports || []);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
 
   // Related notes state
   const [relatedNotes, setRelatedNotes] = useState<Note[]>([]);
@@ -255,6 +377,10 @@ const NotesPreview = () => {
           downloads: doc.downloads,
           likes: doc.likes,
           points: doc.points || 0,
+          views: doc.views || 0,
+          reports: doc.reports || 0,
+          fileSize: doc.fileSize || null,
+          noteType: doc.noteType || 'free',
           degree: doc.degree
         }));
 
@@ -403,22 +529,204 @@ const NotesPreview = () => {
   };
 
   const handleReport = () => {
-    if (!note) return;
-
-    console.log('Reporting note:', note.id);
-    alert('Thank you for your report. We will review this content.');
+    setShowReportModal(true);
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      console.log('New comment:', newComment);
-      setNewComment('');
+  // Handle report submission
+  const handleReportSubmit = async (reportData: {
+    reason: string;
+    description: string;
+    reporterName: string;
+    reporterEmail?: string;
+  }) => {
+    if (!note) return;
+
+    try {
+      setSubmittingReport(true);
+      
+      const response = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          noteId: note.id,
+          ...reportData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      const result = await response.json();
+      
+      // Refresh reports to get updated list
+      await fetchReports();
+      
+      // Update note's report count
+      setNote(prev => prev ? { ...prev, reports: (prev.reports || 0) + 1 } : null);
+      
+      setShowReportModal(false);
+      
+      console.log('Report submitted successfully!');
+      
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      throw error; // Let the modal handle the error display
+    } finally {
+      setSubmittingReport(false);
     }
+  };
+
+  // Handle report voting
+  const handleReportVote = async (reportId: string, voteType: 'up' | 'down') => {
+    try {
+      const apiVoteType = voteType === 'up' ? 'upvote' : 'downvote';
+      const response = await fetch('/api/reports', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportId,
+          action: apiVoteType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to vote on report');
+      }
+
+      // Refresh reports to get updated vote counts
+      await fetchReports();
+      
+    } catch (error) {
+      console.error('Error voting on report:', error);
+      throw error;
+    }
+  };
+
+  // Enhanced comment submit with reply support
+  const handleEnhancedCommentSubmit = async (content: string, parentCommentId?: string) => {
+    if (!note?.id) return;
+
+    // Check if user info is available
+    if (!userInfo.name) {
+      setShowUserForm(true);
+      return;
+    }
+
+    try {
+      setSubmittingComment(true);
+      
+      // Use provided user info or generate default
+      const currentUser = {
+        userId: 'guest_' + Date.now(),
+        userName: userInfo.name || 'Anonymous User',
+        userAvatar: getAvatarUrl(userInfo.name || userInfo.email)
+      };
+
+      const response = await fetch('/api/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          noteId: note.id,
+          userId: currentUser.userId,
+          userName: currentUser.userName,
+          userAvatar: currentUser.userAvatar,
+          content: content.trim(),
+          parentCommentId: parentCommentId || null
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit comment');
+      }
+
+      const data = await response.json();
+      
+      // Refresh comments to get updated threaded structure
+      await fetchComments();
+      
+      console.log('Comment submitted successfully!');
+      
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      alert('Failed to submit comment. Please try again.');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  // Handle comment likes
+  const handleCommentLike = async (commentId: string, isLiked: boolean) => {
+    try {
+      console.log('Liking comment with ID:', commentId, 'Action:', isLiked ? 'like' : 'unlike');
+      
+      const response = await fetch('/api/comments', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          commentId: commentId,
+          action: isLiked ? 'like' : 'unlike'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(`Failed to update comment like: ${errorData.error || response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Like update successful:', result);
+
+      // Refresh comments to get updated like counts
+      await fetchComments();
+      
+    } catch (error) {
+      console.error('Error updating comment like:', error);
+      throw error; // Re-throw to allow component to handle optimistic update rollback
+    }
+  };
+
+  // Keep original for backward compatibility
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    await handleEnhancedCommentSubmit(newComment.trim());
+    setNewComment('');
   };
 
   const closePopup = () => {
     setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
+  };
+
+  // Generate avatar URL based on name or email
+  const getAvatarUrl = (identifier: string) => {
+    if (!identifier) return 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop';
+    
+    // Generate a simple avatar using DiceBear API or use a default
+    const seed = identifier.toLowerCase().replace(/\s+/g, '');
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4&size=150`;
+  };
+
+  // Handle user form submission
+  const handleUserFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userInfo.name.trim()) return;
+    
+    // Save to localStorage
+    localStorage.setItem('guestUserInfo', JSON.stringify(userInfo));
+    setShowUserForm(false);
+    
+    // Now submit the comment
+    handleCommentSubmit(e);
   };
 
   // Show loading state
@@ -528,8 +836,14 @@ const NotesPreview = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="h-4 w-4" />
-                      <span>1,234 views</span>
+                      <span>{note.views} views</span>
                     </div>
+                    {note.fileSize && note.fileSize > 0 && (
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-4 w-4" />
+                        <span>{formatFileSize(note.fileSize)}</span>
+                      </div>
+                    )}
                   </div>
                   <p className="text-gray-700 mb-4">{note.description}</p>
                   <div className="flex flex-wrap gap-2">
@@ -668,7 +982,35 @@ const NotesPreview = () => {
               )}
             </div>
 
-            {/* Comments Section */}
+            {/* Reports Section */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mt-4 lg:mt-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Reports ({reports.length})</h3>
+                <button
+                  onClick={() => setShowReports(!showReports)}
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {showReports ? 'Hide' : 'Show'} Reports
+                </button>
+              </div>
+
+              {showReports && (
+                loadingReports ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                    <span className="text-gray-600">Loading reports...</span>
+                  </div>
+                ) : (
+                  <ReportsSection
+                    reports={reports}
+                    onVoteReport={handleReportVote}
+                    loading={loadingReports}
+                  />
+                )
+              )}
+            </div>
+
+            {/* Enhanced Comments Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 lg:p-6 mt-4 lg:mt-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Comments ({comments.length})</h3>
@@ -681,60 +1023,34 @@ const NotesPreview = () => {
               </div>
 
               {showComments && (
-                <div className="space-y-6">
-                  {/* Add Comment Form */}
-                  <form onSubmit={handleCommentSubmit} className="border-b border-gray-200 pb-6">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Add a comment..."
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <div className="flex justify-end mt-3">
-                      <button
-                        type="submit"
-                        disabled={!newComment.trim()}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Post Comment
-                      </button>
+                isLoggedIn ? (
+                  loadingComments ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                      <span className="text-gray-600">Loading comments...</span>
                     </div>
-                  </form>
-
-                  {/* Comments List */}
-                  <div className="space-y-4">
-                    {comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-3">
-                        <Image
-                          src={comment.avatar}
-                          alt={comment.user}
-                          width={40}
-                          height={40}
-                          className="w-10 h-10 rounded-full border-2 border-white shadow-md"
-                        />
-                        <div className="flex-1">
-                          <div className="bg-gray-50 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900">{comment.user}</h4>
-                              <span className="text-sm text-gray-500">{comment.timestamp}</span>
-                            </div>
-                            <p className="text-gray-700">{comment.content}</p>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2">
-                            <button className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
-                              <ThumbsUp className="h-4 w-4" />
-                              <span className="text-sm">{comment.likes}</span>
-                            </button>
-                            <button className="text-gray-600 hover:text-blue-600 transition-colors text-sm">
-                              Reply
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  ) : (
+                    <EnhancedCommentsSection
+                      comments={comments}
+                      onCommentSubmit={handleEnhancedCommentSubmit}
+                      onCommentLike={handleCommentLike}
+                      submittingComment={submittingComment}
+                      userInfo={userInfo}
+                    />
+                  )
+                ) : (
+                  <div className="border border-gray-200 rounded-lg p-6 text-center bg-gray-50">
+                    <User className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Login to Comment</h3>
+                    <p className="text-gray-600 mb-4">You need to be logged in to post comments on this note.</p>
+                    <button
+                      onClick={() => setShowLoginPrompt(true)}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Login to Comment
+                    </button>
                   </div>
-                </div>
+                )
               )}
             </div>
           </div>
@@ -751,7 +1067,7 @@ const NotesPreview = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Views</span>
-                  <span className="font-semibold">1,234</span>
+                  <span className="font-semibold">{note.views || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Likes</span>
@@ -760,6 +1076,10 @@ const NotesPreview = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Comments</span>
                   <span className="font-semibold">{comments.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Reports</span>
+                  <span className="font-semibold text-red-600">{note.reports || 0}</span>
                 </div>
               </div>
             </div>
@@ -832,6 +1152,139 @@ const NotesPreview = () => {
           </div>
         </div>
       </div>
+
+      {/* User Info Form Popup */}
+      {showUserForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Tell us about yourself</h3>
+              <button
+                onClick={() => setShowUserForm(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUserFormSubmit}>
+              <div className="mb-4">
+                <label htmlFor="userName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Name *
+                </label>
+                <input
+                  id="userName"
+                  type="text"
+                  value={userInfo.name}
+                  onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
+                  placeholder="Enter your name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              
+              <div className="mb-6">
+                <label htmlFor="userEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email (optional)
+                </label>
+                <input
+                  id="userEmail"
+                  type="email"
+                  value={userInfo.email}
+                  onChange={(e) => setUserInfo({ ...userInfo, email: e.target.value })}
+                  placeholder="Enter your email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  We&apos;ll use this to generate a unique avatar for you.
+                </p>
+              </div>
+              
+              <div className="mb-4">
+                <Link
+                  href="/avatar-customizer"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center justify-center"
+                  onClick={() => setShowUserForm(false)}
+                >
+                  <Palette className="h-4 w-4 mr-1" />
+                  Want to create a custom avatar?
+                </Link>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowUserForm(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Save & Comment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Login Popup */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Login Required</h3>
+              <button
+                onClick={() => setShowLoginPrompt(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="flex items-center mb-4">
+              <User className="h-8 w-8 text-blue-600 mr-3" />
+              <div>
+                <p className="text-gray-700 mb-2">
+                  You need to be logged in to comment on this note.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Please log in to join the discussion.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors text-center"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={handleReportSubmit}
+        submitting={submittingReport}
+        noteTitle={note?.title || ''}
+      />
 
       {/* Download Popup */}
       {downloadPopup.show && (

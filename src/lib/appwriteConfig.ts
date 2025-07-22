@@ -7,6 +7,8 @@ export const appwriteConfig = {
     notes: process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID || '686d382f00119e0bf90b',
     users: process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID || '6873f4f10034ced70a40',
     activities: process.env.NEXT_PUBLIC_APPWRITE_USER_ACTIVITIES_COLLECTION_ID || '6873f96f003939323c73',
+    reports: process.env.NEXT_PUBLIC_APPWRITE_REPORTS_COLLECTION_ID || 'reports_collection_placeholder',
+    comments: process.env.NEXT_PUBLIC_APPWRITE_COMMENTS_COLLECTION_ID || '687f1e59000770d11274',
   },
   // GitHub configuration
   github: {
