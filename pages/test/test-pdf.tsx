@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import GoogleDocsPDFViewer from '../src/components/GoogleDocsPDFViewer';
+import GoogleDocsPDFViewer from '../../src/components/GoogleDocsPDFViewer';
 
 const TestPDF = () => {
   const [showViewer, setShowViewer] = useState(false);
   const [pdfUrl, setPdfUrl] = useState('');
-  
+
   const testUrls = [
     {
       name: 'Sample PDF from Mozilla',
@@ -34,7 +34,7 @@ const TestPDF = () => {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">PDF Viewer Test</h1>
-        
+
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Test PDF URLs</h2>
           <div className="space-y-3">
