@@ -1,9 +1,22 @@
 import { Octokit } from '@octokit/rest';
 
 // Initialize Octokit with your GitHub token
-const octokit = new Octokit({
-  auth: process.env.NEXT_PUBLIC_GITHUB_TOKEN
-});
+let octokit: Octokit;
+
+try {
+  const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+  if (!token || token.trim() === '') {
+    throw new Error('GitHub token not found');
+  }
+  
+  octokit = new Octokit({
+    auth: token
+  });
+} catch (error) {
+  console.error('Failed to initialize Octokit:', error);
+  // Initialize without auth as fallback
+  octokit = new Octokit();
+}
 
 // Validate file before upload
 export const validateFile = (file: File) => {
@@ -27,6 +40,21 @@ export const validateFile = (file: File) => {
   }
 };
 
+// Check GitHub credentials
+export const checkGitHubCredentials = async (): Promise<boolean> => {
+  try {
+    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    if (!token) return false;
+    
+    const testOctokit = new Octokit({ auth: token });
+    await testOctokit.rest.user.getAuthenticated();
+    return true;
+  } catch (error) {
+    console.error('GitHub credentials check failed:', error);
+    return false;
+  }
+};
+
 // Upload file to GitHub
 export const uploadToGitHub = async (file: File, path: string): Promise<string> => {
   try {
@@ -36,7 +64,13 @@ export const uploadToGitHub = async (file: File, path: string): Promise<string> 
     const repo = process.env.NEXT_PUBLIC_GITHUB_REPO;
 
     if (!token || !owner || !repo) {
-      throw new Error('GitHub configuration is missing');
+      throw new Error('GitHub configuration is missing. Please check your environment variables.');
+    }
+
+    // Check if credentials are valid
+    const credentialsValid = await checkGitHubCredentials();
+    if (!credentialsValid) {
+      throw new Error('GitHub credentials are invalid or expired. Please update your GitHub token.');
     }
 
     // Read file as base64
