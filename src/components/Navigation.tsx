@@ -10,7 +10,7 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap } from 'lucide-react';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,10 +19,12 @@ const Navigation = () => {
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
-    { path: '/#features', label: 'Features', icon: Star },
-    { path: '/#beta', label: 'Join Beta', icon: FlaskConical },
-    { path: '/#groups', label: 'Join Group', icon: Users },
-    { path: '/notes-upload', label: 'Upload', icon: Upload },
+    { path: '/notes-download', label: 'Download Notes', icon: Download },
+    { path: '/notes-upload', label: 'Upload Notes', icon: Upload },
+    { path: '/groups', label: 'Join Groups', icon: Users },
+    { path: '/events', label: 'Events', icon: Trophy },
+    { path: '/internships', label: 'Internships', icon: Briefcase },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Star },
   ], []);
 
   useEffect(() => {
@@ -79,9 +81,14 @@ const Navigation = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-1">
+              <Link href="/notes-download" className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-all">Notes</Link>
+              <Link href="/groups" className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-all">Groups</Link>
+              <Link href="/events" className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-all">Events</Link>
+              <Link href="/internships" className="px-3 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 transition-all">Jobs</Link>
+              <div className="w-px h-6 bg-white/20 mx-2"></div>
               <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-white/80 hover:bg-white/10">Login</Link>
-              <Link href="/signup" className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90">Sign Up</Link>
+              <Link href="/signup" className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-opacity">Sign Up</Link>
             </div>
 
           </div>
@@ -128,6 +135,35 @@ const Navigation = () => {
                 </button>
               );
             })}
+            
+            {/* Divider */}
+            <div className="border-t border-white/20 my-4"></div>
+            
+            {/* Additional Links for Students */}
+            <Link href="/misc/about" className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <Info className="h-5 w-5" />
+              <span>About JEHUB</span>
+            </Link>
+            
+            <Link href="/blog" className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <BookOpen className="h-5 w-5" />
+              <span>Blog & Updates</span>
+            </Link>
+            
+            <Link href="/profile" className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all">
+              <GraduationCap className="h-5 w-5" />
+              <span>My Profile</span>
+            </Link>
+            
+            {/* Auth Section */}
+            <div className="border-t border-white/20 mt-4 pt-4 space-y-2">
+              <Link href="/login" className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all">
+                <span className="font-medium">Login</span>
+              </Link>
+              <Link href="/signup" className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 transition-all font-semibold">
+                <span>Sign Up Free</span>
+              </Link>
+            </div>
           </nav>
         </div>
       </aside>
