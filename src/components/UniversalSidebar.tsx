@@ -27,16 +27,15 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
   const router = useRouter();
 
   const navigationItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/notes-download', label: 'Notes Download', icon: Download },
-    { path: '/notes-upload', label: 'Notes Upload', icon: Upload },
-    { path: '/notes-request', label: 'Notes Request', icon: HelpCircle },
-    { path: '/groups', label: 'Groups', icon: Users },
-    { path: '/events', label: 'Events', icon: Calendar },
-    { path: '/internships', label: 'Internships', icon: Briefcase },
-    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { path: '/blog', label: 'Blog', icon: BookOpen },
-    { path: '/join-team', label: 'Join Team', icon: UserPlus },
+    { path: '/', label: 'Home', icon: Home, description: 'Main dashboard and updates' },
+    { path: '/notes-download', label: 'Download Notes', icon: Download, description: 'Access study materials' },
+    { path: '/notes-upload', label: 'Upload Notes', icon: Upload, description: 'Share your notes' },
+    { path: '/groups', label: 'College Groups', icon: Users, description: 'Join your college community' },
+    { path: '/events', label: 'Events', icon: Calendar, description: 'Workshops and competitions' },
+    { path: '/internships', label: 'Internships', icon: Briefcase, description: 'Find job opportunities' },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy, description: 'Top contributors' },
+    { path: '/misc/about', label: 'About JEHUB', icon: BookOpen, description: 'Learn about our platform' },
+    { path: '/join-team', label: 'Join Our Team', icon: UserPlus, description: 'Work with us' },
   ];
 
   const bottomItems = [
@@ -66,22 +65,32 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">J</span>
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">J</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">JEHUB</h2>
+                  <p className="text-sm text-gray-500">Student Hub</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">JEHUB</h2>
-                <p className="text-sm text-gray-500">Student Hub</p>
-              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-6 w-6 text-gray-600" />
+              </button>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-6 w-6 text-gray-600" />
-            </button>
+            
+            {/* Welcome Message for New Users */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Welcome to JEHUB! 👋</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Your one-stop platform for notes, groups, events, and career opportunities across Jharkhand colleges.
+              </p>
+            </div>
           </div>
 
           {/* Navigation Items */}
@@ -93,13 +102,20 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
                 
                 return (
                   <Link key={item.path} href={item.path} onClick={onClose}>
-                    <div className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    <div className={`flex flex-col px-4 py-3 rounded-lg transition-all duration-200 ${
                       active 
                         ? 'bg-blue-100 text-blue-700 shadow-sm' 
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}>
-                      <Icon className={`h-5 w-5 ${active ? 'text-blue-700' : 'text-gray-500'}`} />
-                      <span className="font-medium">{item.label}</span>
+                      <div className="flex items-center space-x-3">
+                        <Icon className={`h-5 w-5 ${active ? 'text-blue-700' : 'text-gray-500'}`} />
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      {item.description && (
+                        <p className={`text-xs mt-1 ml-8 ${active ? 'text-blue-600' : 'text-gray-500'}`}>
+                          {item.description}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 );

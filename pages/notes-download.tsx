@@ -1,5 +1,5 @@
-import NotesDownload from '../src/pages/NotesDownload';
+import NotesDownload from '../src/pages/NotesDownload'
 
 export default function NotesDownloadPage() {
-  return <NotesDownload />;
+  return <NotesDownload />
 }

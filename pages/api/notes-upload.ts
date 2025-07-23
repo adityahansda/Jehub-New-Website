@@ -42,6 +42,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       userIp: userIp || 'unknown',
       downloads: 0,
       likes: 0,
+      points: 50, // Default points for all notes
+      views: 0, // ✅ Views attribute added to database
+      reports: 0, // ✅ Default reports count
+      fileSize: req.body.fileSize || 0, // ✅ File size in bytes, default to 0 if not provided
+      noteType: req.body.noteType || 'free', // ✅ Default note type
       degree
     };
 
