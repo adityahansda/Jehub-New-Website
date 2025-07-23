@@ -10,20 +10,23 @@
     "test": "npm run lint && npm run type-check",
     "type-check": "tsc --noEmit",
     "build:analyze": "ANALYZE=true npm run build",
-    "health-check": "npm run test && npm run build"
+    "health-check": "npm run test && npm run build",
+    "db:create-indexes": "node scripts/create-indexes.js",
+    "db:auto-index": "node scripts/auto-index-manager.js",
+    "db:monitor": "node scripts/monitor-indexes.js"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "@react-icons/all-files": "^4.1.0",
     "@vercel/speed-insights": "^1.2.0",
     "appwrite": "^18.1.1",
+    "dotenv": "^17.2.0",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.525.0",
     "next": "^14.2.18",
-    "pdfjs-dist": "^4.8.69",
+    "node-appwrite": "^17.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-pdf": "^9.1.1",
     "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
