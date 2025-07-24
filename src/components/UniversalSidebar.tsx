@@ -34,7 +34,7 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
     { path: '/events', label: 'Events', icon: Calendar, description: 'Workshops and competitions' },
     { path: '/internships', label: 'Internships', icon: Briefcase, description: 'Find job opportunities' },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy, description: 'Top contributors' },
-    { path: '/misc/about', label: 'About JEHUB', icon: BookOpen, description: 'Learn about our platform' },
+    { path: '/about', label: 'About JEHUB', icon: BookOpen, description: 'Learn about our platform' },
     { path: '/join-team', label: 'Join Our Team', icon: UserPlus, description: 'Work with us' },
   ];
 

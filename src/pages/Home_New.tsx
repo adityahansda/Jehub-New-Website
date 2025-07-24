@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 const Home = () => {
+  const router = useRouter();
   const [countdown, setCountdown] = useState({
     days: 0,
     hours: 0,
@@ -237,7 +238,7 @@ const Home = () => {
 
   // Navigation handler for wishlist registration
   const handleWishlistNavigation = () => {
-    window.location.href = '../pages/wishlist'; // Navigate to wishlist page
+    router.push('/wishlist'); // Navigate to wishlist page
   };
 
   return (
