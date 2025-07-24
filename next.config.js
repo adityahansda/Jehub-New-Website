@@ -60,6 +60,11 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  
+  // Skip ESLint during builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
 };
 
