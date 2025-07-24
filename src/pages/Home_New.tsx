@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Head from "next/head";
-import Image from "next/image";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Head from 'next/head';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
 import {
   Upload,
   Download,
@@ -222,7 +223,7 @@ const Home = () => {
         };
       } catch (error) {
         console.warn("Error setting up intersection observers:", error);
-        return () => {}; // Return empty cleanup function
+        return () => { }; // Return empty cleanup function
       }
     };
 
@@ -446,11 +447,10 @@ const Home = () => {
             <div className="max-w-5xl mx-auto text-center">
               <div
                 data-reveal="about-section"
-                className={`transition-all duration-1000 transform ${
-                  revealedElements.has("about-section")
+                className={`transition-all duration-1000 transform ${revealedElements.has("about-section")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
               >
                 {/* Glass blur container */}
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-12 shadow-2xl">
@@ -509,11 +509,10 @@ const Home = () => {
             <div className="max-w-7xl mx-auto w-full">
               <div
                 data-reveal="features-header"
-                className={`text-center mb-20 transition-all duration-1000 transform ${
-                  revealedElements.has("features-header")
+                className={`text-center mb-20 transition-all duration-1000 transform ${revealedElements.has("features-header")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
               >
                 {/* Enhanced section badge */}
                 <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-[#9333ea]/10 via-[#6366f1]/10 to-[#3b82f6]/10 border border-[#9333ea]/20 backdrop-blur-sm mb-8">
@@ -601,11 +600,10 @@ const Home = () => {
                     <div
                       key={feature.id}
                       data-reveal={feature.id}
-                      className={`group transition-all duration-500 transform ${
-                        revealedElements.has(feature.id)
+                      className={`group transition-all duration-500 transform ${revealedElements.has(feature.id)
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-10"
-                      }`}
+                        }`}
                       style={{ transitionDelay: `${index * 100}ms` }}
                     >
                       {/* Simple Glass Card */}
@@ -653,11 +651,10 @@ const Home = () => {
             <div className="max-w-7xl mx-auto w-full">
               <div
                 data-reveal="gamification-header"
-                className={`text-center mb-16 transition-all duration-1000 transform ${
-                  revealedElements.has("gamification-header")
+                className={`text-center mb-16 transition-all duration-1000 transform ${revealedElements.has("gamification-header")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
               >
                 <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
                   Earn, Compete, and Level Up
@@ -721,11 +718,10 @@ const Home = () => {
                     <div
                       key={item.id}
                       data-reveal={item.id}
-                      className={`group transition-all duration-700 transform ${
-                        revealedElements.has(item.id)
+                      className={`group transition-all duration-700 transform ${revealedElements.has(item.id)
                           ? "opacity-100 translate-y-0"
                           : "opacity-0 translate-y-10"
-                      }`}
+                        }`}
                       style={{ transitionDelay: `${index * 100}ms` }}
                     >
                       <div className="bg-[#1c1c1f]/80 backdrop-blur-sm p-6 rounded-2xl border border-[#2d2d30] text-center hover:border-[#9333ea] hover:bg-[#1c1c1f] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
@@ -764,11 +760,10 @@ const Home = () => {
             <div className="max-w-4xl mx-auto text-center">
               <div
                 data-reveal="beta-section"
-                className={`transition-all duration-1000 transform ${
-                  revealedElements.has("beta-section")
+                className={`transition-all duration-1000 transform ${revealedElements.has("beta-section")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
               >
                 {/* Glass morphism container */}
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-12 shadow-2xl">
@@ -832,11 +827,10 @@ const Home = () => {
             <div className="max-w-4xl mx-auto text-center w-full">
               <div
                 data-reveal="community-header"
-                className={`transition-all duration-1000 transform ${
-                  revealedElements.has("community-header")
+                className={`transition-all duration-1000 transform ${revealedElements.has("community-header")
                     ? "opacity-100 translate-y-0 scale-100"
                     : "opacity-0 translate-y-10 scale-95"
-                }`}
+                  }`}
               >
                 <div className="w-20 h-20 bg-gradient-to-r from-[#3B82F6] to-[#1D4ED8] rounded-3xl flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 hover:scale-110">
                   <Users className="h-10 w-10 text-white" />
@@ -852,11 +846,10 @@ const Home = () => {
 
               <div
                 data-reveal="community-buttons"
-                className={`grid md:grid-cols-3 gap-6 max-w-3xl mx-auto transition-all duration-1000 transform ${
-                  revealedElements.has("community-buttons")
+                className={`grid md:grid-cols-3 gap-6 max-w-3xl mx-auto transition-all duration-1000 transform ${revealedElements.has("community-buttons")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
                 style={{ transitionDelay: "200ms" }}
               >
                 <Link
@@ -887,11 +880,10 @@ const Home = () => {
 
               <div
                 data-reveal="community-newsletter"
-                className={`mt-12 bg-black/20 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-xl transition-all duration-1000 transform ${
-                  revealedElements.has("community-newsletter")
+                className={`mt-12 bg-black/20 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-xl transition-all duration-1000 transform ${revealedElements.has("community-newsletter")
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-10"
-                }`}
+                  }`}
                 style={{ transitionDelay: "400ms" }}
               >
                 <h3 className="text-2xl font-bold text-white mb-4">

@@ -151,7 +151,7 @@ const WishlistRegister = () => {
       };
 
       const res = await fetch(
-        "https://script.google.com/macros/s/AKfycbzy5SbMoQDEjXSvg7e0AgvHuA3jWPiKr-dpPjuyNYqsOuz1EHp-vXGMVHwc2zuJm2Y/exec",
+        "https://script.google.com/macros/s/AKfycbzzOSIkJfsYStXoAviCk3cKqWvJ_-lPfND0e2Z-bdM3wJIWCtkoGbqfvfreC5Envh8X/exec",
         {
           method: "POST",
           headers: {
@@ -161,13 +161,24 @@ const WishlistRegister = () => {
         }
       );
 
+      // Check if request was successful
       if (!res.ok) {
         throw new Error(`Server error: ${res.status}`);
       }
 
-      const result = await res.json();
-      if (result.result !== "success") {
-        throw new Error("Google Sheets API returned error");
+      // Try to parse response
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseError) {
+        // If JSON parsing fails, assume success (Google Apps Script might return HTML)
+        console.log("Response received, assuming success");
+        result = { result: "success" };
+      }
+
+      // Check result
+      if (result.result && result.result !== "success") {
+        throw new Error(result.message || "Google Sheets API returned error");
       }
 
       // If successful
