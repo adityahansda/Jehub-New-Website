@@ -2,12 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-
-const PDFViewer = dynamic(() => import('../../components/PDFViewer'), {
-  ssr: false,
-  loading: () => <p>Loading PDF viewer...</p>
-});
+import GoogleDocsPDFViewer from '../../components/GoogleDocsPDFViewer';
 import {
   Download,
   Eye,
@@ -42,7 +37,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 function convertToDownloadUrl(url: string): string {
   if (!url) return url;
 
-  console.log('Converting URL to download:', url);
+  // console.log('Converting URL to download:', url); // Suppressed for production
 
   // Handle raw.githubusercontent.com URLs
   if (url.includes('raw.githubusercontent.com')) {
@@ -55,26 +50,26 @@ function convertToDownloadUrl(url: string): string {
       const branch = parts[2];
       const filePath = parts.slice(3).join('/');
       const downloadUrl = `https://github.com/${user}/${repo}/raw/${branch}/${filePath}`;
-      console.log('Converted to download URL:', downloadUrl);
+      // console.log('Converted to download URL:', downloadUrl); // Suppressed for production
       return downloadUrl;
     }
   }
 
   // Handle github.com/user/repo/raw/ URLs
   if (url.includes('github.com') && url.includes('/raw/')) {
-    console.log('Already a GitHub raw URL for download:', url);
+    // console.log('Already a GitHub raw URL for download:', url); // Suppressed for production
     return url;
   }
 
   // Handle github.com/user/repo/blob/ URLs (convert to raw for download)
   if (url.includes('github.com') && url.includes('/blob/')) {
     const downloadUrl = url.replace('/blob/', '/raw/');
-    console.log('Converted blob to raw URL:', downloadUrl);
+    // console.log('Converted blob to raw URL:', downloadUrl); // Suppressed for production
     return downloadUrl;
   }
 
   // If it's already a download URL or other format, return as is
-  console.log('URL unchanged:', url);
+  // console.log('URL unchanged:', url); // Suppressed for production
   return url;
 }
 
@@ -83,26 +78,26 @@ function convertToDownloadUrl(url: string): string {
 function transformUrlForViewing(url: string): string {
   if (!url) return url;
 
-  console.log('Transforming URL for viewing:', url);
+  // console.log('Transforming URL for viewing:', url); // Suppressed for production
 
   // Handle GitHub URLs
   if (url.includes('github.com')) {
     // Convert GitHub blob URL to raw URL for viewing
     if (url.includes('/blob/')) {
       const rawUrl = url.replace('/blob/', '/raw/');
-      console.log('Converted blob to raw for viewing:', rawUrl);
+      // console.log('Converted blob to raw for viewing:', rawUrl); // Suppressed for production
       return rawUrl;
     }
     // If it's already a raw URL, return as is
     if (url.includes('/raw/')) {
-      console.log('Already a raw URL for viewing:', url);
+      // console.log('Already a raw URL for viewing:', url); // Suppressed for production
       return url;
     }
   }
 
   // Handle raw.githubusercontent.com URLs (already good for viewing)
   if (url.includes('raw.githubusercontent.com')) {
-    console.log('Raw githubusercontent URL for viewing:', url);
+    // console.log('Raw githubusercontent URL for viewing:', url); // Suppressed for production
     return url;
   }
 
@@ -198,25 +193,27 @@ const NotesPreview = () => {
     noteTitle: string;
     status: 'downloading' | 'success' | 'error';
   }>({ show: false, noteTitle: '', status: 'downloading' });
+  const [pdfViewerModal, setPdfViewerModal] = useState<{
+    show: boolean;
+    pdfUrl: string;
+    fileName: string;
+  }>({ show: false, pdfUrl: '', fileName: '' });
 
   // PDF-related state
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  
-  // Function to validate PDF URL
-  const validatePdfUrl = async (url: string) => {
-    setPdfValidationStatus('checking');
-    try {
-      const result = await checkUrlStatus(url);
-      setPdfValidationStatus(result.status);
-      
-      if (result.status === 'deleted') {
-        setShowDeletedMessage(true);
-      }
-    } catch (error) {
-      console.error('PDF validation error:', error);
-      setPdfValidationStatus('error');
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pdfUrl) {
+      fetch(`/api/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`)
+        .then(response => response.blob())
+        .then(blob => {
+          const objectUrl = URL.createObjectURL(blob);
+          setBlobUrl(objectUrl);
+        })
+        .catch(error => console.error('Error fetching PDF blob:', error));
     }
-  };
+  }, [pdfUrl]);
 
   // Fetch note data from database
   useEffect(() => {
@@ -254,12 +251,12 @@ const NotesPreview = () => {
         // Set PDF URL if available and transform for viewing
         if (fetchedNote.githubUrl) {
           const viewableUrl = transformUrlForViewing(fetchedNote.githubUrl);
-          console.log('Original URL:', fetchedNote.githubUrl);
-          console.log('Transformed URL:', viewableUrl);
+          // console.log('Original URL:', fetchedNote.githubUrl); // Suppressed for production
+          // console.log('Transformed URL:', viewableUrl); // Suppressed for production
           setPdfUrl(viewableUrl);
-          
+
           // Validate PDF URL
-          validatePdfUrl(fetchedNote.githubUrl);
+          checkUrlStatus(fetchedNote.githubUrl);
         }
       } catch (err) {
         setError('Failed to fetch note details. Please try again later.');
@@ -493,6 +490,20 @@ const NotesPreview = () => {
     setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
   };
 
+  const openPDFViewer = () => {
+    if (note && note.githubUrl) {
+      setPdfViewerModal({
+        show: true,
+        pdfUrl: note.githubUrl,
+        fileName: note.fileName
+      });
+    }
+  };
+
+  const closePDFViewer = () => {
+    setPdfViewerModal({ show: false, pdfUrl: '', fileName: '' });
+  };
+
   // Show loading state
   if (loading) {
     return (
@@ -723,7 +734,9 @@ const NotesPreview = () => {
             {/* PDF Preview */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
-              {pdfValidationStatus === 'deleted' ? (
+              {blobUrl ? (
+                <GoogleDocsPDFViewer pdfUrl={blobUrl} />
+              ) : pdfValidationStatus === 'deleted' ? (
                 <div className="text-center py-8 text-red-500">
                   <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <XCircle className="h-8 w-8 text-red-600" />
@@ -732,19 +745,13 @@ const NotesPreview = () => {
                   <p className="text-red-700 mb-4">This PDF file has been deleted from GitHub and cannot be previewed.</p>
                   <p className="text-sm text-red-600">Contact the administrator for assistance.</p>
                 </div>
-              ) : pdfUrl ? (
-                <PDFViewer
-                  url={pdfUrl}
-                  fileName={note.fileName}
-                  onDownload={handleDownload}
-                />
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <FileText className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No PDF Available</h3>
-                  <p className="text-gray-600">This note doesn&apos;t have a PDF file attached.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading PDF...</h3>
+                  <p className="text-gray-600">Please wait while we load the PDF.</p>
                 </div>
               )}
             </div>
@@ -970,6 +977,29 @@ const NotesPreview = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {pdfViewerModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-6xl w-full max-h-[90vh] mx-4 overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{pdfViewerModal.fileName}</h3>
+              <button
+                onClick={closePDFViewer}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[calc(90vh-8rem)]">
+              <GoogleDocsPDFViewer
+                pdfUrl={transformUrlForViewing(pdfViewerModal.pdfUrl)}
+                fileName={pdfViewerModal.fileName}
+              />
+            </div>
           </div>
         </div>
       )}

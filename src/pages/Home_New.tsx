@@ -99,7 +99,7 @@ const Home = () => {
         });
       }
     } catch (error) {
-      console.warn("Error in smooth scroll:", error);
+      // console.warn('Error in smooth scroll:', error); // Suppressed for production logging cleanliness
     }
   };
 
@@ -119,7 +119,7 @@ const Home = () => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
       } catch (error) {
-        console.warn("Error in popstate handler:", error);
+        // console.warn('Error in popstate handler:', error); // Suppressed for production
       }
     };
 
@@ -127,8 +127,8 @@ const Home = () => {
       window.addEventListener("popstate", handlePopState);
       return () => window.removeEventListener("popstate", handlePopState);
     } catch (error) {
-      console.warn("Error setting up popstate listener:", error);
-      return () => {};
+      // console.warn('Error setting up popstate listener:', error); // Suppressed for production
+      return () => { };
     }
   }, []);
 
@@ -208,7 +208,7 @@ const Home = () => {
             try {
               revealObserver.observe(el);
             } catch (observeError) {
-              console.warn("Could not observe reveal element:", observeError);
+              // console.warn('Could not observe reveal element:', observeError); // Suppressed for production
             }
           });
         }
@@ -236,7 +236,7 @@ const Home = () => {
 
   // Navigation handler for wishlist registration
   const handleWishlistNavigation = () => {
-    window.location.href = "/wishlist-register";
+    window.location.href = '../pages/wishlist'; // Navigate to wishlist page
   };
 
   return (
@@ -252,10 +252,7 @@ const Home = () => {
 
       <div className="min-h-screen bg-[#0e0e10] text-[#d1d5db]">
         {/* Enhanced Hero Section */}
-        <section
-          id="home"
-          className="relative flex items-center justify-center min-h-screen pt-16 pb-16"
-        >
+        <section id="home" className="relative flex items-center justify-center min-h-screen pt-16 pb-16 flex-col">
           {/* Enhanced Background with Multiple Layers */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0b] via-[#1a1a1d] to-[#0e0e10] -z-10"></div>
 
@@ -298,13 +295,9 @@ const Home = () => {
           <div className="relative z-10 w-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto text-center animate-fade-in-up w-full">
               {/* Enhanced Badge */}
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8">
-                <span className="text-[#f59e0b] text-sm font-medium mr-2">
-                  🚀
-                </span>
-                <span className="text-white text-sm font-medium">
-                  Launching Soon - Join 431+ Students
-                </span>
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-[#f59e0b]/10 to-[#fb923c]/10 border border-[#f59e0b]/20 backdrop-blur-sm mb-8 mt-8">
+                <span className="text-[#f59e0b] text-sm font-medium mr-2">🚀</span>
+                <span className="text-white text-sm font-medium">Launching Soon - Join 431+ Students</span>
                 <div className="ml-2 w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse"></div>
               </div>
 
@@ -323,8 +316,8 @@ const Home = () => {
                   Academic Resources
                 </span>
                 <span
-                  className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left"
-                  style={{ animationDelay: "0.6s" }}
+                  className="block text-4xl sm:text-5xl lg:text-6xl mt-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent animate-slide-in-left pb-3"
+                  style={{ animationDelay: '0.6s' }}
                 >
                   for Every Student
                 </span>
@@ -407,36 +400,38 @@ const Home = () => {
           </div>
 
           {/* Enhanced Scroll Indicator - Down Arrow Design */}
-          <button
-            onClick={() => smoothScrollTo("#features")}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce-slow cursor-pointer focus:outline-none group z-20"
-            aria-label="Scroll to features section"
-          >
-            <div className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 w-full ">
-              {/* Text - hide on mobile, show on tablet+ */}
-              <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300 text-center">
-                Scroll to explore
-              </span>
+          <div className=' w-full flex justify-center'>
+            <button
+              onClick={() => smoothScrollTo('#features')}
+              className=" animate-bounce-slow cursor-pointer focus:outline-none group z-20"
+              aria-label="Scroll to features section"
+            >
+              <div className="flex flex-col items-center justify-center sm:space-y-3 w-full m-auto">
+                {/* Text - hide on mobile, show on tablet+ */}
+                <span className="hidden sm:block text-[#d1d5db] text-xs font-medium tracking-wide group-hover:text-[#f59e0b] transition-colors duration-300">
+                  Scroll to explore
+                </span>
 
-              {/* Down Arrow indicator - responsive sizing */}
-              <div className="relative flex items-center justify-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-[#d1d5db]/50 flex items-center justify-center transition-all duration-300 group-hover:border-[#f59e0b] group-hover:shadow-lg group-hover:shadow-[#f59e0b]/20 group-active:scale-95">
-                  <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#f59e0b] animate-bounce transition-all duration-300 group-hover:text-[#fb923c]" />
+                {/* Down Arrow indicator - responsive sizing */}
+                <div className="relative flex items-center justify-center">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-[#d1d5db]/50 flex items-center justify-center transition-all duration-300 group-hover:border-[#f59e0b] group-hover:shadow-lg group-hover:shadow-[#f59e0b]/20 group-active:scale-95">
+                    <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-[#f59e0b] animate-bounce transition-all duration-300 group-hover:text-[#fb923c]" />
+                  </div>
+
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 border-2 border-[#f59e0b]/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+
+                  {/* Ripple effect on click */}
+                  <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 bg-[#f59e0b]/10 rounded-full opacity-0 group-active:opacity-100 transition-all duration-150 scale-0 group-active:scale-150"></div>
                 </div>
 
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 border-2 border-[#f59e0b]/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-
-                {/* Ripple effect on click */}
-                <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 bg-[#f59e0b]/10 rounded-full opacity-0 group-active:opacity-100 transition-all duration-150 scale-0 group-active:scale-150"></div>
+                {/* Mobile-only simple text */}
+                <span className="sm:hidden text-[#d1d5db] text-[10px] font-medium tracking-wider opacity-80 group-hover:text-[#f59e0b] group-hover:opacity-100 transition-all duration-300 text-center">
+                  SCROLL
+                </span>
               </div>
-
-              {/* Mobile-only simple text */}
-              <span className="sm:hidden text-[#d1d5db] text-[10px] font-medium tracking-wider opacity-80 group-hover:text-[#f59e0b] group-hover:opacity-100 transition-all duration-300 text-center">
-                SCROLL
-              </span>
-            </div>
-          </button>
+            </button>
+          </div>
         </section>
 
         {/* About JEHUB with Reveal Animation */}
@@ -588,7 +583,7 @@ const Home = () => {
                   {
                     icon: Trophy,
                     title: "Leaderboard System",
-                    description: "Compete with peers and climb the rankings.",
+                    description: "Challenge your peers and rise to the top of the leaderboard",
                     gradient: "from-[#FCA5A5] to-[#F59E0B]",
                     id: "feature-leaderboard",
                   },
@@ -693,8 +688,7 @@ const Home = () => {
                   {
                     icon: Crown,
                     title: "Weekly/Monthly Leaderboards",
-                    description:
-                      "Climb rankings and compare with fellow students.",
+                    description: "Boost your rank and see how you stack up against others",
                     gradient: "from-[#FBBF24] to-[#F97316]",
                     id: "gamification-leaderboard",
                   },
@@ -717,8 +711,7 @@ const Home = () => {
                   {
                     icon: Target,
                     title: "College Rank System",
-                    description:
-                      "Compete on a college level and gain recognition.",
+                    description: "Compete at the college level and earn the recognition you deserve",
                     gradient: "from-[#10B981] to-[#059669]",
                     id: "gamification-college",
                   },

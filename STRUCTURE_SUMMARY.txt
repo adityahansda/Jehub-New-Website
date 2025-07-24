@@ -1,0 +1,35 @@
+JEHUB WEBSITE - QUICK FILE STRUCTURE REFERENCE
+==============================================
+
+MAIN DIRECTORIES:
+├── pages/           → Next.js routing (37 pages total)
+├── public/          → Static assets (images, manifest, etc.)  
+├── scripts/         → Build & database scripts
+├── src/             → Source code
+├── docs/            → Documentation
+└── node_modules/    → Dependencies (auto-generated)
+
+KEY PAGES CREATED/FIXED:
+✅ pages/login.tsx              → /login
+✅ pages/signup.tsx             → /signup
+✅ pages/notes-download.tsx     → /notes-download
+✅ pages/notes-upload.tsx       → /notes-upload
+✅ pages/leaderboard.tsx        → /leaderboard
+✅ pages/wishlist.tsx           → /wishlist
+✅ pages/notes-preview/[id].tsx → /notes-preview/[id]
+✅ pages/features/about.tsx     → /features/about (fixed import)
+
+TOTAL ROUTES:
+• 37 pages successfully generated
+• 7 API endpoints
+• All TypeScript compilation ✅ PASSING
+• All ESLint checks ✅ PASSING
+• All import paths ✅ RESOLVED
+
+PATH CONFIGURATIONS:
+• @/* maps to ./src/* (in tsconfig.json)
+• Both @/ and relative imports supported
+• Next.js 14.2.30 with TypeScript strict mode
+
+BUILD STATUS: ✅ ALL WORKING
+Last Updated: July 22, 2025

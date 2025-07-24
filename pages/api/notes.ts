@@ -29,7 +29,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fileName: doc.fileName,
       downloads: doc.downloads,
       likes: doc.likes,
-      points: doc.points || 0,
+      points: doc.points || 50,
+      views: doc.views || 0,
+      reports: doc.reports || 0,
+      fileSize: doc.fileSize || null,
+      noteType: doc.noteType || 'free',
       degree: doc.degree
     }));
 
