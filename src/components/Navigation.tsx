@@ -229,7 +229,7 @@ const Navigation = () => {
             {/* Enhanced Additional Links */}
             <div className="space-y-2">
               {[
-                { href: '/misc/about', label: 'About JEHUB', icon: Info },
+                { href: '/about', label: 'About JEHUB', icon: Info },
                 { href: '/blog', label: 'Blog & Updates', icon: BookOpen },
                 { href: '/profile', label: 'My Profile', icon: GraduationCap }
               ].map((item) => {
