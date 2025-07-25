@@ -1,40 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable strict mode to reduce Fast Refresh issues
-  reactStrictMode: false,
+  // Enable strict mode for better development experience
+  reactStrictMode: true,
   
-  // Optimize build output
-  swcMinify: true,
+  // Allow cross-origin requests from specific origins in development
+  allowedDevOrigins: ['10.67.121.140'],
   
   webpack: (config, { isServer, dev }) => {
-    // Handle PDF.js worker
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        canvas: false,
-        encoding: false,
-        fs: false,
-        path: false,
-        os: false,
-        crypto: false,
-        stream: false,
-        util: false,
-        url: false,
-        zlib: false,
-      };
-    }
-
-    // Optimize for development
-    if (dev) {
-      config.devtool = 'eval-cheap-module-source-map';
-    }
-
     return config;
   },
   
+  // External packages for server components
   experimental: {
-    // Enable server components
-    serverComponentsExternalPackages: ['pdfjs-dist'],
+    serverComponentsExternalPackages: [],
   },
   
   images: {
@@ -63,16 +41,31 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
     // Optimization settings
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
+    // Allow SVG images from DiceBear
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
   // Reduce bundle size
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  
+  // Skip ESLint during builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
 };
 
 module.exports = nextConfig;

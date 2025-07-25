@@ -293,7 +293,7 @@ const About = () => {
                     className="w-32 h-32 rounded-full mx-auto border-4 border-blue-200 shadow-lg group-hover:border-blue-300 transition-all duration-300"
                   />
                   <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    Founder
+                    {member.name === 'Aditya Hansda' ? 'Founder/CEO' : member.role.split(' ')[0]}
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{member.name}</h3>

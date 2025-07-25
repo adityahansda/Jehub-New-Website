@@ -1,7 +1,5 @@
 import type { AppProps } from 'next/app'
 import '../src/index.css'
-import 'react-pdf/dist/Page/AnnotationLayer.css'
-import 'react-pdf/dist/Page/TextLayer.css'
 import Layout from '../src/components/Layout'
 import { NavigationProvider } from '../src/contexts/NavigationContext'
 import { useRouter } from 'next/router'
