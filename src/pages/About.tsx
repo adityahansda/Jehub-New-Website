@@ -8,13 +8,13 @@ const About = () => {
   const coreValues = [
     {
       icon: BookOpen,
-      title: 'JUT Updates Centralized',
-      description: 'All important JUT updates - exams, notes, resources & events - consolidated in one reliable place for diploma students.'
+      title: 'Academic Resources Centralized',
+      description: 'All important academic updates - exams, notes, resources & events - consolidated in one reliable place for diploma students.'
     },
     {
       icon: Users,
       title: 'Student-Led Community',
-      description: 'Built by diploma students who understand the exact curriculum & challenges of the JUT system.'
+      description: 'Built by diploma students who understand the exact curriculum & challenges of the Indian education system.'
     },
     {
       icon: Target,
@@ -31,12 +31,12 @@ const About = () => {
   const keyFeatures = [
     {
       icon: Calendar,
-      title: 'Dedicated JUT Updates',
+      title: 'Academic Updates',
       description: 'Notes, exam dates, events - all in one place'
     },
     {
       icon: GraduationCap,
-      title: 'Built by Diploma Students',
+      title: 'Built by Students',
       description: 'Core team understands the exact curriculum & challenges'
     },
     {
@@ -66,10 +66,10 @@ const About = () => {
               Introduction to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">JEHUB</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-8">
-              JEHUB is a growing, student-led initiative dedicated to empowering learners through collaboration, 
-              community, and hands-on experience. Built by and for diploma students, JEHUB stands out as a reliable 
-              platform where knowledge meets real-world relevance. What started as a small idea is now a thriving 
-              space where learners grow, share, and lead - together.
+              JEHUB is a growing, student-led initiative dedicated to empowering learners across India through collaboration, 
+              community, and hands-on experience. Built by and for students, JEHUB stands out as a reliable 
+              platform where knowledge meets real-world relevance. What started in Jharkhand is now expanding to become a 
+              thriving space where learners from all over India grow, share, and lead - together.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 rounded-full">
@@ -82,7 +82,7 @@ const About = () => {
               </div>
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-3 rounded-full">
                 <School className="h-5 w-5 text-purple-600" />
-                <span className="text-purple-800 font-semibold">JUT Focused</span>
+                <span className="text-purple-800 font-semibold">India Focused</span>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ const About = () => {
               <h2 className="text-3xl sm:text-4xl font-bold mb-6">Our Mission</h2>
               <p className="text-blue-100 leading-relaxed text-lg">
                 To create a free, inclusive, and student-friendly platform that supports academic growth, 
-                skill development, and community learning - especially for diploma students in Jharkhand.
+                skill development, and community learning for students across India, starting from Jharkhand.
               </p>
               <div className="mt-6 flex justify-center">
                 <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
@@ -118,9 +118,9 @@ const About = () => {
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold mb-6">Our Vision</h2>
               <p className="text-purple-100 leading-relaxed text-lg">
-                While JEHUB envisions becoming a pan-India student tech network in the future, we are currently 
-                focused on serving diploma students under Jharkhand University of Technology (JUT). Our goal is to 
-                become the most trusted student community for JUT learners.
+                JEHUB envisions becoming a pan-India student tech network, connecting learners from every corner of the country. 
+                We started in Jharkhand and are rapidly expanding to serve students nationwide. Our goal is to 
+                become the most trusted student community platform across India.
               </p>
               <div className="mt-6 flex justify-center">
                 <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
@@ -135,15 +135,15 @@ const About = () => {
         {/* Stats Section */}
         <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-3xl p-8 sm:p-12 mb-16">
           <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Our Impact on JUT Community</h2>
-            <p className="text-gray-600 mb-12 text-lg">Building a stronger, more connected diploma student community across Jharkhand</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Our Growing Impact</h2>
+            <p className="text-gray-600 mb-12 text-lg">Building a stronger, more connected student community across India, starting from Jharkhand</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100">
                 <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">1000+</div>
-                <div className="text-gray-600 font-medium">JUT Students Helped</div>
+                <div className="text-gray-600 font-medium">Students Helped</div>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-100">
                 <div className="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -157,7 +157,7 @@ const About = () => {
                   <Building className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="text-3xl font-bold text-green-600 mb-2">25+</div>
-                <div className="text-gray-600 font-medium">JUT Colleges Connected</div>
+                <div className="text-gray-600 font-medium">Colleges Connected</div>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100">
                 <div className="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -188,9 +188,9 @@ const About = () => {
               <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <GraduationCap className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">JUT Diploma Students</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Diploma Students</h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                Students enrolled under Jharkhand University of Technology (JUT) seeking reliable academic resources and peer support.
+                Students from across India seeking reliable academic resources, peer support, and community connections.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
@@ -221,7 +221,7 @@ const About = () => {
               Core Objectives
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The driving motives behind everything we do at JEHUB - creating lasting impact for JUT students
+              The driving motives behind everything we do at JEHUB - creating lasting impact for students across India
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -251,7 +251,7 @@ const About = () => {
               Key Features
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              What makes JEHUB the perfect platform for JUT diploma students
+              What makes JEHUB the perfect platform for students across India
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -278,7 +278,7 @@ const About = () => {
               Core Team
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The founding members who started JEHUB and continue to lead its growth across JUT community
+              The founding members who started JEHUB and continue to lead its growth across Indian student communities
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -352,7 +352,7 @@ const About = () => {
               Scope & Future Plans
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our roadmap for expanding JEHUB&apos;s impact across Jharkhand and beyond
+              Our roadmap for expanding JEHUB&apos;s impact across India
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -362,7 +362,7 @@ const About = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">Campus Expansion</h3>
               <p className="text-gray-600 leading-relaxed">
-                Expanding presence in diploma colleges across Jharkhand with dedicated campus chapters and local representatives.
+                Expanding presence in colleges across India with dedicated campus chapters and local representatives in every state.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
@@ -398,7 +398,7 @@ const About = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-indigo-600 transition-colors">JEHUB Campus Chapters</h3>
               <p className="text-gray-600 leading-relaxed">
-                Launching self-sustaining campus chapters with student leadership and local community support.
+                Launching self-sustaining campus chapters across India with student leadership and local community support.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
@@ -420,7 +420,7 @@ const About = () => {
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 Our Story
               </h2>
-              <p className="text-xl text-gray-600">From a small idea to a thriving JUT student community</p>
+              <p className="text-xl text-gray-600">From a small idea to a thriving pan-India student community</p>
             </div>
             <div className="space-y-8">
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -433,8 +433,8 @@ const About = () => {
                 <p className="text-gray-700 leading-relaxed">
                   JEHUB was founded by Aditya Hansda, a visionary diploma student who wanted to build a space where 
                   fellow learners felt heard, guided, and connected. The initiative began with a small group of students 
-                  from the same branch and specialization, which gave us a focused understanding of the academic flow 
-                  and student pain points within the JUT system.
+                  from Jharkhand, which gave us a focused understanding of the academic challenges and student 
+                  pain points in the Indian education system.
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -445,10 +445,10 @@ const About = () => {
                   <h3 className="text-xl font-semibold text-gray-900">Growing Community</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  As we&apos;ve grown, so has our team. Today, JEHUB is proudly mentored by individuals from varied branches
-                  and backgrounds, bringing together diverse expertise to support students across disciplines. This 
-                  cross-branch collaboration ensures that no student feels left out—and every learner, regardless of 
-                  specialization, finds JEHUB a place they can rely on.
+                  As we&apos;ve grown, so has our team. Today, JEHUB is proudly led by individuals from varied branches
+                  and backgrounds across India, bringing together diverse expertise to support students from all states and disciplines. This 
+                  nationwide collaboration ensures that no student feels left out—and every learner, regardless of 
+                  location or specialization, finds JEHUB a place they can rely on.
                 </p>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -459,9 +459,9 @@ const About = () => {
                   <h3 className="text-xl font-semibold text-gray-900">Future Vision</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  In the coming months, JEHUB will continue expanding its presence in diploma colleges, offer micro-events, 
-                  live sessions, project-based learning, and build a strong, digital presence for campus-level collaboration. 
-                  With plans to launch JEHUB Campus Chapters, we aim to build a self-sustaining model across Jharkhand.
+                  In the coming months, JEHUB will continue expanding its presence in colleges across India, offering micro-events, 
+                  live sessions, project-based learning, and building a strong, digital presence for nationwide collaboration. 
+                  With plans to launch JEHUB Campus Chapters, we aim to build a self-sustaining model across every state in India.
                 </p>
               </div>
             </div>
@@ -476,7 +476,7 @@ const About = () => {
                 Get in Touch
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Ready to join the JEHUB community? Have questions? We&apos;d love to hear from you!
+                Ready to join the JEHUB community? From any corner of India? We&apos;d love to hear from you!
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -507,13 +507,13 @@ const About = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Location</p>
-                      <p className="text-gray-600">Jharkhand, India</p>
+                      <p className="text-gray-600">India (Started in Jharkhand)</p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
                   <p className="text-sm text-gray-700 font-medium">💡 Quick Tip</p>
-                  <p className="text-sm text-gray-600 mt-1">For faster response, mention your college and branch when reaching out!</p>
+                  <p className="text-sm text-gray-600 mt-1">For faster response, mention your college, state, and branch when reaching out!</p>
                 </div>
               </div>
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
@@ -536,7 +536,7 @@ const About = () => {
                   <div>
                     <input
                       type="text"
-                      placeholder="Your College & Branch (e.g., JUT - Computer Science)"
+                      placeholder="Your College & Branch (e.g., ABC College, Delhi - Computer Science)"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>

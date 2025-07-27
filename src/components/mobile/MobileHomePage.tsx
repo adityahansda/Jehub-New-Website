@@ -114,6 +114,15 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
       badge: '🔥'
     },
     {
+      id: 'notifications',
+      title: 'Notifications',
+      icon: HelpCircle,
+      color: 'bg-red-500',
+      bgColor: 'bg-red-100',
+      path: '/notifications',
+      badge: 'New'
+    },
+    {
       id: 'notes-upload',
       title: 'Notes Upload',
       icon: Upload,
@@ -122,20 +131,21 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
       path: '/notes-upload'
     },
     {
-      id: 'events',
-      title: 'Events',
+      id: 'exam-updates',
+      title: 'Exam Updates',
       icon: Calendar,
       color: 'bg-purple-500',
       bgColor: 'bg-purple-100',
-      path: '/events'
+      path: '/exam-updates',
+      badge: 'Important'
     },
     {
-      id: 'internships',
-      title: 'Internships',
-      icon: Briefcase,
+      id: 'counselling-updates',
+      title: 'Counselling Updates',
+      icon: UserPlus,
       color: 'bg-indigo-500',
       bgColor: 'bg-indigo-100',
-      path: '/internships',
+      path: '/counselling-updates',
       badge: 'Hot'
     },
     {
@@ -161,6 +171,14 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
       color: 'bg-yellow-500',
       bgColor: 'bg-yellow-100',
       path: '/leaderboard'
+    },
+    {
+      id: 'about',
+      title: 'About JEHUB',
+      icon: HelpCircle,
+      color: 'bg-gray-500',
+      bgColor: 'bg-gray-100',
+      path: '/about'
     }
   ];
 

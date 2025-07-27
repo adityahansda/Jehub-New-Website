@@ -139,10 +139,10 @@ const Groups = () => {
         {/* Call to Action */}
         <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-3xl p-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Don't See Your College?
+            Don&apos;t See Your College?
           </h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            We're constantly adding new college groups. If your college isn't listed, let us know and we'll help you start a community!
+            We&apos;re constantly adding new college groups. If your college isn&apos;t listed, let us know and we&apos;ll help you start a community!
           </p>
           <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 mx-auto">
             Request New Group

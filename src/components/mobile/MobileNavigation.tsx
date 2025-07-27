@@ -15,10 +15,11 @@ const MobileNavigation = () => {
 
   const navItems = [
     { href: '/', label: 'Home' },
-    { href: '/about', label: 'About' },
-    { href: '/services', label: 'Services' },
-    { href: '/contact', label: 'Contact' },
-    { href: '/blog', label: 'Blog' },
+    { href: '/notes-download', label: 'Notes Download' },
+    { href: '/notifications', label: 'Notifications' },
+    { href: '/exam-updates', label: 'Exam Updates' },
+    { href: '/counselling-updates', label: 'Counselling Updates' },
+    { href: '/about', label: 'About Us' },
   ];
 
   return (

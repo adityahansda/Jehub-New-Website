@@ -285,7 +285,7 @@ const TestPDFPage: React.FC = () => {
                   it will automatically try using the proxy server.
                 </li>
                 <li>
-                  <strong>Google Docs Viewer:</strong> Uses Google's document viewer service. 
+                  <strong>Google Docs Viewer:</strong> Uses Google&apos;s document viewer service. 
                   Works well with most publicly accessible PDFs but may have limitations with some sources.
                 </li>
                 <li>

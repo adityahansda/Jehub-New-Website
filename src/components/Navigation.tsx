@@ -10,7 +10,7 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck } from 'lucide-react';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,16 +21,26 @@ const Navigation = () => {
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
     { path: '/notes-download', label: 'Download Notes', icon: Download },
-    { path: '/notes-upload', label: 'Upload Notes', icon: Upload },
+    { path: '/notifications', label: 'Notifications', icon: Bell },
+    { path: '/exam-updates', label: 'Exam Updates', icon: Calendar },
+    { path: '/counselling-updates', label: 'Counselling Updates', icon: UserCheck },
     { path: '/groups', label: 'Join Groups', icon: Users },
-    { path: '/events', label: 'Events', icon: Trophy },
-    { path: '/internships', label: 'Internships', icon: Briefcase },
     { path: '/leaderboard', label: 'Leaderboard', icon: Star },
+    { path: '/about', label: 'About Us', icon: Info },
   ], []);
 
 
   useEffect(() => {
-    const currentIndex = navItems.findIndex(item => item.path.startsWith('/#') ? router.asPath.includes(item.path) : item.path === router.pathname);
+    const currentIndex = navItems.findIndex(item => {
+      if (item.path.startsWith('/#')) {
+        return router.asPath.includes(item.path);
+      }
+      // Handle groups redirect: /groups redirects to /features/groups
+      if (item.path === '/groups' && router.pathname === '/features/groups') {
+        return true;
+      }
+      return item.path === router.pathname;
+    });
     setActiveIndex(currentIndex === -1 ? 0 : currentIndex);
   }, [router.pathname, router.asPath, navItems]);
 
@@ -90,13 +100,17 @@ const Navigation = () => {
               {/* Main Navigation Items */}
               <nav className="flex items-center space-x-1">
                 {[
+                  { href: '/', label: 'Home', icon: BookOpen },
                   { href: '/notes-download', label: 'Notes Download', icon: Download },
-                  { href: '/groups', label: 'Groups', icon: Users },
-                  { href: '/events', label: 'Events', icon: Trophy },
-                  { href: '/internships', label: 'Internships', icon: Briefcase }
+                  { href: '/notifications', label: 'Notifications', icon: Bell },
+                  { href: '/groups', label: 'Join Groups', icon: Users },
+                  { href: '/about', label: 'About Us', icon: Info }
                 ].map((item, index) => {
                   const IconComponent = item.icon;
-                  const isActive = router.pathname === item.href;
+                  // Handle groups redirect: /groups redirects to /features/groups
+                  const isActive = item.href === '/groups' 
+                    ? (router.pathname === '/groups' || router.pathname === '/features/groups')
+                    : router.pathname === item.href;
                   return (
                     <Link
                       key={item.href}
@@ -229,8 +243,6 @@ const Navigation = () => {
             {/* Enhanced Additional Links */}
             <div className="space-y-2">
               {[
-                { href: '/about', label: 'About JEHUB', icon: Info },
-                { href: '/blog', label: 'Blog & Updates', icon: BookOpen },
                 { href: '/profile', label: 'My Profile', icon: GraduationCap }
               ].map((item) => {
                 const IconComponent = item.icon;

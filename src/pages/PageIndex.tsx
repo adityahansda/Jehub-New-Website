@@ -155,7 +155,7 @@ const PageIndex = () => {
             Need Help Finding Something?
           </h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Can't find what you're looking for? Our support team is here to help you navigate through all available features and pages.
+            Can&apos;t find what you&apos;re looking for? Our support team is here to help you navigate through all available features and pages.
           </p>
           <Link 
             href="/contact" 
