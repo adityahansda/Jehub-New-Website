@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AlertCircle, RefreshCw, ExternalLink, Download, Loader2 } from 'lucide-react';
 
 interface GoogleDocsPDFViewerProps {
@@ -16,13 +16,23 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
+  // Validate PDF URL on mount and when URL changes
+  useEffect(() => {
+    if (pdfUrl && !pdfUrl.toLowerCase().includes('.pdf')) {
+      setError('The provided URL does not appear to be a PDF file.');
+      setIsLoading(false);
+    } else if (pdfUrl) {
+      setError(null);
+      setIsLoading(true);
+    }
+  }, [pdfUrl]);
+
   // Convert various URL formats to Google Docs Viewer compatible URLs
   const getGoogleDocsViewerUrl = (url: string): string => {
     if (!url) return '';
 
     // Validate that the URL is a PDF
     if (!url.toLowerCase().includes('.pdf')) {
-      setError('The provided URL does not appear to be a PDF file.');
       return '';
     }
 
@@ -55,7 +65,7 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
     return `https://docs.google.com/gview?url=${encodeURIComponent(processedUrl)}&embedded=true`;
   };
 
-  const viewerUrl = getGoogleDocsViewerUrl(pdfUrl);
+  const viewerUrl = useMemo(() => getGoogleDocsViewerUrl(pdfUrl), [pdfUrl]);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -68,9 +78,11 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
   };
 
   const handleRetry = () => {
-    setError(null);
-    setIsLoading(true);
     setRetryCount(prev => prev + 1);
+    setError(null);
+    if (pdfUrl && pdfUrl.toLowerCase().includes('.pdf')) {
+      setIsLoading(true);
+    }
   };
 
   const openInNewTab = () => {
