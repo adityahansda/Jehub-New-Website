@@ -47,6 +47,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [currentLikes, setCurrentLikes] = useState(comment.likes || 0);
+  const [isGeneratingAvatarForReply, setIsGeneratingAvatarForReply] = useState(false);
 
   const timeAgo = new Date(comment.timestamp).toLocaleString('en-US', {
     year: 'numeric',
@@ -61,15 +62,29 @@ const CommentItem: React.FC<CommentItemProps> = ({
     if (!replyContent.trim()) return;
 
     try {
+      const savedUserInfo = localStorage.getItem('guestUserInfo');
+      const userHasCustomAvatar = savedUserInfo && JSON.parse(savedUserInfo).customAvatar;
+      
+      if (!userHasCustomAvatar) {
+        setIsGeneratingAvatarForReply(true);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       setIsSubmittingReply(true);
       const idToUse = comment.commentId || comment.id || comment.$id || 'unknown';
       await onReply(idToUse, replyContent.trim());
       setReplyContent('');
       setShowReplyForm(false);
+      
+      if (!userHasCustomAvatar && savedUserInfo) {
+        const updatedInfo = { ...JSON.parse(savedUserInfo), hasGeneratedAvatar: true };
+        localStorage.setItem('guestUserInfo', JSON.stringify(updatedInfo));
+      }
     } catch (error) {
       console.error('Error submitting reply:', error);
     } finally {
       setIsSubmittingReply(false);
+      setIsGeneratingAvatarForReply(false);
     }
   };
 
@@ -187,12 +202,27 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 </button>
                 <button
                   type="submit"
-                  disabled={!replyContent.trim() || isSubmittingReply}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  disabled={!replyContent.trim() || isSubmittingReply || isGeneratingAvatarForReply}
+                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
                 >
-                  {isSubmittingReply ? 'Posting...' : 'Reply'}
+                  {(isSubmittingReply || isGeneratingAvatarForReply) && (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                  )}
+                  {isGeneratingAvatarForReply ? 'Creating Avatar...' : (isSubmittingReply ? 'Posting...' : 'Reply')}
                 </button>
               </div>
+              
+              {/* Avatar Generation Alert for Reply */}
+              {isGeneratingAvatarForReply && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                    <span className="text-blue-800 text-xs">
+                      <strong>Creating your avatar...</strong> This happens only once.
+                    </span>
+                  </div>
+                </div>
+              )}
             </form>
           )}
 
@@ -224,16 +254,32 @@ const EnhancedCommentsSection: React.FC<EnhancedCommentsSectionProps> = ({
   userInfo
 }) => {
   const [newComment, setNewComment] = useState('');
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     try {
+      const savedUserInfo = localStorage.getItem('guestUserInfo');
+      const userHasCustomAvatar = savedUserInfo && JSON.parse(savedUserInfo).customAvatar;
+      
+      if (!userHasCustomAvatar && userInfo.name) {
+        setIsGeneratingAvatar(true);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
       await onCommentSubmit(newComment.trim());
       setNewComment('');
+      
+      if (!userHasCustomAvatar && savedUserInfo) {
+        const updatedInfo = { ...JSON.parse(savedUserInfo), hasGeneratedAvatar: true };
+        localStorage.setItem('guestUserInfo', JSON.stringify(updatedInfo));
+      }
     } catch (error) {
       console.error('Error submitting comment:', error);
+    } finally {
+      setIsGeneratingAvatar(false);
     }
   };
 
@@ -259,15 +305,27 @@ const EnhancedCommentsSection: React.FC<EnhancedCommentsSectionProps> = ({
           </span>
           <button
             type="submit"
-            disabled={!newComment.trim() || submittingComment}
+            disabled={!newComment.trim() || submittingComment || isGeneratingAvatar}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
-            {submittingComment && (
+            {(submittingComment || isGeneratingAvatar) && (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             )}
-            {submittingComment ? 'Posting...' : 'Post Comment'}
+            {isGeneratingAvatar ? 'Creating Avatar...' : (submittingComment ? 'Posting...' : 'Post Comment')}
           </button>
         </div>
+        
+        {/* Avatar Generation Alert */}
+        {isGeneratingAvatar && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <span className="text-blue-800 text-sm">
+                <strong>Creating your avatar...</strong> This happens only once. Your comment will be posted shortly.
+              </span>
+            </div>
+          </div>
+        )}
       </form>
 
       {/* Comments List */}

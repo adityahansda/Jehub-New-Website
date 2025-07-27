@@ -13,7 +13,7 @@ export interface ReportData {
   reason: string;
   description: string;
   reporterName: string;
-  reporterEmail?: string;
+  reporterEmail: string;
 }
 
 const REPORT_REASONS = [
@@ -72,6 +72,10 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
     if (!reportData.reporterName.trim()) {
       newErrors.reporterName = 'Please provide your name';
+    }
+
+    if (!reportData.reporterEmail.trim()) {
+      newErrors.reporterEmail = 'Please provide your email';
     }
 
     setErrors(newErrors);
@@ -175,16 +179,21 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email (Optional)
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
                 value={reportData.reporterEmail}
                 onChange={(e) => setReportData(prev => ({ ...prev, reporterEmail: e.target.value }))}
                 placeholder="your.email@example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.reporterEmail ? 'border-red-300' : 'border-gray-300'
+                }`}
                 disabled={submitting}
               />
+              {errors.reporterEmail && (
+                <p className="mt-1 text-sm text-red-600">{errors.reporterEmail}</p>
+              )}
             </div>
           </div>
 
