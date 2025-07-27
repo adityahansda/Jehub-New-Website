@@ -332,7 +332,7 @@ const NotesDownload = () => {
   };
 
   const handleShare = (note: Note) => {
-    const shareUrl = `${window.location.origin}/notes-preview/${note.id}/${encodeURIComponent(note.title)}`;
+    const shareUrl = `${window.location.origin}/notes/preview/${note.id}/${encodeURIComponent(note.title)}`;
     const shareText = `${note.title}\n\nThis note is downloaded from Jharkhand Engineer's Hub. You can join the amazing community:\n• Telegram Group: [Link]\n• WhatsApp Group: [Link]\n\nCheck it out: ${shareUrl}`;
     
     if (navigator.share) {
@@ -356,7 +356,7 @@ const NotesDownload = () => {
 
   const handleViewPDF = (note: Note) => {
     // Redirect to notes preview page
-    window.open(`/notes-preview/${note.id}`, '_blank');
+    window.open(`/notes/preview/${note.id}`, '_blank');
   };
 
 

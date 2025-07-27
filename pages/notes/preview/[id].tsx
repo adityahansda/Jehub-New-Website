@@ -275,6 +275,8 @@ const NotesPreview = () => {
   const [submittingReport, setSubmittingReport] = useState(false);
   const [showReports, setShowReports] = useState(false);
 
+  // Track report modal state changes
+
   // For now, allow anyone to comment (no login required)
   useEffect(() => {
     // Set to true to allow anyone to comment
@@ -574,7 +576,7 @@ const NotesPreview = () => {
 
       setShowReportModal(false);
 
-      console.log('Report submitted successfully!');
+      // Report submitted successfully
 
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -656,7 +658,7 @@ const NotesPreview = () => {
       // Refresh comments to get updated threaded structure
       await fetchComments();
 
-      console.log('Comment submitted successfully!');
+      // Comment submitted successfully
 
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -669,7 +671,7 @@ const NotesPreview = () => {
   // Handle comment likes
   const handleCommentLike = async (commentId: string, isLiked: boolean) => {
     try {
-      console.log('Liking comment with ID:', commentId, 'Action:', isLiked ? 'like' : 'unlike');
+      // Handle comment like/unlike
 
       const response = await fetch('/api/comments', {
         method: 'PATCH',
@@ -689,7 +691,7 @@ const NotesPreview = () => {
       }
 
       const result = await response.json();
-      console.log('Like update successful:', result);
+      // Like update successful
 
       // Refresh comments to get updated like counts
       await fetchComments();

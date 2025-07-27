@@ -143,8 +143,8 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
 
       <div className="space-y-4">
         {reports.map((report) => {
-          const isExpanded = expandedReports.has(report.id);
-          const netVotes = report.upvotes - report.downvotes;
+          const isExpanded = expandedReports.has(report.id || '');
+          const netVotes = (report.upvotes || 0) - (report.downvotes || 0);
           
           return (
             <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
@@ -160,14 +160,14 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-gray-900 truncate">
-                          {report.reporterName}
+                          {report.reporterName || 'Anonymous'}
                         </span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getReasonColor(report.reason)}`}>
-                          {report.reason}
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getReasonColor(report.reason || 'Other')}`}>
+                          {report.reason || 'Other'}
                         </span>
                         <div className="flex items-center gap-1 text-xs text-gray-500">
                           <Calendar className="h-3 w-3" />
-                          {formatRelativeTime(report.createdAt)}
+                          {formatRelativeTime(report.createdAt || new Date().toISOString())}
                         </div>
                       </div>
                     </div>
@@ -214,12 +214,12 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
                   <div className="mt-2">
                     <p className="text-gray-700 text-sm">
                       {isExpanded 
-                        ? report.description 
-                        : `${report.description.slice(0, 120)}${report.description.length > 120 ? '...' : ''}`
+                        ? (report.description || '') 
+                        : `${(report.description || '').slice(0, 120)}${(report.description || '').length > 120 ? '...' : ''}`
                       }
                     </p>
                     
-                    {report.description.length > 120 && (
+                    {(report.description || '').length > 120 && (
                       <button
                         onClick={() => toggleReportExpansion(report.id)}
                         className="flex items-center gap-1 mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
@@ -243,15 +243,15 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
                   <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <ThumbsUp className="h-3 w-3" />
-                      {report.upvotes} helpful
+                      {report.upvotes || 0} helpful
                     </span>
                     <span className="flex items-center gap-1">
                       <ThumbsDown className="h-3 w-3" />
-                      {report.downvotes} not helpful
+                      {report.downvotes || 0} not helpful
                     </span>
                     <span className="flex items-center gap-1">
                       <MessageCircle className="h-3 w-3" />
-                      Report #{report.id.slice(-8)}
+                      Report #{(report.id || '').slice(-8) || 'Unknown'}
                     </span>
                   </div>
                 </div>
@@ -267,7 +267,7 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({
           <div className="flex items-center gap-4">
             <span>Total Reports: {reports.length}</span>
             <span>
-              Total Votes: {reports.reduce((sum, report) => sum + report.upvotes + report.downvotes, 0)}
+              Total Votes: {reports.reduce((sum, report) => sum + (report.upvotes || 0) + (report.downvotes || 0), 0)}
             </span>
           </div>
           <div className="text-xs">
