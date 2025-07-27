@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
+import { extractIdFromSlug, isValidNoteSlug, generateNoteSlug } from '../../../src/utils/seo';
+import SEO from '../../../src/components/SEO';
+import JsonLd from '../../../src/components/JsonLd';
 import {
   Download,
   Eye,
@@ -175,10 +178,16 @@ const NotesPreview = () => {
         setLoading(true);
         setError(''); // Clear any previous errors
 
+        // Extract actual ID from slug if it's a slug format
+        let noteId = id as string;
+        if (typeof id === 'string' && isValidNoteSlug(id)) {
+          noteId = extractIdFromSlug(id);
+        }
+
         const response = await databases.getDocument(
           process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
           process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-          id as string
+          noteId
         );
 
         const fetchedNote = {
@@ -811,8 +820,56 @@ const NotesPreview = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <>
+      {note && (
+        <SEO
+          title={`${note.title} - Engineering Notes Preview`}
+          description={`${note.description} - Download this ${note.subject} note for ${note.branch} ${note.semester} semester from ${note.uploader}. Part of Jharkhand Engineer's Hub community.`}
+          tags={[note.subject, note.branch, note.semester, note.degree, ...note.tags, 'engineering notes', 'study materials']}
+          article={true}
+          publishedTime={note.uploadDate}
+        />
+      )}
+      {note && (
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "CreativeWork",
+            "name": note.title,
+            "description": note.description,
+            "keywords": [...note.tags, note.subject, note.branch, note.semester, note.degree].join(', '),
+            "author": {
+              "@type": "Person",
+              "name": note.uploader
+            },
+            "datePublished": note.uploadDate,
+            "genre": "education",
+            "provider": {
+              "@type": "Organization",
+              "name": "Jharkhand Engineer's Hub"
+            },
+            "interactionStatistic": [
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/DownloadAction",
+                "userInteractionCount": note.downloads
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/LikeAction",
+                "userInteractionCount": note.likes
+              },
+              {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/ViewAction",
+                "userInteractionCount": note.views
+              }
+            ]
+          }}
+        />
+      )}
+      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
           <Link
@@ -1241,7 +1298,7 @@ const NotesPreview = () => {
                 {relatedNotes.map((relatedNote) => (
                   <Link
                     key={relatedNote.id}
-                    href={`/notes/preview/${relatedNote.id}`}
+                    href={`/notes/preview/${generateNoteSlug(relatedNote.id, relatedNote.title)}`}
                     className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
                   >
                     <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
@@ -1266,6 +1323,7 @@ const NotesPreview = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* User Info Form Popup */}
@@ -1463,7 +1521,7 @@ const NotesPreview = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
