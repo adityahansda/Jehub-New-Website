@@ -185,7 +185,7 @@ const NotesPreview = () => {
         }
       }
     }
-  }, [note]);
+  }, [note?.id]);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [downloadPopup, setDownloadPopup] = useState<{
@@ -201,19 +201,6 @@ const NotesPreview = () => {
 
   // PDF-related state
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (pdfUrl) {
-      fetch(`/api/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`)
-        .then(response => response.blob())
-        .then(blob => {
-          const objectUrl = URL.createObjectURL(blob);
-          setBlobUrl(objectUrl);
-        })
-        .catch(error => console.error('Error fetching PDF blob:', error));
-    }
-  }, [pdfUrl]);
 
   // Fetch note data from database
   useEffect(() => {
@@ -255,8 +242,15 @@ const NotesPreview = () => {
           // console.log('Transformed URL:', viewableUrl); // Suppressed for production
           setPdfUrl(viewableUrl);
 
-          // Validate PDF URL
-          checkUrlStatus(fetchedNote.githubUrl);
+          // Validate PDF URL asynchronously
+          checkUrlStatus(fetchedNote.githubUrl)
+            .then(result => {
+              setPdfValidationStatus(result.status);
+            })
+            .catch(error => {
+              console.error('Error validating PDF URL:', error);
+              setPdfValidationStatus('error');
+            });
         }
       } catch (err) {
         setError('Failed to fetch note details. Please try again later.');
@@ -296,7 +290,7 @@ const NotesPreview = () => {
   // Fetch related notes when note is loaded
   useEffect(() => {
     const fetchRelatedNotes = async () => {
-      if (!note) return;
+      if (!note?.id || !note?.subject) return;
 
       try {
         const response = await databases.listDocuments(
@@ -334,7 +328,7 @@ const NotesPreview = () => {
     };
 
     fetchRelatedNotes();
-  }, [note]);
+  }, [note?.id, note?.subject]);
 
 
   const handleDownload = async () => {
@@ -676,17 +670,6 @@ const NotesPreview = () => {
               </div>
             </div>
 
-            {/* Debug Info */}
-            {note && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h4 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info:</h4>
-                <div className="text-xs text-yellow-700 space-y-1">
-                  <p><strong>Original GitHub URL:</strong> <span className="break-all">{note.githubUrl}</span></p>
-                  <p><strong>PDF URL for viewing:</strong> <span className="break-all">{pdfUrl}</span></p>
-                  <p><strong>Download URL would be:</strong> <span className="break-all">{note.githubUrl ? convertToDownloadUrl(note.githubUrl) : 'N/A'}</span></p>
-                </div>
-              </div>
-            )}
 
             {/* Deleted PDF Message */}
             {showDeletedMessage && (
@@ -734,9 +717,7 @@ const NotesPreview = () => {
             {/* PDF Preview */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">PDF Preview</h3>
-              {blobUrl ? (
-                <GoogleDocsPDFViewer pdfUrl={blobUrl} />
-              ) : pdfValidationStatus === 'deleted' ? (
+              {pdfValidationStatus === 'deleted' ? (
                 <div className="text-center py-8 text-red-500">
                   <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <XCircle className="h-8 w-8 text-red-600" />
@@ -745,6 +726,11 @@ const NotesPreview = () => {
                   <p className="text-red-700 mb-4">This PDF file has been deleted from GitHub and cannot be previewed.</p>
                   <p className="text-sm text-red-600">Contact the administrator for assistance.</p>
                 </div>
+              ) : pdfUrl ? (
+                <GoogleDocsPDFViewer 
+                  pdfUrl={pdfUrl} 
+                  fileName={note?.fileName || 'document.pdf'}
+                />
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">

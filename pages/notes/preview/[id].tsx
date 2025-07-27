@@ -219,8 +219,13 @@ const NotesPreview = () => {
             },
             body: JSON.stringify({ action: 'increment_view' })
           });
-          // Update local state with new view count
-          setNote(prev => prev ? { ...prev, views: prev.views + 1 } : null);
+          // Update local state with new view count without triggering re-renders
+          setNote(prev => {
+            if (prev) {
+              return { ...prev, views: prev.views + 1 };
+            }
+            return prev;
+          });
         } catch (viewError) {
           console.warn('Failed to track view:', viewError);
         }
@@ -391,7 +396,7 @@ const NotesPreview = () => {
     };
 
     fetchRelatedNotes();
-  }, [note]);
+  }, [note?.id, note?.subject]);
 
 
   const handleDownload = async () => {

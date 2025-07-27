@@ -70,7 +70,7 @@ const Home = () => {
       window.addEventListener('load', handlePageLoad);
       return () => window.removeEventListener('load', handlePageLoad);
     }
-  }, [isInitialized]);
+  }, []);
 
   // Smooth scroll function for navigation
   const smoothScrollTo = (elementId: string) => {
@@ -220,7 +220,7 @@ const Home = () => {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [isInitialized]);
+  }, []);
 
   // Navigation handler for wishlist registration
   const handleWishlistNavigation = () => {
