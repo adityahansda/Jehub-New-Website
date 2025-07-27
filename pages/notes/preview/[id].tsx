@@ -399,7 +399,7 @@ const NotesPreview = () => {
     };
 
     fetchRelatedNotes();
-  }, [note?.id, note?.subject]);
+  }, [note]);
 
 
   const handleDownload = async () => {
@@ -1297,7 +1297,7 @@ const NotesPreview = () => {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  💡 We'll create a unique avatar for you based on your name
+                  💡 We&apos;ll create a unique avatar for you based on your name
                 </p>
               </div>
 

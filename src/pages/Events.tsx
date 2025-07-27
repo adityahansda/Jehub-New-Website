@@ -94,7 +94,7 @@ const Events = () => {
             Want to Organize an Event?
           </h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Have an idea for a workshop, seminar, or competition? We'd love to help you organize it for the JEHUB community.
+            Have an idea for a workshop, seminar, or competition? We&apos;d love to help you organize it for the JEHUB community.
           </p>
           <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
             Propose an Event

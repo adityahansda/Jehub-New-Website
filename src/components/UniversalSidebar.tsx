@@ -30,12 +30,13 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
     { path: '/', label: 'Home', icon: Home, description: 'Main dashboard and updates' },
     { path: '/notes-download', label: 'Download Notes', icon: Download, description: 'Access study materials' },
     { path: '/notes-upload', label: 'Upload Notes', icon: Upload, description: 'Share your notes' },
+    { path: '/notifications', label: 'Notifications', icon: HelpCircle, description: 'Important announcements' },
+    { path: '/exam-updates', label: 'Exam Updates', icon: Calendar, description: 'Examination schedules and results' },
+    { path: '/counselling-updates', label: 'Counselling Updates', icon: Users, description: 'Admission and counselling info' },
     { path: '/groups', label: 'College Groups', icon: Users, description: 'Join your college community' },
-    { path: '/events', label: 'Events', icon: Calendar, description: 'Workshops and competitions' },
-    { path: '/internships', label: 'Internships', icon: Briefcase, description: 'Find job opportunities' },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy, description: 'Top contributors' },
-    { path: '/about', label: 'About JEHUB', icon: BookOpen, description: 'Learn about our platform' },
     { path: '/join-team', label: 'Join Our Team', icon: UserPlus, description: 'Work with us' },
+    { path: '/about', label: 'About JEHUB', icon: BookOpen, description: 'Learn about our platform' },
   ];
 
   const bottomItems = [
