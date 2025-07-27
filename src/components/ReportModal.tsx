@@ -111,7 +111,12 @@ const ReportModal: React.FC<ReportModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  console.log('ReportModal - isOpen prop:', isOpen);
+  if (!isOpen) {
+    console.log('ReportModal - returning null because isOpen is false');
+    return null;
+  }
+  console.log('ReportModal - rendering modal');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
