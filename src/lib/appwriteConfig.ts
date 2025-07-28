@@ -11,6 +11,7 @@ export const appwriteConfig = {
     comments: process.env.NEXT_PUBLIC_APPWRITE_COMMENTS_COLLECTION_ID || '687f1e59000770d11274',
     pageIndexing: process.env.NEXT_PUBLIC_APPWRITE_PAGE_INDEXING_COLLECTION_ID || 'page_indexing',
     notifications: process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID || 'notifications',
+    shares: process.env.NEXT_PUBLIC_APPWRITE_SHARES_COLLECTION_ID || 'shares_collection_id',
   },
   // GitHub configuration
   github: {
