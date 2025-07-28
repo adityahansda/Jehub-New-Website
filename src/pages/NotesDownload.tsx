@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText } from 'lucide-react';
+import { generateNoteSlug } from '../utils/seo';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
@@ -332,7 +333,8 @@ const NotesDownload = () => {
   };
 
   const handleShare = (note: Note) => {
-    const shareUrl = `${window.location.origin}/notes/preview/${note.id}/${encodeURIComponent(note.title)}`;
+    const noteSlug = generateNoteSlug(note.id, note.title);
+    const shareUrl = `${window.location.origin}/notes/preview/${noteSlug}`;
     const shareText = `${note.title}\n\nThis note is downloaded from Jharkhand Engineer's Hub. You can join the amazing community:\n• Telegram Group: [Link]\n• WhatsApp Group: [Link]\n\nCheck it out: ${shareUrl}`;
     
     if (navigator.share) {
@@ -355,8 +357,9 @@ const NotesDownload = () => {
   };
 
   const handleViewPDF = (note: Note) => {
-    // Redirect to notes preview page
-    window.open(`/notes/preview/${note.id}`, '_blank');
+    // Redirect to notes preview page with SEO-friendly URL
+    const noteSlug = generateNoteSlug(note.id, note.title);
+    window.open(`/notes/preview/${noteSlug}`, '_blank');
   };
 
 

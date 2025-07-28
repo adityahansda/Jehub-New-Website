@@ -3,6 +3,8 @@ import '../src/index.css'
 import Layout from '../src/components/Layout'
 import { NavigationProvider } from '../src/contexts/NavigationContext'
 import { useRouter } from 'next/router'
+import { DefaultSeo } from 'next-seo'
+import SEO from '../next-seo.config'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter()
@@ -16,6 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
   
   return (
     <NavigationProvider>
+      <DefaultSeo {...SEO} />
       {shouldUseLayout ? (
         <Layout>
           <Component {...pageProps} />
