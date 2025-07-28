@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test/
+Disallow: /_next/
+Disallow: /private/
+
+# Host
+Host: https://jehub.vercel.app
+
+# Sitemaps
+Sitemap: https://jehub.vercel.app/sitemap.xml

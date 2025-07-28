@@ -9,6 +9,8 @@ export const appwriteConfig = {
     activities: process.env.NEXT_PUBLIC_APPWRITE_USER_ACTIVITIES_COLLECTION_ID || '6873f96f003939323c73',
     reports: process.env.NEXT_PUBLIC_APPWRITE_REPORTS_COLLECTION_ID || 'reports_collection_placeholder',
     comments: process.env.NEXT_PUBLIC_APPWRITE_COMMENTS_COLLECTION_ID || '687f1e59000770d11274',
+    pageIndexing: process.env.NEXT_PUBLIC_APPWRITE_PAGE_INDEXING_COLLECTION_ID || 'page_indexing',
+    notifications: process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID || 'notifications',
   },
   // GitHub configuration
   github: {

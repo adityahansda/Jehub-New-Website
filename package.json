@@ -13,7 +13,9 @@
     "health-check": "npm run test && npm run build",
     "db:create-indexes": "node scripts/create-indexes.js",
     "db:auto-index": "node scripts/auto-index-manager.js",
-    "db:monitor": "node scripts/monitor-indexes.js"
+    "db:monitor": "node scripts/monitor-indexes.js",
+    "postbuild": "next-sitemap",
+    "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
@@ -24,6 +26,8 @@
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.525.0",
     "next": "^14.2.18",
+    "next-seo": "^6.8.0",
+    "next-sitemap": "^4.2.3",
     "node-appwrite": "^17.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -39,6 +43,6 @@
     "eslint-config-next": "^14.2.18",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.5.4"
+    "typescript": "5.5.4"
   }
 }
