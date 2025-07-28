@@ -14,7 +14,8 @@
     "db:create-indexes": "node scripts/create-indexes.js",
     "db:auto-index": "node scripts/auto-index-manager.js",
     "db:monitor": "node scripts/monitor-indexes.js",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
@@ -42,6 +43,6 @@
     "eslint-config-next": "^14.2.18",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.5.4"
+    "typescript": "5.5.4"
   }
 }

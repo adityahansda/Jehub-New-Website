@@ -8,7 +8,7 @@ Disallow: /_next/
 Disallow: /private/
 
 # Host
-Host: https://your-domain.com
+Host: https://jehub.vercel.app
 
 # Sitemaps
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://jehub.vercel.app/sitemap.xml
