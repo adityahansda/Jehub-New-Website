@@ -9,3 +9,4 @@ export const NOTES_COLLECTION_ID = collections.notes;
 export const USERS_COLLECTION_ID = collections.users;
 export const ACTIVITIES_COLLECTION_ID = collections.activities;
 export const COMMENTS_COLLECTION_ID = collections.comments;
+export const SHARES_COLLECTION_ID = collections.shares;

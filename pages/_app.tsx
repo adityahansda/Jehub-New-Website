@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app'
 import '../src/index.css'
 import Layout from '../src/components/Layout'
 import { NavigationProvider } from '../src/contexts/NavigationContext'
+import { AuthProvider } from '../src/contexts/AuthContext'
 import { useRouter } from 'next/router'
 import { DefaultSeo } from 'next-seo'
 import SEO from '../next-seo.config'
@@ -17,15 +18,17 @@ export default function App({ Component, pageProps }: AppProps) {
   const shouldUseLayout = !(isComingSoonMode && router.pathname === '/') && router.pathname !== '/coming-soon'
   
   return (
-    <NavigationProvider>
-      <DefaultSeo {...SEO} />
-      {shouldUseLayout ? (
-        <Layout>
+    <AuthProvider>
+      <NavigationProvider>
+        <DefaultSeo {...SEO} />
+        {shouldUseLayout ? (
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        ) : (
           <Component {...pageProps} />
-        </Layout>
-      ) : (
-        <Component {...pageProps} />
-      )}
-    </NavigationProvider>
+        )}
+      </NavigationProvider>
+    </AuthProvider>
   )
 }
