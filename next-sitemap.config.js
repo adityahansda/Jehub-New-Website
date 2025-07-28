@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://your-domain.com',
+  siteUrl: process.env.SITE_URL || 'https://jehub.vercel.app',
   generateRobotsTxt: true,
   generateIndexSitemap: false,
   exclude: [
@@ -26,33 +26,78 @@ module.exports = {
       }
     ],
     additionalSitemaps: [
-      'https://your-domain.com/sitemap.xml',
+      'https://jehub.vercel.app/sitemap.xml',
     ]
   },
   additionalPaths: async (config) => {
-    const result = []
-    
-    // Add dynamic routes for notes
-    // You can fetch your notes here and add them to the sitemap
-    try {
-      // This would be your API call to get all notes
-      // const notes = await fetch('your-api-endpoint/notes')
-      // notes.forEach(note => {
-      //   result.push({
-      //     url: `/notes/preview/${note.id}`,
-      //     changefreq: 'weekly',
-      //     priority: 0.8,
-      //     lastmod: note.updatedDate || note.uploadDate
-      //   })
-      // })
-    } catch (error) {
-      console.warn('Could not generate dynamic sitemap entries:', error)
+    // Skip API calls during build time if server is not running
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.VERCEL_URL) {
+      return [];
     }
     
-    return result
+    try {
+      const res = await fetch(`${config.siteUrl}/api/admin/page-indexing`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        timeout: 5000
+      });
+      
+      if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) {
+        return [];
+      }
+      
+      const { data: pages } = await res.json();
+      
+      // Use indexing settings to generate sitemap paths
+      return pages.filter(page => page.isIndexed).map(page => {
+        return {
+          loc: page.pagePath,
+          changefreq: page.changefreq,
+          priority: page.priority,
+          lastmod: page.lastmod
+        };
+      });
+    } catch (error) {
+      // Silently return empty array during build
+      return [];
+    }
   },
   transform: async (config, path) => {
-    // Custom priority and changefreq based on path
+    // Skip API calls during build time if server is not running
+    if (!(process.env.NODE_ENV === 'production' && (process.env.VERCEL || process.env.VERCEL_URL))) {
+      // Use fallback settings during build
+    } else {
+      // Try to get settings from database first in production
+      try {
+        const res = await fetch(`${config.siteUrl}/api/admin/page-indexing`, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          timeout: 5000
+        });
+        
+        if (res.ok && res.headers.get('content-type')?.includes('application/json')) {
+          const { data: pages } = await res.json();
+          const pageSettings = pages.find(page => page.pagePath === path);
+          
+          if (pageSettings) {
+            return {
+              loc: path,
+              changefreq: pageSettings.changefreq,
+              priority: pageSettings.priority,
+              lastmod: pageSettings.lastmod || new Date().toISOString(),
+            };
+          }
+        }
+      } catch (error) {
+        // Silently fall through to default settings
+      }
+    }
+    
+    // Fallback to default settings
     const customConfig = {
       loc: path,
       changefreq: 'weekly',

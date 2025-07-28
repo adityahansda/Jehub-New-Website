@@ -1,62 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, Calendar, AlertCircle, CheckCircle, Info, X, Clock, Filter, Search, Bookmark, BookmarkCheck } from 'lucide-react';
+
+interface Notification {
+  $id: string;
+  title: string;
+  message: string;
+  type: string;
+  category: string;
+  priority: string;
+  isActive: boolean;
+  targetAudience: string;
+  expiryDate?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Notifications = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const notifications = [
-    {
-      id: 1,
-      type: 'exam',
-      title: 'Semester End Examination Schedule Released',
-      message: 'The examination schedule for all diploma courses has been published. Check your exam dates and prepare accordingly.',
-      timestamp: '2 hours ago',
-      read: false,
-      priority: 'high',
-      category: 'Academic'
-    },
-    {
-      id: 2,
-      type: 'admission',
-      title: 'New Admission Notifications Available',
-      message: 'Latest admission notifications for various diploma courses are now available. Apply before the deadline.',
-      timestamp: '4 hours ago',
-      read: false,
-      priority: 'medium',
-      category: 'Admission'
-    },
-    {
-      id: 3,
-      type: 'general',
-      title: 'JEHUB Community Update',
-      message: 'New features added to the platform. Explore the updated interface and enhanced functionality.',
-      timestamp: '1 day ago',
-      read: true,
-      priority: 'low',
-      category: 'Platform'
-    },
-    {
-      id: 4,
-      type: 'result',
-      title: 'Semester Results Declared',
-      message: 'Results for the recent semester examinations have been declared. Check your results now.',
-      timestamp: '2 days ago',
-      read: true,
-      priority: 'high',
-      category: 'Results'
-    },
-    {
-      id: 5,
-      type: 'counselling',
-      title: 'Counselling Session Schedule Updated',
-      message: 'The counselling schedule has been updated. New dates and venues have been added.',
-      timestamp: '3 days ago',
-      read: false,
-      priority: 'medium',
-      category: 'Counselling'
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/notifications?type=${selectedFilter}`);
+      const data = await response.json();
+      if (data.success) {
+        setNotifications(data.data);
+      } else {
+        console.error('Error fetching notifications:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     }
-  ];
+    setLoading(false);
+  }, [selectedFilter]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Handle search query changes with debouncing effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchNotifications();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchNotifications]);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -76,13 +69,6 @@ const Notifications = () => {
       default: return 'border-l-gray-500';
     }
   };
-
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesFilter = selectedFilter === 'all' || notification.type === selectedFilter;
-    const matchesSearch = notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         notification.message.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -135,35 +121,35 @@ const Notifications = () => {
               <div className="text-sm text-gray-600">Total</div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <div className="text-2xl font-bold text-red-600 mb-1">{notifications.filter(n => !n.read).length}</div>
-              <div className="text-sm text-gray-600">Unread</div>
+              <div className="text-2xl font-bold text-green-600 mb-1">{notifications.filter(n => n.isActive).length}</div>
+              <div className="text-sm text-gray-600">Active</div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <div className="text-2xl font-bold text-orange-600 mb-1">{notifications.filter(n => n.priority === 'high').length}</div>
               <div className="text-sm text-gray-600">High Priority</div>
             </div>
             <div className="bg-white rounded-lg p-4 border border-gray-200">
-              <div className="text-2xl font-bold text-green-600 mb-1">{notifications.filter(n => n.read).length}</div>
-              <div className="text-sm text-gray-600">Read</div>
+              <div className="text-2xl font-bold text-blue-600 mb-1">{notifications.filter(n => n.priority === 'medium').length}</div>
+              <div className="text-sm text-gray-600">Medium Priority</div>
             </div>
           </div>
         </div>
 
         {/* Notifications List */}
         <div className="space-y-4">
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <p>Loading...</p>
+          ) : notifications.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <Bell className="h-12 w-12 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No notifications found</h3>
               <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
             </div>
           ) : (
-            filteredNotifications.map((notification) => (
+            notifications.map((notification) => (
               <div
-                key={notification.id}
-                className={`bg-white rounded-lg border-l-4 ${getPriorityColor(notification.priority)} shadow-sm hover:shadow-md transition-shadow duration-200 p-6 ${
-                  !notification.read ? 'ring-2 ring-blue-100' : ''
-                }`}
+                key={notification.$id}
+                className={`bg-white rounded-lg border-l-4 ${getPriorityColor(notification.priority)} shadow-sm hover:shadow-md transition-shadow duration-200 p-6`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
@@ -172,14 +158,9 @@ const Notifications = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className={`text-lg font-semibold ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <h3 className={`text-lg font-semibold text-gray-900`}>
                           {notification.title}
                         </h3>
-                        {!notification.read && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            New
-                          </span>
-                        )}
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           notification.priority === 'high' ? 'bg-red-100 text-red-800' :
                           notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -195,16 +176,18 @@ const Notifications = () => {
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            <span>{notification.timestamp}</span>
+                            <span>{new Date(notification.createdAt).toLocaleString()}</span>
                           </div>
                           <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
                             {notification.category}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-                            {notification.read ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                          </button>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            notification.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {notification.isActive ? 'Active' : 'Inactive'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -215,14 +198,6 @@ const Notifications = () => {
           )}
         </div>
 
-        {/* Load More Button */}
-        {filteredNotifications.length > 0 && (
-          <div className="text-center mt-8">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-              Load More Notifications
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
