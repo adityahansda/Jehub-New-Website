@@ -230,407 +230,406 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="min-h-screen bg-gray-50"
       >
-      {/* Top App Bar */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3"
-      >
-        <div className="flex items-center justify-between">
-          {/* Left Side - Menu + Logo */}
-          <div className="flex items-center space-x-3">
-            <motion.button 
-              onClick={() => setIsMenuOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="h-5 w-5 text-gray-600" />
-            </motion.button>
-            <Image
-              src="/images/logo.png"
-              alt="JEHUB"
-              width={32}
-              height={32}
-              className="h-8 w-auto"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'block');
-              }}
-            />
-            <span
-              className="text-xl font-bold text-blue-600 hidden"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              JEHUB
-            </span>
-          </div>
-
-          {/* Right Section */}
-          <div className="flex items-center space-x-3">
-            {/* Notifications */}
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <Bell className="h-5 w-5 text-gray-600" />
-              {notificationCount > 0 && (
-                <motion.span 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse"
-                >
-                  {notificationCount}
-                </motion.span>
-              )}
-            </motion.button>
-            {/* Profile */}
-            <Link href="/profile">
-              <motion.div 
+        {/* Top App Bar */}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3"
+        >
+          <div className="flex items-center justify-between">
+            {/* Left Side - Menu + Logo */}
+            <div className="flex items-center space-x-3">
+              <motion.button
+                onClick={() => setIsMenuOpen(true)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                {user.avatar ? (
-                  <Image src={user.avatar} alt={user.name} width={32} height={32} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User className="h-4 w-4 text-white" />
-                )}
-              </motion.div>
-            </Link>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Universal Sidebar */}
-      <UniversalSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-
-
-      {/* Announcement Strip */}
-      <AnimatePresence>
-        {showAnnouncement && (
-          <motion.div 
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -50, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 relative"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 flex-1">
-                <Megaphone className="h-4 w-4 animate-pulse" />
-                <div className="overflow-hidden">
-                  <motion.p 
-                    key={currentAnnouncement}
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -100, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-sm font-medium"
-                  >
-                    {announcements[currentAnnouncement]}
-                  </motion.p>
-                </div>
-              </div>
-              <motion.button
-                onClick={() => setShowAnnouncement(false)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="text-white/80 hover:text-white"
-              >
-                <span className="text-lg">×</span>
+                <Menu className="h-5 w-5 text-gray-600" />
               </motion.button>
+              <Image
+                src="/images/logo.png"
+                alt="JEHUB"
+                width={32}
+                height={32}
+                className="h-8 w-auto"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'block');
+                }}
+              />
+              <span
+                className="text-xl font-bold text-blue-600 hidden"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                JEHUB
+              </span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="px-4 pb-20 pt-5"
-      >
-
-        {/* Search Section */}
-        <div className="mb-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+            {/* Right Section */}
+            <div className="flex items-center space-x-3">
+              {/* Notifications */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <Bell className="h-5 w-5 text-gray-600" />
+                {notificationCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse"
+                  >
+                    {notificationCount}
+                  </motion.span>
+                )}
+              </motion.button>
+              {/* Profile */}
+              <Link href="/dashboard">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center"
+                >
+                  {user.avatar ? (
+                    <Image src={user.avatar} alt={user.name} width={32} height={32} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User className="h-4 w-4 text-white" />
+                  )}
+                </motion.div>
+              </Link>
             </div>
-            <input
-              type="text"
-              placeholder="Search notes, events, blogs..."
-              className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
-                <Filter className="h-5 w-5 text-gray-400" />
+          </div>
+        </motion.div>
+
+        {/* Universal Sidebar */}
+        <UniversalSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
+
+        {/* Announcement Strip */}
+        <AnimatePresence>
+          {showAnnouncement && (
+            <motion.div
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 relative"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 flex-1">
+                  <Megaphone className="h-4 w-4 animate-pulse" />
+                  <div className="overflow-hidden">
+                    <motion.p
+                      key={currentAnnouncement}
+                      initial={{ x: 100, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -100, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-sm font-medium"
+                    >
+                      {announcements[currentAnnouncement]}
+                    </motion.p>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={() => setShowAnnouncement(false)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-white/80 hover:text-white"
+                >
+                  <span className="text-lg">×</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="px-4 pb-20 pt-5"
+        >
+
+          {/* Search Section */}
+          <div className="mb-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search notes, events, blogs..."
+                className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-2xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                  <Filter className="h-5 w-5 text-gray-400" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Slider */}
+          <div className="mb-6">
+            <div className="relative overflow-hidden rounded-3xl">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentHeroSlide}
+                  initial={{ opacity: 0, x: 100 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className={`bg-gradient-to-r ${heroSlides[currentHeroSlide].gradient} rounded-3xl p-6 text-white relative overflow-hidden`}
+                >
+                  {/* Background decorations */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
+
+                  <div className="relative z-10">
+                    <div className="mb-4">
+                      {React.createElement(heroSlides[currentHeroSlide].icon, { className: "h-8 w-8 text-yellow-300 animate-pulse" })}
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">{heroSlides[currentHeroSlide].title}</h2>
+                    <p className="text-blue-100 mb-4">{heroSlides[currentHeroSlide].subtitle}</p>
+                    <Link href={heroSlides[currentHeroSlide].buttonLink}>
+                      <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold flex items-center space-x-2 hover:bg-blue-50 transition-colors">
+                        <span>{heroSlides[currentHeroSlide].buttonText}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </Link>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Slide indicators */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentHeroSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentHeroSlide ? 'bg-white w-6' : 'bg-white/50'
+                      }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Explore Categories */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Explore Categories</h3>
+              <button className="text-blue-600 text-sm font-medium">See all</button>
+            </div>
+
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex space-x-4 pb-6 pt-3" style={{ width: 'max-content' }}>
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <Link key={category.id} href={category.path}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + Math.random() * 0.3 }}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`${category.bgColor} p-4 rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 relative flex-shrink-0 flex flex-col`}
+                        style={{ minWidth: '140px', width: '140px', height: '120px', minHeight: '120px' }}
+                      >
+                        {category.badge && (
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.6 + Math.random() * 0.2 }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
+                          >
+                            {category.badge}
+                          </motion.span>
+                        )}
+                        <div className={`w-12 h-12 ${category.color} rounded-2xl flex items-center justify-center mb-3`}>
+                          <Icon className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1 flex items-end">
+                          <h4 className="font-semibold text-gray-900 text-sm leading-tight text-center w-full">{category.title}</h4>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Announcement Section */}
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white">
+              <div className="flex items-center space-x-2 mb-2">
+                <Megaphone className="h-5 w-5" />
+                <h3 className="font-bold text-lg">Announcement</h3>
+              </div>
+              <p className="text-orange-100 text-sm leading-relaxed">
+                📢 JEHUB Internship Program 2024 applications are now open! Apply before August 31st.
+                Get real-world experience and boost your career. Limited seats available.
+              </p>
+              <button className="mt-3 bg-white text-orange-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-50 transition-colors">
+                Learn More
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Hero Slider */}
-        <div className="mb-6">
-          <div className="relative overflow-hidden rounded-3xl">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentHeroSlide}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className={`bg-gradient-to-r ${heroSlides[currentHeroSlide].gradient} rounded-3xl p-6 text-white relative overflow-hidden`}
-              >
-                {/* Background decorations */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-8 -translate-x-8"></div>
+          {/* JEHUB Official Notices */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xl font-bold text-gray-900">JEHUB Official Notices</h3>
+              <button className="text-blue-600 text-sm font-medium">View all</button>
+            </div>
 
-                <div className="relative z-10">
-                  <div className="mb-4">
-                    {React.createElement(heroSlides[currentHeroSlide].icon, { className: "h-8 w-8 text-yellow-300 animate-pulse" })}
+            <div className="space-y-2">
+              <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium">New</span>
+                      <span className="text-xs text-gray-500">2 hours ago</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1">Semester Exam Schedule Released</h4>
+                    <p className="text-gray-600 text-xs">Final examination schedule for all JUT affiliated colleges has been published. Check your exam dates now.</p>
                   </div>
-                  <h2 className="text-2xl font-bold mb-2">{heroSlides[currentHeroSlide].title}</h2>
-                  <p className="text-blue-100 mb-4">{heroSlides[currentHeroSlide].subtitle}</p>
-                  <Link href={heroSlides[currentHeroSlide].buttonLink}>
-                    <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold flex items-center space-x-2 hover:bg-blue-50 transition-colors">
-                      <span>{heroSlides[currentHeroSlide].buttonText}</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </Link>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
 
-            {/* Slide indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {heroSlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentHeroSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentHeroSlide ? 'bg-white w-6' : 'bg-white/50'
-                  }`}
-                />
+              <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Important</span>
+                      <span className="text-xs text-gray-500">1 day ago</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1">Scholarship Applications Open</h4>
+                    <p className="text-gray-600 text-xs">Merit-based scholarship applications are now open for all diploma students. Apply before the deadline.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+                <div className="flex items-start space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full font-medium">Update</span>
+                      <span className="text-xs text-gray-500">3 days ago</span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 text-sm mb-1">New Course Material Available</h4>
+                    <p className="text-gray-600 text-xs">Updated course materials and reference books are now available in the digital library.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Latest Updates / Blogs */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xl font-bold text-gray-900">Latest from JEHUB</h3>
+              <Link href="/blog">
+                <button className="text-blue-600 text-sm font-medium flex items-center space-x-1">
+                  <span>View all</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {latestBlogs.map((blog, index) => (
+                <motion.div
+                  key={blog.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  className="bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="flex space-x-3">
+                    <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
+                          {blog.category}
+                        </span>
+                        <span className="text-xs text-gray-500">{blog.readTime}</span>
+                      </div>
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                        {blog.title}
+                      </h4>
+                      <p className="text-gray-600 text-xs line-clamp-2 mb-1">
+                        {blog.summary}
+                      </p>
+                      <motion.button
+                        whileHover={{ x: 5 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="text-blue-600 text-xs font-medium flex items-center space-x-1"
+                      >
+                        <span>Read More</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Explore Categories */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900">Explore Categories</h3>
-            <button className="text-blue-600 text-sm font-medium">See all</button>
-          </div>
-
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-4 pb-6 pt-3" style={{ width: 'max-content' }}>
-              {categories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <Link key={category.id} href={category.path}>
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 + Math.random() * 0.3 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`${category.bgColor} p-4 rounded-2xl border border-gray-100 hover:shadow-lg transition-all duration-300 relative flex-shrink-0 flex flex-col`} 
-                      style={{ minWidth: '140px', width: '140px', height: '120px', minHeight: '120px' }}
-                    >
-                      {category.badge && (
-                        <motion.span 
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 0.6 + Math.random() * 0.2 }}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
-                        >
-                          {category.badge}
-                        </motion.span>
-                      )}
-                      <div className={`w-12 h-12 ${category.color} rounded-2xl flex items-center justify-center mb-3`}>
-                        <Icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="flex-1 flex items-end">
-                        <h4 className="font-semibold text-gray-900 text-sm leading-tight text-center w-full">{category.title}</h4>
-                      </div>
-                    </motion.div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Announcement Section */}
-        <div className="mb-6">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-4 text-white">
-            <div className="flex items-center space-x-2 mb-2">
-              <Megaphone className="h-5 w-5" />
-              <h3 className="font-bold text-lg">Announcement</h3>
-            </div>
-            <p className="text-orange-100 text-sm leading-relaxed">
-              📢 JEHUB Internship Program 2024 applications are now open! Apply before August 31st.
-              Get real-world experience and boost your career. Limited seats available.
-            </p>
-            <button className="mt-3 bg-white text-orange-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-50 transition-colors">
-              Learn More
-            </button>
-          </div>
-        </div>
-
-        {/* JEHUB Official Notices */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xl font-bold text-gray-900">JEHUB Official Notices</h3>
-            <button className="text-blue-600 text-sm font-medium">View all</button>
-          </div>
-
-          <div className="space-y-2">
-            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium">New</span>
-                    <span className="text-xs text-gray-500">2 hours ago</span>
+          {/* Quick Stats */}
+          <div className="mb-6">
+            <div className="bg-white rounded-2xl p-4 border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">Your Progress</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Download className="h-6 w-6 text-blue-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">Semester Exam Schedule Released</h4>
-                  <p className="text-gray-600 text-xs">Final examination schedule for all JUT affiliated colleges has been published. Check your exam dates now.</p>
+                  <p className="text-2xl font-bold text-gray-900">24</p>
+                  <p className="text-xs text-gray-600">Downloads</p>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Important</span>
-                    <span className="text-xs text-gray-500">1 day ago</span>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Upload className="h-6 w-6 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">Scholarship Applications Open</h4>
-                  <p className="text-gray-600 text-xs">Merit-based scholarship applications are now open for all diploma students. Apply before the deadline.</p>
+                  <p className="text-2xl font-bold text-gray-900">8</p>
+                  <p className="text-xs text-gray-600">Uploads</p>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full font-medium">Update</span>
-                    <span className="text-xs text-gray-500">3 days ago</span>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Star className="h-6 w-6 text-yellow-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">New Course Material Available</h4>
-                  <p className="text-gray-600 text-xs">Updated course materials and reference books are now available in the digital library.</p>
+                  <p className="text-2xl font-bold text-gray-900">1,250</p>
+                  <p className="text-xs text-gray-600">Points</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Latest Updates / Blogs */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xl font-bold text-gray-900">Latest from JEHUB</h3>
-            <Link href="/blog">
-              <button className="text-blue-600 text-sm font-medium flex items-center space-x-1">
-                <span>View all</span>
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </Link>
-          </div>
-
-          <div className="space-y-3">
-            {latestBlogs.map((blog, index) => (
-              <motion.div 
-                key={blog.id} 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="bg-white rounded-2xl p-3 border border-gray-100 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex space-x-3">
-                  <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
-                        {blog.category}
-                      </span>
-                      <span className="text-xs text-gray-500">{blog.readTime}</span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
-                      {blog.title}
-                    </h4>
-                    <p className="text-gray-600 text-xs line-clamp-2 mb-1">
-                      {blog.summary}
-                    </p>
-                    <motion.button 
-                      whileHover={{ x: 5 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="text-blue-600 text-xs font-medium flex items-center space-x-1"
-                    >
-                      <span>Read More</span>
-                      <ArrowRight className="h-3 w-3" />
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="mb-6">
-          <div className="bg-white rounded-2xl p-4 border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-3">Your Progress</h3>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Download className="h-6 w-6 text-blue-600" />
-                </div>
-                <p className="text-2xl font-bold text-gray-900">24</p>
-                <p className="text-xs text-gray-600">Downloads</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Upload className="h-6 w-6 text-green-600" />
-                </div>
-                <p className="text-2xl font-bold text-gray-900">8</p>
-                <p className="text-xs text-gray-600">Uploads</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Star className="h-6 w-6 text-yellow-600" />
-                </div>
-                <p className="text-2xl font-bold text-gray-900">1,250</p>
-                <p className="text-xs text-gray-600">Points</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* CSS for animations */}
-      <style jsx>{`
+        {/* CSS for animations */}
+        <style jsx>{`
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -647,7 +646,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
           display: none;
         }
       `}</style>
-    </motion.div>
+      </motion.div>
     </AnimatePresence>
   );
 };

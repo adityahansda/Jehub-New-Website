@@ -36,6 +36,7 @@ import GoogleDocsPDFViewer from '@/components/GoogleDocsPDFViewer';
 import EnhancedCommentsSection from '@/components/EnhancedCommentsSection';
 import ReportModal from '@/components/ReportModal';
 import ReportsSection from '@/components/ReportsSection';
+import ShareModal from '@/components/ShareModal';
 
 // Format file size in human-readable format
 function formatFileSize(bytes: number | null): string {
@@ -285,6 +286,9 @@ const NotesPreview = () => {
   const [submittingReport, setSubmittingReport] = useState(false);
   const [showReports, setShowReports] = useState(true);
 
+  // Share modal state
+  const [showShareModal, setShowShareModal] = useState(false);
+
   // Track report modal state changes
 
   // For now, allow anyone to comment (no login required)
@@ -531,18 +535,7 @@ const NotesPreview = () => {
 
   const handleShare = () => {
     if (!note) return;
-
-    if (navigator.share) {
-      navigator.share({
-        title: note.title,
-        text: note.description,
-        url: window.location.href,
-      });
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
+    setShowShareModal(true);
   };
 
   const handleReport = () => {
@@ -1451,6 +1444,23 @@ const NotesPreview = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Share Modal */}
+      {note && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          note={{
+            id: note.id,
+            title: note.title,
+            subject: note.subject,
+            branch: note.branch,
+            semester: note.semester,
+            uploader: note.uploader,
+            description: note.description
+          }}
+        />
       )}
 
       {/* Report Modal */}

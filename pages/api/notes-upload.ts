@@ -19,12 +19,19 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       githubUrl,
       fileName,
       userIp,
-      degree
+      degree,
+      points
     } = req.body;
 
     // Validate required fields
     if (!title || !branch || !semester || !subject || !description || !authorName || !githubUrl || !fileName || !degree) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Validate points range
+    const pointsValue = points || 50;
+    if (pointsValue < 1 || pointsValue > 1000) {
+      return res.status(400).json({ error: 'Points must be between 1 and 1000' });
     }
 
     // Prepare the notes data
@@ -42,7 +49,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       userIp: userIp || 'unknown',
       downloads: 0,
       likes: 0,
-      points: 50, // Default points for all notes
+      points: pointsValue, // Use validated points
       views: 0, // ✅ Views attribute added to database
       reports: 0, // ✅ Default reports count
       fileSize: req.body.fileSize || 0, // ✅ File size in bytes, default to 0 if not provided
