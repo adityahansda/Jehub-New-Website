@@ -85,6 +85,34 @@ class AuthService {
       throw new Error(error.message || 'Password reset failed');
     }
   }
+
+  // Change password
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    try {
+      await account.updatePassword(newPassword, oldPassword);
+    } catch (error: any) {
+      throw new Error(error.message || 'Password change failed');
+    }
+  }
+
+  // Change email
+  async changeEmail(newEmail: string, password: string): Promise<void> {
+    try {
+      await account.updateEmail(newEmail, password);
+    } catch (error: any) {
+      throw new Error(error.message || 'Email change failed');
+    }
+  }
+
+  // Send email verification
+  async sendEmailVerification(): Promise<void> {
+    try {
+      const verifyUrl = `${window.location.origin}/auth/verify-email`;
+      await account.createVerification(verifyUrl);
+    } catch (error: any) {
+      throw new Error(error.message || 'Email verification failed');
+    }
+  }
 }
 
 export const authService = new AuthService();

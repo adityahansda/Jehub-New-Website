@@ -3,6 +3,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import TopNavbar from '../src/components/common/TopNavbar';
+import UserProfileSection from '../src/components/dashboard/UserProfileSection';
+import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
 import { useAuth } from '../src/contexts/AuthContext';
 import { userService } from '../src/services/userService';
 import {
@@ -65,7 +67,15 @@ const mockStats = {
     weeklyPoints: 185,
     monthlyPoints: 750,
     level: 5,
-    pointsToNextLevel: 250
+    pointsToNextLevel: 250,
+    // Additional tracking
+    notesRequested: 23,
+    requestsFulfilled: 18,
+    helpedStudents: 134,
+    weeklyDownloads: 42,
+    monthlyDownloads: 156,
+    totalViews: 2134,
+    likesReceived: 89
 };
 
 const mockRecentNotes = [
@@ -157,8 +167,17 @@ export default function StudentDashboard() {
     const { user, userProfile, logout } = useAuth();
     const [activeSection, setActiveSection] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [userStats, setUserStats] = useState(null);
+    const [userStats, setUserStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    // Logout handler
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
     
     // Fetch user stats
     useEffect(() => {
@@ -178,15 +197,6 @@ export default function StudentDashboard() {
 
         fetchUserStats();
     }, [user?.email]);
-
-    // Logout handler
-    const handleLogout = async () => {
-        try {
-            await logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
-    };
     
     // Upload form state
     const [uploadFormData, setUploadFormData] = useState({
@@ -209,7 +219,7 @@ export default function StudentDashboard() {
     const [showPremiumPopup, setShowPremiumPopup] = useState(false);
     
     // Mock user role - replace with actual user role from authentication
-    const userRole = 'student'; // 'student' or 'admin'
+    const [userRole] = useState<'student' | 'admin'>('student');
 
     // Dashboard main content
     const renderDashboardContent = () => (
@@ -255,7 +265,8 @@ export default function StudentDashboard() {
                             <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
 
-                        {/* User Info */}
+
+                        {/* User Info & Stats */}
                         <div className="text-center lg:text-left flex-1">
                             <h2 className="text-3xl font-bold mb-2">{userProfile?.name || user?.name}</h2>
                             <p className="text-white/90 text-lg mb-4">
@@ -263,24 +274,26 @@ export default function StudentDashboard() {
                                 {userProfile?.semester && ` • ${userProfile.semester} Semester`}
                             </p>
 
-                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-6 text-sm">
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                                        <Trophy className="h-4 w-4" />
-                                    </div>
-                                    <span>Rank #{userStats?.current?.rank || 'N/A'}</span>
+                            {/* Rank and Points */}
+                            <div className="flex items-center justify-center lg:justify-start space-x-6 mb-4">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold">{userStats?.currentRank || 'N/A'}</p>
+                                    <p className="text-xs text-white/80">Rank</p>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                                        <Star className="h-4 w-4" />
-                                    </div>
-                                    <span>{userStats?.current?.totalPoints || 0} Points</span>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold">{userStats?.pointsEarned || 'N/A'}</p>
+                                    <p className="text-xs text-white/80">Points</p>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                                        <FileText className="h-4 w-4" />
-                                    </div>
-                                    <span>{userStats?.current?.notesUploaded || 0} Notes</span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div>
+                                <div className="flex justify-between text-sm font-medium mb-1">
+                                    <span>Level {userStats?.level || 'N/A'}</span>
+                                    <span>{userStats?.pointsToNextLevel ? `${userStats.pointsToNextLevel} to next level` : ''}</span>
+                                </div>
+                                <div className="w-full bg-white/30 rounded-full h-2.5">
+                                    <div className="bg-white h-2.5 rounded-full" style={{ width: `${(userStats?.pointsEarned / (userStats?.pointsEarned + userStats?.pointsToNextLevel)) * 100 || 0}%` }}></div>
                                 </div>
                             </div>
                         </div>
@@ -304,115 +317,119 @@ export default function StudentDashboard() {
                 </div>
             </div>
 
-            {/* Modern Stats Grid */}
+
+
+            {/* Modern Stats Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {loading ? (
-                    // Loading skeleton
-                    Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 animate-pulse">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
-                                <div className="w-16 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                                <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    [
-                        {
-                            title: "Notes Uploaded",
-                            value: userStats?.current?.notesUploaded || 0,
-                            change: userStats?.percentageChanges?.notesUploadedPercent || '0%',
-                            icon: FileText,
-                            color: "bg-blue-50 dark:bg-blue-900/20",
-                            iconColor: "text-blue-600 dark:text-blue-400",
-                            gradient: "from-blue-400 to-blue-600"
-                        },
-                        {
-                            title: "Downloads Received",
-                            value: userStats?.current?.notesDownloaded || 0,
-                            change: userStats?.percentageChanges?.notesDownloadedPercent || '0%',
-                            icon: Download,
-                            color: "bg-green-50 dark:bg-green-900/20",
-                            iconColor: "text-green-600 dark:text-green-400",
-                            gradient: "from-green-400 to-green-600"
-                        },
-                        {
-                            title: "Points Earned",
-                            value: userStats?.current?.totalPoints || 0,
-                            change: userStats?.percentageChanges?.totalPointsPercent || '0%',
-                            icon: Star,
-                            color: "bg-purple-50 dark:bg-purple-900/20",
-                            iconColor: "text-purple-600 dark:text-purple-400",
-                            gradient: "from-purple-400 to-purple-600"
-                        },
-                        {
-                            title: "Current Rank",
-                            value: userStats?.current?.rank ? `#${userStats.current.rank}` : 'N/A',
-                            change: userStats?.percentageChanges?.rankChangeText || '0',
-                            icon: Trophy,
-                            color: "bg-orange-50 dark:bg-orange-900/20",
-                            iconColor: "text-orange-600 dark:text-orange-400",
-                            gradient: "from-orange-400 to-orange-600"
-                        }
-                    ].map((stat, index) => (
-                    <div key={index} className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:scale-105">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
-                            </div>
-                            <div className={`px-2 py-1 bg-gradient-to-r ${stat.gradient} text-white text-xs font-medium rounded-full`}>
-                                {stat.change}
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
-                        </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                        <Upload className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
-                    ))
-                )}
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Notes Uploaded</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.notesUploaded || 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                        <Download className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Notes Downloaded</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.downloadsReceived || 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                        <Star className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Points Earned</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.pointsEarned || 'N/A'}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
+                        <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Completed Achievements</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{`${userStats?.completedAchievements || 0}/${userStats?.totalAchievements || 0}`}</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Detailed Points Breakdown */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Points Breakdown</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.pointsPerNote}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Points per Note</p>
+            {/* Secondary Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                     </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.pointsPerDownload}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Points per Download</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.bonusPoints}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Bonus Points</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.pointsToNextLevel}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Points to Next Level</p>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Requests Fulfilled</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.requestsFulfilled}/{mockStats.notesRequested}</p>
                     </div>
                 </div>
-                
-                {/* Level Progress Bar */}
-                <div className="mt-6">
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Level {mockStats.level} Progress</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{mockStats.pointsEarned} / {mockStats.pointsEarned + mockStats.pointsToNextLevel} points</span>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center">
+                        <Eye className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                        <div 
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500" 
-                            style={{ width: `${(mockStats.pointsEarned / (mockStats.pointsEarned + mockStats.pointsToNextLevel)) * 100}%` }}
-                        ></div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Total Views</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.totalViews}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/20 rounded-full flex items-center justify-center">
+                        <Heart className="h-6 w-6 text-pink-600 dark:text-pink-400" />
+                    </div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Likes Received</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.likesReceived}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/20 rounded-full flex items-center justify-center">
+                        <Users className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Students Helped</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.helpedStudents}</p>
                     </div>
                 </div>
             </div>
+
+            {/* Activity Overview */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 mb-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Activity Overview</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <TrendingUp className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Weekly Activity</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{mockStats.weeklyDownloads} downloads</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{mockStats.weeklyPoints} points earned</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <Activity className="h-8 w-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Monthly Activity</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{mockStats.monthlyDownloads} downloads</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{mockStats.monthlyPoints} points earned</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                            <Target className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Growth Rate</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">+{mockStats.weeklyGrowth}% this week</p>
+                        <p className="text-sm text-green-600 dark:text-green-400">↗ Trending up</p>
+                    </div>
+                </div>
+            </div>
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -439,8 +456,6 @@ export default function StudentDashboard() {
         switch (activeSection) {
             case 'dashboard':
                 return renderDashboardContent();
-            case 'analytics':
-                return renderAnalyticsContent();
             case 'my-notes':
                 return renderMyNotesContent();
             case 'bookmarks':
@@ -449,27 +464,15 @@ export default function StudentDashboard() {
                 return renderUploadContent();
             case 'achievements':
                 return renderAchievementsContent();
+            case 'analytics':
+                return <DashboardAnalytics userStats={userStats} loading={loading} />;
             case 'profile':
-                return renderProfileContent();
+                return <UserProfileSection />;
             default:
                 return renderDashboardContent();
         }
     };
 
-    // Analytics content
-    const renderAnalyticsContent = () => (
-        <div className="p-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Analytics</h1>
-                <p className="text-gray-600 dark:text-gray-400">Track your academic performance and progress</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-                <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Analytics Dashboard</h3>
-                <p className="text-gray-600 dark:text-gray-400">Detailed analytics coming soon...</p>
-            </div>
-        </div>
-    );
 
     // My Notes content
     const renderMyNotesContent = () => (
@@ -592,54 +595,6 @@ export default function StudentDashboard() {
     );
 
 
-    // Profile content
-    const renderProfileContent = () => (
-        <div className="p-8">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Profile</h1>
-                <p className="text-gray-600 dark:text-gray-400">Manage your account information</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
-                <div className="flex items-center space-x-6 mb-8">
-                    <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-2xl font-bold">JS</span>
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">John Student</h2>
-                        <p className="text-gray-600 dark:text-gray-400">4th Year Computer Science Engineering</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-500">Member since January 2024</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.pointsEarned}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Total Points</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.notesUploaded}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Notes Uploaded</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">#{mockStats.currentRank}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Current Rank</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.weeklyPoints}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Weekly Points</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.monthlyPoints}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Points</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.level}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Level</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     const renderUploadContent = () => {
 
@@ -1047,10 +1002,10 @@ export default function StudentDashboard() {
                                         <div className="space-y-1">
                                             {[
                                                 { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                                                { key: 'analytics', label: 'Analytics', icon: BarChart3 },
                                                 { key: 'my-notes', label: 'My Notes', icon: BookOpen },
                                                 { key: 'upload', label: 'Upload', icon: Upload },
                                                 { key: 'bookmarks', label: 'Bookmarks', icon: Bookmark },
+                                                { key: 'analytics', label: 'Analytics', icon: BarChart3 },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
                                                 const active = activeSection === item.key;
@@ -1126,7 +1081,10 @@ export default function StudentDashboard() {
                                         <span>Help & Support</span>
                                     </Link>
 
-                                    <button className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 w-full">
+                                    <button 
+                                        onClick={handleLogout}
+                                        className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 w-full"
+                                    >
                                         <LogOut className="h-4 w-4" />
                                         <span>Sign Out</span>
                                     </button>
