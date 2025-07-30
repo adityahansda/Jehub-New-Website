@@ -373,7 +373,8 @@ export default function StudentDashboard() {
                             <p className="text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
                         </div>
                     </div>
-                ))}
+                    ))
+                )}
             </div>
 
             {/* Detailed Points Breakdown */}
