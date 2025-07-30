@@ -35,7 +35,7 @@ const Login = () => {
         try {
         const isComplete = await userService.isProfileComplete(user.email);
         if (isComplete) {
-          router.push('/dashboard');
+          router.push('/'); // Redirect existing users to home page
         } else {
           router.push('/complete-profile');
         }
@@ -71,7 +71,7 @@ const Login = () => {
       try {
         const isComplete = await userService.isProfileComplete(formData.email);
         if (isComplete) {
-          router.push('/dashboard');
+          router.push('/'); // Redirect existing users to home page
         } else {
           router.push('/complete-profile');
         }

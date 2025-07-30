@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
-import TopNavbar from '../src/components/common/TopNavbar';
 import UserProfileSection from '../src/components/dashboard/UserProfileSection';
 import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
 import { useAuth } from '../src/contexts/AuthContext';
 import { userService } from '../src/services/userService';
+import { dashboardService, DashboardStats } from '../src/services/dashboardService';
 import {
     BarChart3,
     BookOpen,
@@ -47,127 +47,20 @@ import {
     Wifi,
     WifiOff,
     X,
-    Lock
+    Lock,
+    Menu
 } from 'lucide-react';
 
-// Enhanced Mock data with detailed point system - replace with real API calls
-const mockStats = {
-    totalNotes: 24,
-    downloadsReceived: 156,
-    pointsEarned: 1250,
-    currentRank: 15,
-    notesUploaded: 8,
-    weeklyGrowth: 12,
-    completedAchievements: 6,
-    totalAchievements: 12,
-    // Enhanced point system
-    pointsPerNote: 50,
-    pointsPerDownload: 5,
-    bonusPoints: 200,
-    weeklyPoints: 185,
-    monthlyPoints: 750,
-    level: 5,
-    pointsToNextLevel: 250,
-    // Additional tracking
-    notesRequested: 23,
-    requestsFulfilled: 18,
-    helpedStudents: 134,
-    weeklyDownloads: 42,
-    monthlyDownloads: 156,
-    totalViews: 2134,
-    likesReceived: 89
-};
+// Real data will be fetched from Appwrite
 
-const mockRecentNotes = [
-    {
-        id: 1,
-        title: "Data Structures and Algorithms - Complete Notes",
-        subject: "Computer Science",
-        semester: "4th Semester",
-        downloads: 45,
-        likes: 12,
-        uploadDate: "2025-01-25",
-        thumbnail: "/images/note-thumb-1.jpg"
-    },
-    {
-        id: 2,
-        title: "Engineering Mathematics III - Unit 1-5",
-        subject: "Mathematics",
-        semester: "3rd Semester",
-        downloads: 38,
-        likes: 9,
-        uploadDate: "2025-01-23",
-        thumbnail: "/images/note-thumb-2.jpg"
-    },
-    {
-        id: 3,
-        title: "Digital Electronics - Lab Manual",
-        subject: "Electronics",
-        semester: "2nd Semester",
-        downloads: 29,
-        likes: 7,
-        uploadDate: "2025-01-20",
-        thumbnail: "/images/note-thumb-3.jpg"
-    }
-];
-
-const mockUpcomingEvents = [
-    {
-        id: 1,
-        title: "JEE Advanced Mock Test",
-        date: "2025-02-05",
-        time: "10:00 AM",
-        type: "exam",
-        participants: 150
-    },
-    {
-        id: 2,
-        title: "Technical Workshop - React.js",
-        date: "2025-02-08",
-        time: "2:00 PM",
-        type: "workshop",
-        participants: 75
-    },
-    {
-        id: 3,
-        title: "Study Group - GATE Preparation",
-        date: "2025-02-10",
-        time: "6:00 PM",
-        type: "study",
-        participants: 25
-    }
-];
-
-const mockNotifications = [
-    {
-        id: 1,
-        message: "Your note 'Data Structures' received 5 new downloads",
-        time: "2 hours ago",
-        type: "success",
-        read: false
-    },
-    {
-        id: 2,
-        message: "New counselling update for engineering admissions",
-        time: "4 hours ago",
-        type: "info",
-        read: false
-    },
-    {
-        id: 3,
-        message: "You've earned 50 points for active participation",
-        time: "1 day ago",
-        type: "achievement",
-        read: true
-    }
-];
+// Real data will be fetched from Appwrite
 
 
 export default function StudentDashboard() {
     const { user, userProfile, logout } = useAuth();
     const [activeSection, setActiveSection] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [userStats, setUserStats] = useState<any>(null);
+    const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Logout handler
@@ -178,26 +71,54 @@ export default function StudentDashboard() {
             console.error('Logout error:', error);
         }
     };
-    
-    // Fetch user stats
+
+    // Fetch dashboard stats
     useEffect(() => {
-        const fetchUserStats = async () => {
+        const fetchDashboardStats = async () => {
             if (user?.email) {
                 try {
                     setLoading(true);
-                    const stats = await userService.getUserStatsWithComparison(user.email);
-                    setUserStats(stats);
+                    console.log('Fetching dashboard stats for user:', user.email);
+                    const stats = await dashboardService.getDashboardStats(user.email);
+                    console.log('Dashboard stats received:', stats);
+                    setDashboardStats(stats);
                 } catch (error) {
-                    console.error('Error fetching user stats:', error);
+                    console.error('Error fetching dashboard stats:', error);
+                    // Set fallback data even on error
+                    setDashboardStats({
+                        totalPoints: 0,
+                        notesUploaded: 0,
+                        notesDownloaded: 0,
+                        requestsFulfilled: 0,
+                        currentRank: 0,
+                        level: 1,
+                        pointsToNextLevel: 250,
+                        weeklyDownloads: 0,
+                        monthlyDownloads: 0,
+                        weeklyPoints: 0,
+                        monthlyPoints: 0,
+                        weeklyGrowth: 0,
+                        totalViews: 0,
+                        likesReceived: 0,
+                        helpedStudents: 0,
+                        notesRequested: 0,
+                        completedAchievements: 0,
+                        totalAchievements: 12,
+                        recentNotes: [],
+                        notifications: []
+                    });
                 } finally {
                     setLoading(false);
                 }
+            } else {
+                // Set empty stats if no user
+                setLoading(false);
             }
         };
 
-        fetchUserStats();
+        fetchDashboardStats();
     }, [user?.email]);
-    
+
     // Upload form state
     const [uploadFormData, setUploadFormData] = useState({
         title: '',
@@ -217,9 +138,29 @@ export default function StudentDashboard() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [githubUrl, setGithubUrl] = useState('');
     const [showPremiumPopup, setShowPremiumPopup] = useState(false);
-    
+
     // Mock user role - replace with actual user role from authentication
     const [userRole] = useState<'student' | 'admin'>('student');
+
+    // Loading skeleton component
+    const LoadingSkeleton = () => (
+        <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        </div>
+    );
+
+    const StatCardSkeleton = () => (
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 animate-pulse">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex-shrink-0"></div>
+                <div className="min-w-0 flex-1">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                </div>
+            </div>
+        </div>
+    );
 
     // Dashboard main content
     const renderDashboardContent = () => (
@@ -246,69 +187,93 @@ export default function StudentDashboard() {
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
 
-                    <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start lg:space-x-8">
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start lg:space-x-8 space-y-6 lg:space-y-0">
                         {/* Avatar */}
-                        <div className="relative mb-6 lg:mb-0">
+                        <div className="relative">
                             {userProfile?.profileImageUrl ? (
-                                <img 
-                                    src={userProfile.profileImageUrl} 
-                                    alt="Profile" 
-                                    className="w-24 h-24 rounded-2xl border border-white/30 object-cover"
+                                <img
+                                    src={userProfile.profileImageUrl}
+                                    alt="Profile"
+                                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-white/30 object-cover"
                                 />
                             ) : (
-                                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 flex items-center justify-center">
-                                    <span className="text-2xl font-bold">
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 flex items-center justify-center">
+                                    <span className="text-xl sm:text-2xl font-bold">
                                         {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
                                     </span>
                                 </div>
                             )}
-                            <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
+                            <div className="absolute -bottom-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
 
-
                         {/* User Info & Stats */}
-                        <div className="text-center lg:text-left flex-1">
-                            <h2 className="text-3xl font-bold mb-2">{userProfile?.name || user?.name}</h2>
-                            <p className="text-white/90 text-lg mb-4">
+                        <div className="text-center lg:text-left flex-1 w-full">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-2">{userProfile?.name || user?.name}</h2>
+                            <p className="text-white/90 text-base sm:text-lg mb-4">
                                 {userProfile?.branch ? `${userProfile.branch}` : 'Student'}
                                 {userProfile?.semester && ` • ${userProfile.semester} Semester`}
                             </p>
 
                             {/* Rank and Points */}
-                            <div className="flex items-center justify-center lg:justify-start space-x-6 mb-4">
-                                <div className="text-center">
-                                    <p className="text-2xl font-bold">{userStats?.currentRank || 'N/A'}</p>
-                                    <p className="text-xs text-white/80">Rank</p>
+                            {loading ? (
+                                <div className="flex items-center justify-center lg:justify-start space-x-4 sm:space-x-6 mb-4">
+                                    <div className="text-center animate-pulse">
+                                        <div className="h-6 bg-white/20 rounded w-8 mb-1"></div>
+                                        <p className="text-xs text-white/80">Rank</p>
+                                    </div>
+                                    <div className="text-center animate-pulse">
+                                        <div className="h-6 bg-white/20 rounded w-12 mb-1"></div>
+                                        <p className="text-xs text-white/80">Points</p>
+                                    </div>
                                 </div>
-                                <div className="text-center">
-                                    <p className="text-2xl font-bold">{userStats?.pointsEarned || 'N/A'}</p>
-                                    <p className="text-xs text-white/80">Points</p>
+                            ) : (
+                                <div className="flex items-center justify-center lg:justify-start space-x-4 sm:space-x-6 mb-4">
+                                    <div className="text-center">
+                                        <p className="text-xl sm:text-2xl font-bold">{dashboardStats?.currentRank ? `#${dashboardStats.currentRank}` : 'Unranked'}</p>
+                                        <p className="text-xs text-white/80">Rank</p>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xl sm:text-2xl font-bold">{dashboardStats?.totalPoints ?? 0}</p>
+                                        <p className="text-xs text-white/80">Points</p>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Progress Bar */}
-                            <div>
-                                <div className="flex justify-between text-sm font-medium mb-1">
-                                    <span>Level {userStats?.level || 'N/A'}</span>
-                                    <span>{userStats?.pointsToNextLevel ? `${userStats.pointsToNextLevel} to next level` : ''}</span>
+                            {loading ? (
+                                <div className="animate-pulse">
+                                    <div className="flex justify-between text-xs sm:text-sm font-medium mb-1">
+                                        <div className="h-3 bg-white/20 rounded w-16"></div>
+                                        <div className="h-3 bg-white/20 rounded w-20 hidden sm:block"></div>
+                                    </div>
+                                    <div className="w-full bg-white/30 rounded-full h-2 sm:h-2.5">
+                                        <div className="bg-white/20 h-2 sm:h-2.5 rounded-full w-1/3"></div>
+                                    </div>
                                 </div>
-                                <div className="w-full bg-white/30 rounded-full h-2.5">
-                                    <div className="bg-white h-2.5 rounded-full" style={{ width: `${(userStats?.pointsEarned / (userStats?.pointsEarned + userStats?.pointsToNextLevel)) * 100 || 0}%` }}></div>
+                            ) : (
+                                <div>
+                                    <div className="flex justify-between text-xs sm:text-sm font-medium mb-1">
+                                        <span>Level {dashboardStats?.level ?? 1}</span>
+                                        <span className="hidden sm:inline">{dashboardStats?.pointsToNextLevel ? `${dashboardStats.pointsToNextLevel} to next level` : '250 to next level'}</span>
+                                    </div>
+                                    <div className="w-full bg-white/30 rounded-full h-2 sm:h-2.5">
+                                        <div className="bg-white h-2 sm:h-2.5 rounded-full" style={{ width: `${dashboardStats?.totalPoints && dashboardStats?.pointsToNextLevel ? ((dashboardStats.totalPoints % 250) / 250) * 100 : 0}%` }}></div>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3 mt-6 lg:mt-0">
-                            <Link href="/notes/upload">
-                                <button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center space-x-2">
-                                    <Upload className="h-5 w-5" />
+                        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                            <Link href="/notes/upload" className="w-full sm:w-auto">
+                                <button className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2">
+                                    <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
                                     <span>Upload</span>
                                 </button>
                             </Link>
-                            <Link href="/notes/download">
-                                <button className="bg-white hover:bg-gray-100 text-purple-600 px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center space-x-2">
-                                    <Download className="h-5 w-5" />
+                            <Link href="/notes/download" className="w-full sm:w-auto">
+                                <button className="w-full bg-white hover:bg-gray-100 text-purple-600 px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2">
+                                    <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                                     <span>Browse</span>
                                 </button>
                             </Link>
@@ -317,117 +282,160 @@ export default function StudentDashboard() {
                 </div>
             </div>
 
-
-
             {/* Modern Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                        <Upload className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Notes Uploaded</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.notesUploaded || 'N/A'}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                        <Download className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Notes Downloaded</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.downloadsReceived || 'N/A'}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
-                        <Star className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Points Earned</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats?.pointsEarned || 'N/A'}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
-                        <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Completed Achievements</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{`${userStats?.completedAchievements || 0}/${userStats?.totalAchievements || 0}`}</p>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                {loading ? (
+                    <>
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Upload className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Notes Uploaded</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.notesUploaded ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Download className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Notes Downloaded</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.notesDownloaded ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Star className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Points Earned</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.totalPoints ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Achievements</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{`${dashboardStats?.completedAchievements ?? 0}/${dashboardStats?.totalAchievements ?? 12}`}</p>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Secondary Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
-                        <CheckCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Requests Fulfilled</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.requestsFulfilled}/{mockStats.notesRequested}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center">
-                        <Eye className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Total Views</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.totalViews}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/20 rounded-full flex items-center justify-center">
-                        <Heart className="h-6 w-6 text-pink-600 dark:text-pink-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Likes Received</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.likesReceived}</p>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/20 rounded-full flex items-center justify-center">
-                        <Users className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
-                    </div>
-                    <div>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">Students Helped</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{mockStats.helpedStudents}</p>
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                {loading ? (
+                    <>
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                        <StatCardSkeleton />
+                    </>
+                ) : (
+                    <>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Requests Fulfilled</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.requestsFulfilled ?? 0}/{dashboardStats?.notesRequested ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Total Views</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.totalViews ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 dark:bg-pink-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600 dark:text-pink-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Likes Received</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.likesReceived ?? 0}</p>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-100 dark:bg-cyan-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-600 dark:text-cyan-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Students Helped</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.helpedStudents ?? 0}</p>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Activity Overview */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Activity Overview</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                            <TrendingUp className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">Activity Overview</h3>
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="text-center animate-pulse">
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-2 w-20"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-1 w-16"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto w-20"></div>
                         </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Weekly Activity</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{mockStats.weeklyDownloads} downloads</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{mockStats.weeklyPoints} points earned</p>
-                    </div>
-                    <div className="text-center">
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                            <Activity className="h-8 w-8 text-green-600 dark:text-green-400" />
+                        <div className="text-center animate-pulse">
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-2 w-20"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-1 w-16"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto w-20"></div>
                         </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Monthly Activity</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{mockStats.monthlyDownloads} downloads</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{mockStats.monthlyPoints} points earned</p>
-                    </div>
-                    <div className="text-center">
-                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                            <Target className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                        <div className="text-center animate-pulse">
+                            <div className="bg-gray-200 dark:bg-gray-700 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4"></div>
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-2 w-20"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-1 w-16"></div>
+                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mx-auto w-20"></div>
                         </div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Growth Rate</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">+{mockStats.weeklyGrowth}% this week</p>
-                        <p className="text-sm text-green-600 dark:text-green-400">↗ Trending up</p>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="text-center">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                                <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 text-sm sm:text-base">Weekly Activity</h4>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">{dashboardStats?.weeklyDownloads ?? 0} downloads</p>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{dashboardStats?.weeklyPoints ?? 0} points earned</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="bg-green-50 dark:bg-green-900/20 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                                <Activity className="h-7 w-7 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 text-sm sm:text-base">Monthly Activity</h4>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">{dashboardStats?.monthlyDownloads ?? 0} downloads</p>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{dashboardStats?.monthlyPoints ?? 0} points earned</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-full w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                                <Target className="h-7 w-7 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 text-sm sm:text-base">Growth Rate</h4>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">+{dashboardStats?.weeklyGrowth ?? 0}% this week</p>
+                            <p className="text-xs sm:text-sm text-green-600 dark:text-green-400">↗ Trending up</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
@@ -465,7 +473,7 @@ export default function StudentDashboard() {
             case 'achievements':
                 return renderAchievementsContent();
             case 'analytics':
-                return <DashboardAnalytics userStats={userStats} loading={loading} />;
+                return <DashboardAnalytics userStats={dashboardStats} />;
             case 'profile':
                 return <UserProfileSection />;
             default:
@@ -482,7 +490,7 @@ export default function StudentDashboard() {
                 <p className="text-gray-600 dark:text-gray-400">Manage all your uploaded notes</p>
             </div>
             <div className="space-y-4">
-                {mockRecentNotes.map((note) => (
+                {dashboardStats?.recentNotes?.map((note) => (
                     <div key={note.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
@@ -503,7 +511,7 @@ export default function StudentDashboard() {
                                         </span>
                                         <span className="text-xs text-purple-600 dark:text-purple-400 flex items-center">
                                             <Star className="h-3 w-3 mr-1" />
-                                            {mockStats.pointsPerNote + (note.downloads * mockStats.pointsPerDownload)} points
+                                            {50 + (note.downloads * 5)} points
                                         </span>
                                     </div>
                                 </div>
@@ -521,7 +529,13 @@ export default function StudentDashboard() {
                             </div>
                         </div>
                     </div>
-                ))}
+                )) || (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                            <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Notes Yet</h3>
+                            <p className="text-gray-600 dark:text-gray-400">Start uploading notes to see them here</p>
+                        </div>
+                    )}
             </div>
         </div>
     );
@@ -824,17 +838,16 @@ export default function StudentDashboard() {
                                             }
                                         }}
                                     />
-                                    <span className={`flex items-center px-3 py-1 rounded-full text-sm font-bold ${
-                                        userRole === 'admin' 
-                                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' 
-                                            : 'bg-gray-300 text-gray-500 opacity-60'
-                                    }`}>
+                                    <span className={`flex items-center px-3 py-1 rounded-full text-sm font-bold ${userRole === 'admin'
+                                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
+                                        : 'bg-gray-300 text-gray-500 opacity-60'
+                                        }`}>
                                         {userRole === 'admin' ? '⭐ PREMIUM' : '🔒 PREMIUM'}
                                     </span>
                                 </label>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {userRole === 'admin' 
+                                {userRole === 'admin'
                                     ? 'Free notes are accessible to everyone. Premium notes may have additional features.'
                                     : 'Free notes are accessible to everyone. Premium features are only available for administrators.'
                                 }
@@ -920,14 +933,14 @@ export default function StudentDashboard() {
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">Premium Feature Restricted</h3>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setShowPremiumPopup(false)}
                                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                                 >
                                     <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                 </button>
                             </div>
-                            
+
                             <div className="mb-6">
                                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                                     The Premium note feature is currently restricted to administrators only. Regular students can only upload free notes.
@@ -942,15 +955,15 @@ export default function StudentDashboard() {
                                     </ul>
                                 </div>
                             </div>
-                            
+
                             <div className="flex space-x-3">
-                                <button 
+                                <button
                                     onClick={() => setShowPremiumPopup(false)}
                                     className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Continue with Free
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowPremiumPopup(false);
                                         // You can add contact admin functionality here
@@ -977,9 +990,27 @@ export default function StudentDashboard() {
             </Head>
 
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="flex">
-                    {/* Enhanced Sidebar - Fixed */}
-                    <div className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30">
+                {/* Mobile Menu Button */}
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                >
+                    <Menu className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                </button>
+
+                {/* Mobile Sidebar Overlay */}
+                {sidebarOpen && (
+                    <div
+                        className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                <div className="flex min-h-screen">
+                    {/* Enhanced Sidebar - Responsive */}
+                    <div className={`fixed lg:relative left-0 top-0 h-full lg:h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-50 transform transition-transform duration-300 ease-in-out ${
+                        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                    }`}>
                         <div className="h-full flex flex-col">
                             {/* Logo */}
                             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -1013,7 +1044,10 @@ export default function StudentDashboard() {
                                                 return (
                                                     <button
                                                         key={item.key}
-                                                        onClick={() => setActiveSection(item.key)}
+                                                        onClick={() => {
+                                                            setActiveSection(item.key);
+                                                            setSidebarOpen(false);
+                                                        }}
                                                         className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${active
                                                             ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm'
                                                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
@@ -1046,7 +1080,10 @@ export default function StudentDashboard() {
                                                 return (
                                                     <button
                                                         key={item.key}
-                                                        onClick={() => setActiveSection(item.key)}
+                                                        onClick={() => {
+                                                            setActiveSection(item.key);
+                                                            setSidebarOpen(false);
+                                                        }}
                                                         className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${active
                                                             ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm'
                                                             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'
@@ -1081,7 +1118,7 @@ export default function StudentDashboard() {
                                         <span>Help & Support</span>
                                     </Link>
 
-                                    <button 
+                                    <button
                                         onClick={handleLogout}
                                         className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 w-full"
                                     >
@@ -1093,10 +1130,38 @@ export default function StudentDashboard() {
                         </div>
                     </div>
 
-                    {/* Main Content Area - Properly aligned */}
-                    <div className="flex-1 ml-64">
-                        <TopNavbar />
-                        <div className="overflow-y-auto">
+                    {/* Main Content Area - Responsive */}
+                    <div className="flex-1 w-full min-h-screen">
+                        {/* Mobile Header */}
+                        <div className="lg:hidden sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between z-30">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                                    <GraduationCap className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">JEHUB</h1>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                {userProfile?.profileImageUrl ? (
+                                    <img 
+                                        src={userProfile.profileImageUrl} 
+                                        alt="Profile" 
+                                        className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-xs font-medium">
+                                            {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        {/* Main Content */}
+                        <div className="h-full overflow-y-auto">
                             {renderContent()}
                         </div>
                     </div>
