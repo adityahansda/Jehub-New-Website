@@ -46,7 +46,7 @@ const OAuthSuccess: React.FC = () => {
     // Start checking after a short delay to allow session to be established
     const timer = setTimeout(checkAuth, 1000);
     return () => clearTimeout(timer);
-  }, [attempts, router]);
+  }, [attempts, router, user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

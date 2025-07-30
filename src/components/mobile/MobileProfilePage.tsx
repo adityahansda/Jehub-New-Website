@@ -14,7 +14,7 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  School, 
+  School,
   Award, 
   BookOpen, 
   TrendingUp,
@@ -185,7 +185,7 @@ const MobileProfilePage: React.FC<ProfilePageProps> = ({
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
               
-              <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+              <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => console.log('Navigating to downloads')}>
                 <div className="flex items-center space-x-3">
                   <Download className="h-5 w-5 text-gray-600" />
                   <span className="text-gray-900 font-medium">Downloads</span>
@@ -193,7 +193,7 @@ const MobileProfilePage: React.FC<ProfilePageProps> = ({
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
               
-              <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition-colors">
+              <div className="flex items-center justify-between py-4 px-2 hover:bg-gray-50 rounded-lg transition-colors" onClick={() => console.log('Navigating to language settings')}>
                 <div className="flex items-center space-x-3">
                   <Globe className="h-5 w-5 text-gray-600" />
                   <span className="text-gray-900 font-medium">Language</span>

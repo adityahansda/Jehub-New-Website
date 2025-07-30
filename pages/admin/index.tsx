@@ -69,7 +69,7 @@ const AdminDashboard = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage your Jharkhand Engineer's Hub platform</p>
+              <p className="text-gray-600">Manage your Jharkhand Engineer&apos;s Hub platform</p>
             </div>
           </div>
         </div>

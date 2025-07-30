@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { authService, User } from '../services/auth';
+import { userService, UserProfile } from '../services/userService';
 
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   sendPasswordRecovery: (email: string) => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -19,6 +22,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Check if user is logged in on app start
@@ -30,6 +34,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
+      if (currentUser) {
+        const profile = await userService.getUserProfile(currentUser.email);
+        setUserProfile(profile);
+      }
     } catch (error) {
       console.log('No active session');
     } finally {
@@ -37,10 +45,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshUserProfile = async () => {
+    if (user) {
+      try {
+        const profile = await userService.getUserProfile(user.email);
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Error refreshing user profile:', error);
+      }
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       const loggedInUser = await authService.login(email, password);
       setUser(loggedInUser);
+      // Fetch user profile after login
+      const profile = await userService.getUserProfile(loggedInUser.email);
+      setUserProfile(profile);
     } catch (error) {
       throw error;
     }
@@ -68,6 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await authService.logout();
       setUser(null);
+      setUserProfile(null);
     } catch (error) {
       throw error;
     }
@@ -83,12 +106,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
+    userProfile,
     loading,
     login,
     register,
     loginWithGoogle,
     logout,
     sendPasswordRecovery,
+    refreshUserProfile,
   };
 
   return (

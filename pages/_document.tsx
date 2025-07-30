@@ -33,8 +33,9 @@ class MyDocument extends Document {
           <link rel="manifest" href="/manifest.json" />
           
           {/* Theme color for mobile browsers */}
-          <meta name="theme-color" content="#000000" />
-          <meta name="msapplication-TileColor" content="#000000" />
+          <meta name="theme-color" content="#ffffff" />
+          <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
+          <meta name="msapplication-TileColor" content="#1f2937" />
           
           {/* Security headers */}
           <meta httpEquiv="X-Content-Type-Options" content="nosniff" />

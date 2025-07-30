@@ -14,7 +14,7 @@ const MobileTest = () => {
     { path: '/join-team', label: 'Join Team' },
     { path: '/login', label: 'Login' },
     { path: '/signup', label: 'Sign Up' },
-    { path: '/profile', label: 'Profile' },
+    { path: '/dashboard', label: 'Dashboard' },
     { path: '/team', label: 'Team' },
     { path: '/team-dashboard', label: 'Team Dashboard' },
     { path: '/admin-dashboard', label: 'Admin Dashboard' },

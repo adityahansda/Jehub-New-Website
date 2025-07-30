@@ -17,6 +17,7 @@ const NotesUpload = () => {
     authorName: '',
     degree: '',
     noteType: 'free', // Default to free
+    points: 50,
     file: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,6 +128,7 @@ const NotesUpload = () => {
         fileName: formData.file.name,
         fileSize: formData.file.size,
         noteType: formData.noteType,
+        points: formData.points,
         userIp: ip,
         degree: formData.degree
       };
@@ -159,6 +161,7 @@ const NotesUpload = () => {
         authorName: '',
         degree: '',
         noteType: 'free',
+        points: 50,
         file: null
       });
 
@@ -445,6 +448,26 @@ const NotesUpload = () => {
                 </div>
 
                 <div>
+                  <label htmlFor="points" className="block text-sm font-medium text-gray-700 mb-2">
+                    Points *
+                  </label>
+                  <input
+                    type="number"
+                    id="points"
+                    required
+                    min="1"
+                    max="1000"
+                    value={formData.points}
+                    onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value, 10) || 50 })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter points for this upload (1-1000)"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Set points between 1-1000. Higher quality notes deserve more points!
+                  </p>
+                </div>
+
+                <div>
                   <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
                     Tags (optional)
                   </label>
@@ -540,8 +563,8 @@ const NotesUpload = () => {
                   Upload quality notes and earn points that boost your ranking on the leaderboard
                 </p>
                 <div className="bg-white/20 rounded-lg p-4 backdrop-blur-sm">
-                  <p className="text-2xl font-bold">50 Points</p>
-                  <p className="text-sm text-blue-100">per upload</p>
+                  <p className="text-2xl font-bold">{formData.points} Points</p>
+                  <p className="text-sm text-blue-100">for this upload</p>
                 </div>
               </div>
             </div>

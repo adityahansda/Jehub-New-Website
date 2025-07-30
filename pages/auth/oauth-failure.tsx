@@ -24,7 +24,7 @@ const OAuthFailure: React.FC = () => {
           Authentication Failed
         </h2>
         <p className="text-gray-600 mb-4">
-          We couldn't complete your Google sign-in. This might be because:
+          We couldn&apos;t complete your Google sign-in. This might be because:
         </p>
         <ul className="text-left text-sm text-gray-600 mb-6 space-y-1">
           <li>• You cancelled the sign-in process</li>
