@@ -299,7 +299,7 @@ export default function ModernDashboard() {
       case 'dashboard':
         return renderDashboardContent();
       case 'analytics':
-        return <DashboardAnalytics user={user} userProfile={userProfile} userStats={userStats} />;
+        return <DashboardAnalytics user={user} userProfile={userProfile || undefined} userStats={userStats} />;
       default:
         return renderDashboardContent();
     }

@@ -6,19 +6,60 @@ export interface UserProfile {
   userId: string;
   name: string;
   email: string;
+  
+  // Contact Information
   phone?: string;
+  alternatePhone?: string;
+  collegeEmail?: string;
+  
+  // Personal Information
+  dateOfBirth?: string;
+  gender?: string;
+  
+  // Academic Information
   college?: string;
   branch?: string;
   semester?: string;
+  year?: string;
+  enrollmentNumber?: string;
+  currentGPA?: string;
+  
+  // Enhanced Personal Information
   bio?: string;
+  interests?: string;
+  skills?: string;
+  languages?: string;
+  
+  // Address Information
+  currentAddress?: string;
+  permanentAddress?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  pincode?: string;
+  
+  // Social Links
+  linkedinUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  
+  // Profile Management
   profileImageUrl?: string;
+  isProfileComplete?: boolean;
+  profileCompletedAt?: string;
   joinDate?: string;
+  
+  // Stats and Rankings
   totalPoints?: number;
   notesUploaded?: number;
   notesDownloaded?: number;
   requestsFulfilled?: number;
   rank?: number;
-  isProfileComplete?: boolean;
+  
+  // Preferences
+  preferredLanguage?: string;
+  notificationPreferences?: string;
+  
   [key: string]: any;
 }
 
@@ -33,7 +74,7 @@ export class UserService {
       );
 
       if (response.documents.length > 0) {
-        return response.documents[0] as UserProfile;
+        return response.documents[0] as unknown as UserProfile;
       }
       return null;
     } catch (error) {
@@ -72,7 +113,7 @@ export class UserService {
         }
       );
 
-      return updatedProfile as UserProfile;
+      return updatedProfile as unknown as UserProfile;
     } catch (error) {
       console.error('Error updating user profile:', error);
       throw error;

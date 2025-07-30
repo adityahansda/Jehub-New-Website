@@ -16,6 +16,7 @@ const CompleteProfile: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -401,11 +402,14 @@ const CompleteProfile: React.FC = () => {
         console.log('✅ Created new user profile');
       }
       
-      // Show success message
-      alert('Profile completed successfully!');
+      // Show success message and redirect
+      console.log('✅ Profile completed successfully!');
+      setSuccess(true);
       
-      // Redirect to profile page after profile completion
-      router.push('/dashboard');
+      // Redirect to dashboard after profile completion
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1500); // Give user time to see success message
       
     } catch (error: any) {
       console.error('Profile save error:', error);
@@ -479,7 +483,27 @@ const CompleteProfile: React.FC = () => {
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-5 text-green-500 flex-shrink-0">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-800">Profile completed successfully!</p>
+                  <p className="text-xs text-green-600 mt-1">Redirecting to your dashboard...</p>
+                </div>
+              </div>
             </div>
           )}
 
