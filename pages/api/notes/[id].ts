@@ -8,6 +8,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Invalid note ID' });
   }
 
+  // Validate Appwrite document ID format
+  // Valid chars: a-z, A-Z, 0-9, underscore. Max 36 chars. Can't start with underscore
+  const validIdPattern = /^[a-zA-Z0-9][a-zA-Z0-9_]{0,35}$/;
+  if (!validIdPattern.test(id)) {
+    return res.status(400).json({ 
+      error: 'Invalid document ID format', 
+      details: 'Document ID must contain only a-z, A-Z, 0-9, and underscore. Max 36 chars and cannot start with underscore.' 
+    });
+  }
+
   try {
     switch (req.method) {
       case 'GET':

@@ -40,7 +40,7 @@ const UniversalSidebar: React.FC<UniversalSidebarProps> = ({ isOpen, onClose }) 
   ];
 
   const bottomItems = [
-    { path: '/profile', label: 'Profile', icon: User },
+    { path: '/dashboard', label: 'Dashboard', icon: User },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 

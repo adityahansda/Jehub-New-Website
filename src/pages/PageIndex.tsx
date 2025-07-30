@@ -48,7 +48,7 @@ const PageIndex = () => {
       title: 'User Account',
       description: 'Profile and account management',
       pages: [
-        { name: 'Profile', path: '/profile', icon: User, description: 'View and edit your profile' },
+        { name: 'Dashboard', path: '/dashboard', icon: User, description: 'View your dashboard and profile' },
         { name: 'Settings', path: '/settings', icon: Settings, description: 'Account settings and preferences' },
         { name: 'Login', path: '/login', icon: User, description: 'Sign in to your account' },
         { name: 'Sign Up', path: '/signup', icon: User, description: 'Create a new account' },
