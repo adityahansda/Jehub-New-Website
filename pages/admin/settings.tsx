@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { 
   Settings, 
@@ -35,7 +35,7 @@ const AdminSettings = () => {
   const [showPreview, setShowPreview] = useState<string | null>(null);
 
   // Default settings structure
-  const defaultSettings: AppSettings = {
+  const defaultSettings: AppSettings = useMemo(() => ({
     'share_message_template': {
       value: '🎓 Check out this amazing study material: {title}\n\n📚 Subject: {subject}\n🎯 Branch: {branch}\n📅 Semester: {semester}\n👤 Shared by: {uploader}\n\n💡 Join Jharkhand Engineer\'s Hub for more quality resources!\n\n{url}',
       type: 'textarea',
@@ -78,13 +78,9 @@ const AdminSettings = () => {
       description: 'Site tagline for social media shares',
       updatedAt: new Date().toISOString()
     }
-  };
+  }), []);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/settings');
@@ -110,7 +106,11 @@ const AdminSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [defaultSettings]);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const updateSetting = async (key: string, value: string) => {
     try {

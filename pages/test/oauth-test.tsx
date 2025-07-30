@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { account } from '../../src/lib/appwrite';
 import { authService } from '../../src/services/auth';
 
@@ -6,16 +6,12 @@ const OAuthTest: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const addLog = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'error' | 'success' = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [...prev, `[${timestamp}] ${type.toUpperCase()}: ${message}`]);
-  };
-
-  useEffect(() => {
-    checkCurrentSession();
   }, []);
 
-  const checkCurrentSession = async () => {
+  const checkCurrentSession = useCallback(async () => {
     try {
       addLog('Checking current session...');
       const user = await authService.getCurrentUser();
@@ -28,7 +24,11 @@ const OAuthTest: React.FC = () => {
     } catch (error: any) {
       addLog(`Session check failed: ${error.message}`, 'error');
     }
-  };
+  }, [addLog]);
+
+  useEffect(() => {
+    checkCurrentSession();
+  }, [checkCurrentSession]);
 
   const testGoogleOAuth = async () => {
     try {

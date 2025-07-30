@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   X, 
   Share2, 
@@ -42,13 +43,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, note, userId }
 
   const loading = settingsLoading || templateLoading;
 
-  useEffect(() => {
-    if (isOpen && !loading && userId) {
-      generateCustomMessage();
-    }
-  }, [isOpen, loading, settings, note, userId]);
-
-  const generateCustomMessage = () => {
+  const generateCustomMessage = useCallback(() => {
     // Use active template if available, otherwise fall back to settings
     const template = activeTemplate || getShareMessageTemplate(settings);
     const currentUrl = window.location.href;
@@ -62,7 +57,13 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, note, userId }
       .replace(/{url}/g, currentUrl);
 
     setCustomMessage(message);
-  };
+  }, [activeTemplate, settings, note]);
+
+  useEffect(() => {
+    if (isOpen && !loading && userId) {
+      generateCustomMessage();
+    }
+  }, [isOpen, loading, settings, note, userId, generateCustomMessage]);
 
   const handleCreateShare = async (platform: SharePlatform) => {
     if (!userId) return;
@@ -204,7 +205,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, note, userId }
                     QR Code for Quick Sharing
                   </label>
                   <div className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32" />
+                    <Image src={qrCodeUrl} alt="QR Code" width={128} height={128} className="w-32 h-32" />
                   </div>
                   <p className="text-xs text-gray-500 text-center mt-2">
                     Scan this QR code to quickly access the shared content

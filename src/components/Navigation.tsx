@@ -243,7 +243,7 @@ const Navigation = () => {
             {/* Enhanced Additional Links */}
             <div className="space-y-2">
               {[
-                { href: '/profile', label: 'My Profile', icon: GraduationCap }
+                { href: '/dashboard', label: 'Dashboard', icon: GraduationCap }
               ].map((item) => {
                 const IconComponent = item.icon;
                 return (

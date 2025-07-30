@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { useAuth } from '../src/contexts/AuthContext';
 import { databases, DATABASE_ID } from '../src/appwrite/config';
 import { collections } from '../src/lib/appwriteConfig';
@@ -103,18 +104,8 @@ const CompleteProfile: React.FC = () => {
     'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 'Ladakh'
   ];
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    
-    // Fetch existing user profile data
-    fetchUserProfile();
-  }, [user, router]);
-
   // Fetch existing user profile data from database
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -122,7 +113,7 @@ const CompleteProfile: React.FC = () => {
       const response = await databases.listDocuments(
         DATABASE_ID,
         collections.users,
-        [Query.equal('email', user.email)]
+        [Query.equal('email', user.email!)]
       );
       
       if (response.documents.length > 0) {
@@ -199,7 +190,17 @@ const CompleteProfile: React.FC = () => {
         email: user.email || '',
       }));
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Fetch existing user profile data
+    fetchUserProfile();
+  }, [user, router, fetchUserProfile]);
 
   // Handle profile image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,6 +307,11 @@ const CompleteProfile: React.FC = () => {
     
     try {
       // Check if user already exists in database
+      if (!user) {
+        setError('User authentication required');
+        return;
+      }
+      
       const existingUserResponse = await databases.listDocuments(
         DATABASE_ID,
         collections.users,
@@ -399,7 +405,7 @@ const CompleteProfile: React.FC = () => {
       alert('Profile completed successfully!');
       
       // Redirect to profile page after profile completion
-      router.push('/profile');
+      router.push('/dashboard');
       
     } catch (error: any) {
       console.error('Profile save error:', error);
@@ -430,10 +436,11 @@ const CompleteProfile: React.FC = () => {
           <div className="relative mx-auto mb-4">
             <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto overflow-hidden">
               {profileImage || formData.profileImageUrl ? (
-                <img 
+                <Image 
                   src={profileImage || formData.profileImageUrl} 
                   alt="Profile" 
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 user?.name?.charAt(0).toUpperCase() || 'U'
@@ -463,7 +470,7 @@ const CompleteProfile: React.FC = () => {
             Welcome to JEHUB, {user?.name || 'Student'}! 👋
           </h1>
           <p className="text-gray-600">
-            Let's complete your profile to give you a personalized experience
+            Let&apos;s complete your profile to give you a personalized experience
           </p>
         </div>
 
@@ -482,10 +489,12 @@ const CompleteProfile: React.FC = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <img 
+                    <Image 
                       src={profileImage || formData.profileImageUrl} 
                       alt="Profile Preview" 
-                      className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+                      width={64}
+                      height={64}
+                      className="rounded-full object-cover border-2 border-white shadow-sm"
                     />
                     <div>
                       <p className="text-sm font-medium text-gray-900">Profile Photo</p>
