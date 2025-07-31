@@ -1,12 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { databases } from '@/lib/appwrite';
 import { Query } from 'appwrite';
-import { withAdminProtection } from '../../../src/lib/serverAuth';
 
 const SETTINGS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_SETTINGS_COLLECTION_ID || 'settings';
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 
-export default withAdminProtection(async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!DATABASE_ID) {
     return res.status(500).json({ error: 'Database configuration missing' });
   }
@@ -123,4 +122,4 @@ export default withAdminProtection(async function handler(req: NextApiRequest, r
     console.error('Settings API error:', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
-});
+}
