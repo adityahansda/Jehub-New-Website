@@ -20,7 +20,7 @@ const Navigation = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter();
-  const { user, userProfile, logout, redirectToDashboard } = useAuth();
+  const { user, userProfile, logout } = useAuth();
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
@@ -79,11 +79,7 @@ const Navigation = () => {
 
   const handleProfileClick = (path: string) => {
     setIsProfileOpen(false);
-    if (path === '/dashboard') {
-      redirectToDashboard();
-    } else {
-      router.push(path);
-    }
+    router.push(path);
   };
 
   return (
@@ -317,23 +313,9 @@ const Navigation = () => {
               {/* Enhanced Additional Links */}
               <div className="space-y-2">
                 {[
-                { href: '/dashboard', label: 'Dashboard', icon: GraduationCap, onClick: () => redirectToDashboard() }
+                  { href: '/dashboard', label: 'Dashboard', icon: GraduationCap }
                 ].map((item) => {
                   const IconComponent = item.icon;
-                  if (item.onClick) {
-                    return (
-                      <button
-                        key={item.href}
-                        onClick={item.onClick}
-                        className="group w-full flex items-center space-x-4 px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300 hover:scale-105"
-                      >
-                        <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all duration-300">
-                          <IconComponent className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <span className="font-medium">{item.label}</span>
-                      </button>
-                    );
-                  }
                   return (
                     <Link
                       key={item.href}

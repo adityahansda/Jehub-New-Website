@@ -125,25 +125,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Access to Unified Dashboard */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold mb-2">🚀 Unified Admin Dashboard</h3>
-                <p className="text-blue-100">Access all admin features in one comprehensive dashboard</p>
-              </div>
-              <Link
-                href="/unified-admin-dashboard"
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
-              >
-                Launch Dashboard
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {/* Admin Features Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {adminFeatures.map((feature, index) => {
@@ -193,7 +174,7 @@ const AdminDashboard = () => {
                   </button>
                 ) : (
                   <Link
-                    href="/unified-admin-dashboard"
+                    href={feature.href}
                     className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                   >
                     Open {feature.title}
