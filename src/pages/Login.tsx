@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { userService } from '../services/userService';
 import Image from 'next/image';
 
 const Login = () => {
@@ -18,7 +17,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { login, loginWithGoogle, user, sendPasswordRecovery } = useAuth();
+  const { login, loginWithGoogle, user, sendPasswordRecovery, redirectToDashboard } = useAuth();
   const router = useRouter();
 
   // Check for OAuth error in URL params
@@ -30,24 +29,13 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    const checkUserAndRedirect = async () => {
-      if (user) {
-        try {
-        const isComplete = await userService.isProfileComplete(user.email);
-        if (isComplete) {
-          router.push('/'); // Redirect existing users to home page
-        } else {
-          router.push('/complete-profile');
-        }
-        } catch (error) {
-          console.error('Error checking profile completion:', error);
-          router.push('/complete-profile');
-        }
-      }
-    };
-
-    checkUserAndRedirect();
-  }, [user, router]);
+    if (user) {
+      // Use a slight delay to ensure userProfile is loaded
+      setTimeout(() => {
+        redirectToDashboard();
+      }, 500);
+    }
+  }, [user, redirectToDashboard]);
 
   const handleInputChange = (field: 'email' | 'password', value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -66,19 +54,10 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password);
-
-      // Check if profile is complete and redirect accordingly
-      try {
-        const isComplete = await userService.isProfileComplete(formData.email);
-        if (isComplete) {
-          router.push('/'); // Redirect existing users to home page
-        } else {
-          router.push('/complete-profile');
-        }
-      } catch (error) {
-        console.error('Error checking profile completion:', error);
-        router.push('/complete-profile');
-      }
+      // Redirect will be handled by the useEffect hook
+      setTimeout(() => {
+        redirectToDashboard();
+      }, 1000);
     } catch (error: any) {
       setError(error.message || 'Login failed. Please try again.');
     } finally {
