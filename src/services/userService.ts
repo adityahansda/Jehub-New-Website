@@ -60,6 +60,10 @@ export interface UserProfile {
   preferredLanguage?: string;
   notificationPreferences?: string;
   
+  // Role and Status
+  role?: 'admin' | 'manager' | 'intern' | 'student' | 'user';
+  status?: 'active' | 'banned' | 'inactive';
+  
   [key: string]: any;
 }
 
@@ -87,10 +91,26 @@ export class UserService {
   async isProfileComplete(email: string): Promise<boolean> {
     try {
       const profile = await this.getUserProfile(email);
-      return profile?.isProfileComplete || false;
+      // If no profile exists, user is new and profile is not complete
+      if (!profile) {
+        return false;
+      }
+      // Check if profile is explicitly marked as complete
+      return profile.isProfileComplete === true;
     } catch (error) {
       console.error('Error checking profile completion:', error);
       return false;
+    }
+  }
+
+  // Check if user is new (doesn't have a profile in database)
+  async isNewUser(email: string): Promise<boolean> {
+    try {
+      const profile = await this.getUserProfile(email);
+      return profile === null;
+    } catch (error) {
+      console.error('Error checking if user is new:', error);
+      return true; // Assume new user if error occurs
     }
   }
 
@@ -289,6 +309,200 @@ export class UserService {
           rankChangeText: 'N/A'
         }
       };
+    }
+  }
+
+  // ADMIN METHODS
+  
+  // List all users (admin only)
+  async listAllUsers(): Promise<UserProfile[]> {
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        [
+          Query.limit(100) // Limit to 100 users, can be increased or paginated
+        ]
+      );
+      return response.documents as unknown as UserProfile[];
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      throw error;
+    }
+  }
+
+  // Update user role (admin only)
+  async updateUserRole(userId: string, newRole: string): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          role: newRole,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      throw error;
+    }
+  }
+
+  // Ban/unban user (admin only)
+  async banUser(userId: string, banned: boolean = true): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          status: banned ? 'banned' : 'active',
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error banning/unbanning user:', error);
+      throw error;
+    }
+  }
+
+  // Delete user account (admin only)
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      await databases.deleteDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId
+      );
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  }
+
+  // Update user points (admin only)
+  async updateUserPoints(userId: string, points: number): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          totalPoints: points,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user points:', error);
+      throw error;
+    }
+  }
+
+  // Update user rank (admin only)
+  async updateUserRank(userId: string, rank: number): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          rank: rank,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user rank:', error);
+      throw error;
+    }
+  }
+
+  // Update user gamification stats (admin only)
+  async updateUserGamification(userId: string, stats: {
+    totalPoints?: number;
+    notesUploaded?: number;
+    notesDownloaded?: number;
+    requestsFulfilled?: number;
+    communityPosts?: number;
+    rank?: number;
+    level?: string;
+  }): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          ...stats,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user gamification:', error);
+      throw error;
+    }
+  }
+
+  // Get user by ID (admin only)
+  async getUserById(userId: string): Promise<UserProfile | null> {
+    try {
+      const response = await databases.getDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId
+      );
+      return response as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+      return null;
+    }
+  }
+
+  // Update any user profile field (admin only)
+  async adminUpdateUserProfile(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
+    try {
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          ...profileData,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user profile (admin):', error);
+      throw error;
+    }
+  }
+
+  // Set user role by email (for testing/debugging)
+  async setUserRoleByEmail(email: string, role: 'admin' | 'manager' | 'intern' | 'student' | 'user'): Promise<UserProfile | null> {
+    try {
+      const profile = await this.getUserProfile(email);
+      if (!profile) {
+        throw new Error('User profile not found');
+      }
+      
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        profile.$id!,
+        {
+          role: role,
+          updatedAt: new Date().toISOString()
+        }
+      );
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error setting user role:', error);
+      throw error;
     }
   }
 }
