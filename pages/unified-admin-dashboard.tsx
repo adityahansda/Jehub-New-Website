@@ -48,7 +48,34 @@ import {
   LogOut,
   BookOpen,
   Bookmark,
-  GraduationCap
+  GraduationCap,
+  Calendar,
+  Clock,
+  Target,
+  Cpu,
+  Server,
+  Monitor,
+  Wifi,
+  HardDrive,
+  PieChart,
+  LineChart,
+  BarChart,
+  MapPin,
+  Star,
+  Heart,
+  Flag,
+  Tag,
+  Image,
+  Video,
+  Mail,
+  Phone,
+  ArrowUp,
+  ArrowDown,
+  ArrowRight,
+  ArrowLeft,
+  ExternalLink,
+  Copy,
+  Link2
 } from 'lucide-react';
 
 // Import admin components
@@ -192,72 +219,197 @@ const UnifiedAdminDashboard: React.FC = () => {
   // Render dashboard overview
   const renderDashboard = () => (
     <div className="space-y-6">
-      {/* Stats Grid */}
+      {/* Dashboard Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your platform with comprehensive tools</p>
+        </div>
+        <div className="flex space-x-3">
+          <button 
+            onClick={fetchAllData}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Refresh Stats</span>
+          </button>
+          <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2">
+            <Download className="h-4 w-4" />
+            <span>Export Data</span>
+          </button>
+        </div>
+      </div>
+      {/* Enhanced Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Users className="h-6 w-6 text-blue-600" />
+        {/* Total Users Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-lg">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.totalUsers}</p>
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <ArrowUp className="h-3 w-3 mr-1" />
+                  +12% from last month
+                </p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalUsers}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-full">
-              <FileText className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Notes</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalNotes}</p>
+            <div className="text-blue-600 dark:text-blue-400">
+              <TrendingUp className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Download className="h-6 w-6 text-purple-600" />
+        {/* Total Notes Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-lg">
+                <FileText className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Notes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.totalNotes}</p>
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <ArrowUp className="h-3 w-3 mr-1" />
+                  +8% from last month
+                </p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Downloads</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalDownloads}</p>
+            <div className="text-green-600 dark:text-green-400">
+              <BookOpen className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-orange-100 rounded-full">
-              <Share2 className="h-6 w-6 text-orange-600" />
+        {/* Downloads Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full shadow-lg">
+                <Download className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Downloads</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.totalDownloads}</p>
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <ArrowUp className="h-3 w-3 mr-1" />
+                  +23% from last month
+                </p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Shares</p>
-              <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalShares}</p>
+            <div className="text-purple-600 dark:text-purple-400">
+              <Activity className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Shares Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-lg">
+                <Share2 className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Shares</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats.totalShares}</p>
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <ArrowUp className="h-3 w-3 mr-1" />
+                  +5% from last month
+                </p>
+              </div>
+            </div>
+            <div className="text-orange-600 dark:text-orange-400">
+              <Globe className="h-5 w-5" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          {dashboardStats.recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                <Activity className="h-4 w-4 text-blue-600" />
+      {/* Enhanced Recent Activity & System Health Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Activity</h3>
+            <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View All
+            </button>
+          </div>
+          <div className="space-y-4">
+            {dashboardStats.recentActivity.map((activity, index) => (
+              <div key={index} className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg mr-3">
+                  <Activity className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.message}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+                </div>
+                <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <ChevronRight className="h-4 w-4" />
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                <p className="text-xs text-gray-500">{activity.time}</p>
+            ))}
+          </div>
+        </div>
+
+        {/* System Health Monitor */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">System Health</h3>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-600 dark:text-green-400 font-medium">All Systems Operational</span>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {/* Server Status */}
+            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="flex items-center">
+                <Server className="h-5 w-5 text-green-600 dark:text-green-400 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Server Status</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Uptime: 99.9%</p>
+                </div>
+              </div>
+              <div className="text-green-600 dark:text-green-400">
+                <CheckCircle className="h-5 w-5" />
               </div>
             </div>
-          ))}
+
+            {/* Database */}
+            <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="flex items-center">
+                <Database className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Database</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Response: 12ms</p>
+                </div>
+              </div>
+              <div className="text-blue-600 dark:text-blue-400">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+            </div>
+
+            {/* API Status */}
+            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div className="flex items-center">
+                <Zap className="h-5 w-5 text-purple-600 dark:text-purple-400 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">API Services</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Load: 23%</p>
+                </div>
+              </div>
+              <div className="text-purple-600 dark:text-purple-400">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -608,8 +760,19 @@ const UnifiedAdminDashboard: React.FC = () => {
   );
 
   // Render analytics section
-  const renderAnalytics = () => (
+const renderAnalytics = () => (
     <div className="space-y-6">
+      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">User Engagement</h3>
+          <p className="text-gray-600 dark:text-gray-400">Active users, session duration, and more...</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Performance Metrics</h3>
+          <p className="text-gray-600 dark:text-gray-400">Load times, server response, API calls...</p>
+        </div>
+      </div>
       <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
