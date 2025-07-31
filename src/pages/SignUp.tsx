@@ -27,7 +27,7 @@ const SignUp = () => {
   const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
   const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
 
-  // Redirect if already logged in - for signup, always go to complete profile
+  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push('/complete-profile');

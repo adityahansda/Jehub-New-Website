@@ -12,7 +12,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
   sendPasswordRecovery: (email: string) => Promise<void>;
   refreshUserProfile: () => Promise<void>;
-  redirectToDashboard: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -105,36 +104,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const redirectToDashboard = () => {
-    if (!userProfile) {
-      // Default redirect if no profile
-      window.location.href = '/dashboard';
-      return;
-    }
-
-    // Role-based dashboard redirection
-    const role = userProfile.role || 'user';
-    
-    switch (role) {
-      case 'admin':
-        window.location.href = '/admin-dashboard';
-        break;
-      case 'manager':
-        window.location.href = '/admin-dashboard'; // Managers can also use admin dashboard
-        break;
-      case 'intern':
-        window.location.href = '/dashboard';
-        break;
-      case 'student':
-        window.location.href = '/dashboard';
-        break;
-      case 'user':
-      default:
-        window.location.href = '/dashboard';
-        break;
-    }
-  };
-
   const value: AuthContextType = {
     user,
     userProfile,
@@ -145,7 +114,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     sendPasswordRecovery,
     refreshUserProfile,
-    redirectToDashboard,
   };
 
   return (

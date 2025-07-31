@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useAuth } from '../src/contexts/AuthContext';
-import { userService } from '../src/services/userService';
 import { databases, DATABASE_ID } from '../src/appwrite/config';
 import { collections } from '../src/lib/appwriteConfig';
 import { ID, Query } from 'appwrite';
@@ -199,18 +198,9 @@ const CompleteProfile: React.FC = () => {
       router.push('/login');
       return;
     }
-
-    const checkProfileAndRedirect = async () => {
-      const isComplete = await userService.isProfileComplete(user.email);
-      if (isComplete) {
-        router.push('/');
-        return;
-      }
-
-      // Fetch existing user profile data
-      fetchUserProfile();
-    };
-    checkProfileAndRedirect();
+    
+    // Fetch existing user profile data
+    fetchUserProfile();
   }, [user, router, fetchUserProfile]);
 
   // Handle profile image upload

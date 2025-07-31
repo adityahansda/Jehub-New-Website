@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, User, Settings, Shield } from 'lucide-react';
+import { LogOut, User, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { useRoleVerification } from '../hooks/useRoleVerification';
-import RoleBadge from './common/RoleBadge';
 
 const UserMenu: React.FC = () => {
   const { user, logout } = useAuth();
-  const { userRole, isAdmin } = useRoleVerification();
   const [isOpen, setIsOpen] = useState(false);
+
   if (!user) return null;
 
   const handleLogout = async () => {
@@ -39,8 +37,8 @@ const UserMenu: React.FC = () => {
           <div className="px-4 py-2 border-b border-gray-100">
             <p className="text-sm font-medium text-gray-900">{user.name}</p>
             <p className="text-sm text-gray-500">{user.email}</p>
-            <RoleBadge role={userRole} />
           </div>
+          
           <Link
             href="/dashboard"
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -49,17 +47,6 @@ const UserMenu: React.FC = () => {
             <User className="h-4 w-4" />
             Profile
           </Link>
-          
-          {isAdmin && (
-            <Link
-              href="/admin-dashboard"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Shield className="h-4 w-4" />
-              Admin Dashboard
-            </Link>
-          )}
           
           <Link
             href="/settings"
