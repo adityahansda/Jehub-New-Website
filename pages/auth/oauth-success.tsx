@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/auth';
+import { handlePostLoginRedirect } from '../../src/utils/redirectHelpers';
 
 const OAuthSuccess: React.FC = () => {
   const router = useRouter();
@@ -24,8 +25,14 @@ const OAuthSuccess: React.FC = () => {
         addDebug(`Auth check result: ${currentUser ? currentUser.name : 'null'}`);
         
         if (currentUser) {
-          addDebug('User found, redirecting to complete profile');
-          setTimeout(() => router.push('/complete-profile'), 1000);
+          addDebug('User found, determining redirect path');
+          try {
+            await handlePostLoginRedirect(currentUser.email, router);
+            addDebug('Redirect initiated');
+          } catch (error: any) {
+            addDebug(`Redirect error: ${error.message}`);
+            setTimeout(() => router.push('/complete-profile'), 1000);
+          }
           return;
         }
         

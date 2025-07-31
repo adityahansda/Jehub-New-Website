@@ -7,6 +7,7 @@ import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
 import { useAuth } from '../src/contexts/AuthContext';
 import { userService } from '../src/services/userService';
 import { dashboardService, DashboardStats } from '../src/services/dashboardService';
+import { useRoleVerification } from '../src/hooks/useRoleVerification';
 import {
     BarChart3,
     BookOpen,
@@ -58,6 +59,7 @@ import {
 
 export default function StudentDashboard() {
     const { user, userProfile, logout } = useAuth();
+    const { userRole, isAdmin } = useRoleVerification();
     const [activeSection, setActiveSection] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
@@ -139,8 +141,7 @@ export default function StudentDashboard() {
     const [githubUrl, setGithubUrl] = useState('');
     const [showPremiumPopup, setShowPremiumPopup] = useState(false);
 
-    // Mock user role - replace with actual user role from authentication
-    const [userRole] = useState<'student' | 'admin'>('student');
+    // User role is now fetched dynamically from useRoleVerification hook
 
     // Loading skeleton component
     const LoadingSkeleton = () => (
