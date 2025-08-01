@@ -15,10 +15,11 @@ export default function App({ Component, pageProps }: AppProps) {
   const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
   
   // Don't wrap with Layout if we're in coming soon mode and on the home page,
-  // or if we're directly accessing the coming-soon page, or on profile page
+  // or if we're directly accessing the coming-soon page, dashboard page, or admin pages
   const shouldUseLayout = !(isComingSoonMode && router.pathname === '/') && 
                          router.pathname !== '/coming-soon' && 
-                         router.pathname !== '/dashboard'
+                         router.pathname !== '/dashboard' &&
+                         !router.pathname.startsWith('/admin')
   
   return (
     <ThemeProvider>

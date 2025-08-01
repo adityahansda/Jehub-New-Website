@@ -23,15 +23,19 @@ const LeaderboardControl: React.FC<LeaderboardControlProps> = ({ userRole }) => 
   };
 
   const handleResetWeekly = () => {
+    if (!confirm('Are you sure you want to reset all weekly points?')) return;
     setLeaderboardData(prev => 
       prev.map(user => ({ ...user, weeklyPoints: 0 }))
     );
+    alert('Weekly points have been reset for all users!');
   };
 
   const handleResetMonthly = () => {
+    if (!confirm('Are you sure you want to reset all monthly points?')) return;
     setLeaderboardData(prev => 
       prev.map(user => ({ ...user, monthlyPoints: 0 }))
     );
+    alert('Monthly points have been reset for all users!');
   };
 
   return (

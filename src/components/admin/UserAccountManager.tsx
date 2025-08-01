@@ -3,7 +3,7 @@ import { Users, Ban, RotateCcw, Search, Shield, Eye, AlertTriangle } from 'lucid
 
 const UserAccountManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [users] = useState([
+  const [users, setUsers] = useState([
     {
       id: 1,
       name: 'John Doe',
@@ -33,10 +33,22 @@ const UserAccountManager = () => {
 
   const handleSuspendUser = (userId: number) => {
     console.log('Suspending user:', userId);
+    setUsers(prevUsers => prevUsers.map(user => 
+      user.id === userId ? { ...user, status: 'suspended' } : user
+    ));
+    alert(`User ${userId} has been suspended!`);
   };
 
   const handleResetPassword = (userId: number) => {
     console.log('Resetting password for user:', userId);
+    alert(`Password for user ${userId} has been reset!`);
+  };
+
+  const handleViewDetails = (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      alert(`User Details:\nName: ${user.name}\nEmail: ${user.email}\nStatus: ${user.status}\nJoin Date: ${user.joinDate}`);
+    }
   };
 
   return (
@@ -89,6 +101,7 @@ const UserAccountManager = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
+                    onClick={() => handleViewDetails(user.id)}
                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="View Details"
                   >

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import UserProfileSection from '../src/components/dashboard/UserProfileSection';
 import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
 import { useAuth } from '../src/contexts/AuthContext';
 import { userService } from '../src/services/userService';
 import { dashboardService, DashboardStats } from '../src/services/dashboardService';
+import { hasRequiredRole } from '../src/utils/dashboardRouter';
 import {
     BarChart3,
     BookOpen,
@@ -56,7 +58,7 @@ import {
 // Real data will be fetched from Appwrite
 
 
-export default function StudentDashboard() {
+function StudentDashboard() {
     const { user, userProfile, logout } = useAuth();
     const [activeSection, setActiveSection] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1169,4 +1171,59 @@ export default function StudentDashboard() {
             </div>
         </DashboardLayout>
     );
+}
+
+// Role-based access control wrapper
+export default function ProtectedStudentDashboard() {
+    const { user, userProfile } = useAuth();
+    const router = useRouter();
+    const [isChecking, setIsChecking] = useState(true);
+    const [hasAccess, setHasAccess] = useState(false);
+
+    useEffect(() => {
+        const checkAccess = async () => {
+            // Wait for user and userProfile to load
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            // If userProfile is still loading, wait a bit
+            if (userProfile === undefined) {
+                return;
+            }
+
+            // Check role-based access
+            const userRole = userProfile?.role || 'user';
+            
+            // Allow access for student, user, and admin roles (admin can access student dashboard)
+            const allowedRoles = ['student', 'user', 'admin', 'manager', 'intern'];
+            
+            if (allowedRoles.includes(userRole)) {
+                setHasAccess(true);
+            } else {
+                router.push('/access-denied');
+                return;
+            }
+            
+            setIsChecking(false);
+        };
+
+        checkAccess();
+    }, [user, userProfile, router]);
+
+    // Show loading while checking access
+    if (isChecking || !user) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">Verifying access...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Render dashboard if access is granted
+    return hasAccess ? <StudentDashboard /> : null;
 }

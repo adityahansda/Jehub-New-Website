@@ -26,6 +26,11 @@ const BroadcastSection: React.FC<BroadcastSectionProps> = ({ userRole }) => {
   ]);
 
   const handleSendBroadcast = () => {
+    if (!message.subject || !message.content) {
+      alert('Please fill in both subject and content!');
+      return;
+    }
+
     const newAnnouncement = {
       id: Date.now(),
       type: broadcastType,
@@ -38,6 +43,7 @@ const BroadcastSection: React.FC<BroadcastSectionProps> = ({ userRole }) => {
     
     setAnnouncements(prev => [newAnnouncement, ...prev]);
     setMessage({ subject: '', content: '', recipients: 'all' });
+    alert(`Broadcast sent successfully to ${message.recipients}!`);
     console.log('Broadcasting:', newAnnouncement);
   };
 

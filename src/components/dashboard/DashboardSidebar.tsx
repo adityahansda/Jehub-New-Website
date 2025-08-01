@@ -28,6 +28,8 @@ import {
   Globe,
   HelpCircle
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { getDashboardUrl } from '../../utils/dashboardRouter';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -66,7 +68,6 @@ const sidebarItems = [
   {
     group: 'Personal',
     items: [
-      { href: '/profile', label: 'Profile', icon: User },
       { href: '/notifications', label: 'Notifications', icon: Bell },
       { href: '/settings', label: 'Settings', icon: Settings },
     ]
@@ -75,10 +76,29 @@ const sidebarItems = [
 
 export default function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
+  const { userProfile } = useAuth();
+  
+  // Get the appropriate dashboard URL based on user role
+  const dashboardUrl = getDashboardUrl(userProfile);
+  
+  // Dynamic sidebar items with role-based dashboard URL
+  const dynamicSidebarItems = sidebarItems.map(group => {
+    if (group.group === 'Main') {
+      return {
+        ...group,
+        items: group.items.map(item => 
+          item.href === '/dashboard' 
+            ? { ...item, href: dashboardUrl }
+            : item
+        )
+      };
+    }
+    return group;
+  });
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return router.pathname === '/dashboard';
+    if (href === dashboardUrl || (href === '/dashboard' && router.pathname === dashboardUrl)) {
+      return router.pathname === dashboardUrl || router.pathname === '/dashboard';
     }
     return router.pathname.startsWith(href);
   };
@@ -115,7 +135,7 @@ export default function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-6">
             <div className="px-6 space-y-8">
-              {sidebarItems.map((group, groupIndex) => (
+              {dynamicSidebarItems.map((group, groupIndex) => (
                 <div key={groupIndex} className="space-y-3">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {group.group}

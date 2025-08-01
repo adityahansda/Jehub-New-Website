@@ -24,6 +24,10 @@ const SystemSettings = () => {
 
   const handleSave = () => {
     console.log('Saving settings:', settings);
+    // Simulate saving to backend
+    alert('Settings saved successfully!');
+    // You can add actual API call here
+    // Example: await updateSystemSettings(settings);
   };
 
   return (

@@ -352,7 +352,7 @@ const NotesPreview = () => {
 
       const data = await response.json();
       // Map Appwrite document format to component format
-      const formattedReports = data.map((report: Models.Document) => ({
+      const formattedReports = data.map((report: any) => ({
         ...report,
         id: report.$id || report.id
       }));
@@ -383,7 +383,7 @@ const NotesPreview = () => {
           ]
         );
 
-        const fetchedRelatedNotes = response.documents.map((doc: Models.Document) => ({
+        const fetchedRelatedNotes = response.documents.map((doc: any) => ({
           id: doc.$id,
           title: doc.title,
           branch: doc.branch,

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, User, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { getDashboardUrl } from '../utils/dashboardRouter';
 
 const UserMenu: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, userProfile, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!user) return null;
@@ -40,12 +41,12 @@ const UserMenu: React.FC = () => {
           </div>
           
           <Link
-            href="/dashboard"
+            href={getDashboardUrl(userProfile)}
             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
             onClick={() => setIsOpen(false)}
           >
             <User className="h-4 w-4" />
-            Profile
+            Dashboard
           </Link>
           
           <Link

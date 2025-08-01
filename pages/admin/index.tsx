@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { 
   Settings, 
   FileText, 
@@ -11,6 +12,8 @@ import {
   Database,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { hasRequiredRole } from '../../src/utils/dashboardRouter';
 
 const AdminDashboard = () => {
   const adminFeatures = [
@@ -244,4 +247,62 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+// Role-based access control wrapper
+export default function ProtectedAdminDashboard() {
+    const { user, userProfile } = useAuth();
+    const router = useRouter();
+    const [isChecking, setIsChecking] = useState(true);
+    const [hasAccess, setHasAccess] = useState(false);
+
+    useEffect(() => {
+        const checkAccess = async () => {
+            // Wait for user and userProfile to load
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+
+            // If userProfile is still loading, wait a bit
+            if (userProfile === undefined) {
+                return;
+            }
+
+            // Check role-based access
+            const userRole = userProfile?.role || 'user';
+            
+            // Only allow access for admin, manager, and intern roles
+            const allowedRoles = ['admin', 'manager', 'intern'];
+            
+            if (allowedRoles.includes(userRole)) {
+                setHasAccess(true);
+            } else {
+                // Redirect students to student dashboard
+                if (userRole === 'student' || userRole === 'user') {
+                    router.push('/dashboard');
+                } else {
+                    router.push('/access-denied');
+                }
+                return;
+            }
+            
+            setIsChecking(false);
+        };
+
+        checkAccess();
+    }, [user, userProfile, router]);
+
+    // Show loading while checking access
+    if (isChecking || !user) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Verifying admin access...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Render admin dashboard if access is granted
+    return hasAccess ? <AdminDashboard /> : null;
+}

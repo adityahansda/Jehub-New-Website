@@ -125,11 +125,14 @@ export class ShareService {
 
       const documentId = response.documents[0].$id;
       
+      // Remove Appwrite-specific fields from updates
+      const { $id, $createdAt, $updatedAt, $permissions, $collectionId, $databaseId, ...cleanUpdates } = updates as any;
+      
       await databases.updateDocument(
         DATABASE_ID,
         SHARES_COLLECTION_ID,
         documentId,
-        updates
+        cleanUpdates
       );
     } catch (error) {
       console.error('Error updating share:', error);

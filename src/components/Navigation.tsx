@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
+import { getDashboardUrl } from '../utils/dashboardRouter';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -188,7 +189,7 @@ const Navigation = () => {
                         </div>
                         <div className="py-2">
                           <button
-                            onClick={() => handleProfileClick('/dashboard')}
+                            onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
                             className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
                           >
                             <GraduationCap className="h-5 w-5" />
@@ -355,7 +356,7 @@ const Navigation = () => {
                       {/* Profile Actions */}
                       <div className="space-y-2">
                         <button
-                          onClick={() => handleProfileClick('/dashboard')}
+                          onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
                           className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
                         >
                           <GraduationCap className="h-5 w-5" />

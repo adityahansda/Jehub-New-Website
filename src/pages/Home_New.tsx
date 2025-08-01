@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import NewsletterSubscription from '../components/NewsletterSubscription';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
@@ -765,25 +766,31 @@ const Home = () => {
                 style={{ transitionDelay: '200ms' }}
               >
                 <Link
-                  href="#"
+                  href="https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center px-6 py-4 bg-[#25d366] text-white rounded-lg font-semibold hover:bg-[#20ba59] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <MessageCircle className="h-5 w-5 mr-2" />
                   Join WhatsApp
                 </Link>
                 <Link
-                  href="#"
+                  href="https://www.instagram.com/jharkhandengineershub/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-[#e1306c] to-[#f56040] text-white rounded-lg font-semibold hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
                 >
                   <Camera className="h-5 w-5 mr-2" />
                   Follow Instagram
                 </Link>
                 <Link
-                  href="#"
+                  href="https://t.me/JharkhandEnginnersHub"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center justify-center px-6 py-4 bg-[#1c1c1f] border border-[#2d2d30] text-white rounded-lg font-semibold hover:border-[#9333ea] hover:bg-[#9333ea] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   <Crown className="h-5 w-5 mr-2" />
-                  Campus Captain
+                  Join Telegram
                 </Link>
               </div>
 
@@ -797,16 +804,7 @@ const Home = () => {
               >
                 <h3 className="text-2xl font-bold text-white mb-4">Stay Updated</h3>
                 <p className="text-[#d1d5db] mb-6">Get the latest updates about JEHUB&apos;s launch and features</p>
-                <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-3 rounded-lg bg-[#0e0e10]/80 backdrop-blur-sm border border-[#2d2d30] text-white placeholder-[#666] focus:outline-none focus:border-[#9333ea] transition-colors"
-                  />
-                  <button className="px-6 py-3 bg-[#9333ea] text-white rounded-lg font-semibold hover:bg-[#7c3aed] transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg">
-                    Subscribe
-                  </button>
-                </div>
+                <NewsletterSubscription />
               </div>
             </div>
           </div>
