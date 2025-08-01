@@ -30,23 +30,9 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    const checkUserAndRedirect = async () => {
-      if (user) {
-        try {
-        const isComplete = await userService.isProfileComplete(user.email);
-        if (isComplete) {
-          router.push('/'); // Redirect existing users to home page
-        } else {
-          router.push('/complete-profile');
-        }
-        } catch (error) {
-          console.error('Error checking profile completion:', error);
-          router.push('/complete-profile');
-        }
-      }
-    };
-
-    checkUserAndRedirect();
+    if (user) {
+      router.push('/'); // Redirect all users to home page
+    }
   }, [user, router]);
 
   const handleInputChange = (field: 'email' | 'password', value: string) => {
@@ -66,19 +52,7 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password);
-
-      // Check if profile is complete and redirect accordingly
-      try {
-        const isComplete = await userService.isProfileComplete(formData.email);
-        if (isComplete) {
-          router.push('/'); // Redirect existing users to home page
-        } else {
-          router.push('/complete-profile');
-        }
-      } catch (error) {
-        console.error('Error checking profile completion:', error);
-        router.push('/complete-profile');
-      }
+      router.push('/'); // Redirect all users to home page
     } catch (error: any) {
       setError(error.message || 'Login failed. Please try again.');
     } finally {

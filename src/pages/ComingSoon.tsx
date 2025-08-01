@@ -19,6 +19,8 @@ import {
 const ComingSoon = () => {
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -63,13 +65,41 @@ const ComingSoon = () => {
     return () => clearInterval(timer);
   }, [launchDate]);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      // Handle email subscription
-      console.log("Email subscribed:", email);
-      setIsSubscribed(true);
-      setEmail("");
+    if (!email) return;
+
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email, 
+          source: 'coming-soon-page' 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSubscribed(true);
+        setEmail("");
+        // Show success message
+        console.log('Subscription successful:', data.message);
+      } else {
+        // Handle error
+        setErrorMessage(data.error || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      setErrorMessage('Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -210,6 +240,13 @@ const ComingSoon = () => {
                         JEHUB&apos;s launch
                       </p>
                     </div>
+                    
+                    {errorMessage && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                        {errorMessage}
+                      </div>
+                    )}
+                    
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <input
@@ -218,14 +255,23 @@ const ComingSoon = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email address"
                         required
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                        disabled={isSubmitting}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      disabled={isSubmitting}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
-                      Notify Me at Launch
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Subscribing...
+                        </div>
+                      ) : (
+                        'Notify Me at Launch'
+                      )}
                     </button>
                     <p className="text-xs text-gray-500 text-center">
                       No spam, unsubscribe anytime. We respect your privacy.
@@ -320,7 +366,7 @@ const ComingSoon = () => {
               </h3>
               <div className="flex justify-center space-x-6 flex-wrap gap-4">
                 <a
-                  href="https://t.me/JharkhandEnginnersHub"
+href="https://t.me/JharkhandEnginnersHub"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors bg-white/50 px-4 py-2 rounded-lg"
@@ -329,7 +375,7 @@ const ComingSoon = () => {
                   <span>Telegram</span>
                 </a>
                 <a
-                  href="https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU"
+href="https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors bg-white/50 px-4 py-2 rounded-lg"
@@ -338,7 +384,7 @@ const ComingSoon = () => {
                   <span>WhatsApp</span>
                 </a>
                 <a
-                  href="https://www.youtube.com/@JharkhandEngineersHub"
+href="https://www.youtube.com/@JharkhandEngineersHub"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors bg-white/50 px-4 py-2 rounded-lg"
@@ -347,7 +393,7 @@ const ComingSoon = () => {
                   <span>YouTube</span>
                 </a>
                 <a
-                  href="https://www.instagram.com/jharkhandengineershub/"
+href="https://www.instagram.com/jharkhandengineershub/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2 text-gray-600 hover:text-pink-600 transition-colors bg-white/50 px-4 py-2 rounded-lg"

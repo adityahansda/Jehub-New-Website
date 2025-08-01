@@ -30,7 +30,7 @@ const SignUp = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      router.push('/complete-profile');
+      router.push('/');
     }
   }, [user, router]);
 
@@ -68,7 +68,7 @@ const SignUp = () => {
     
     try {
       await register(formData.email, formData.password, formData.name);
-      router.push('/complete-profile'); // Redirect to complete profile after successful registration
+      router.push('/'); // Redirect to home page after successful registration
     } catch (error: any) {
       setError(error.message || 'Registration failed. Please try again.');
     } finally {

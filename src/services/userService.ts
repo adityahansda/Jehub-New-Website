@@ -60,6 +60,9 @@ export interface UserProfile {
   preferredLanguage?: string;
   notificationPreferences?: string;
   
+  // User Role
+  role?: 'student' | 'admin' | 'manager' | 'intern' | 'user';
+  
   [key: string]: any;
 }
 
@@ -103,12 +106,15 @@ export class UserService {
         throw new Error('User profile not found');
       }
 
+      // Remove Appwrite-specific fields from profileData
+      const { $id, $createdAt, $updatedAt, $permissions, $collectionId, $databaseId, ...cleanProfileData } = profileData as any;
+      
       const updatedProfile = await databases.updateDocument(
         DATABASE_ID,
         USERS_COLLECTION_ID,
         existingProfile.$id!,
         {
-          ...profileData,
+          ...cleanProfileData,
           updatedAt: new Date().toISOString()
         }
       );

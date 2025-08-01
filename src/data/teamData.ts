@@ -124,10 +124,10 @@ export const allJehubTeam: TeamMember[] = [
   },
   {
     name: 'Suryansh Sinha',
-    role: 'Student Support Executive',
+    role: 'Developer',
     education: 'Government Polytechnic Dhanbad - CSE',
     specialization: 'Student Mentorship & Support',
-    bio: 'Provides guidance and support to students, helping them with academic and career-related queries. Experience: JEHUB - Student Support Executive',
+    bio: 'Passionate about software development and creating innovative solutions for the JEHUB platform. Experience: JEHUB - Developer',
     image: 'https://images.pexels.com/photos/1181563/pexels-photo-1181563.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
     department: 'Support Team',
     working: 1,

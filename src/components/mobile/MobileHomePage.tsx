@@ -28,6 +28,8 @@ import {
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import UniversalSidebar from '../UniversalSidebar';
+import { useAuth } from '../../contexts/AuthContext';
+import { getDashboardUrl } from '../../utils/dashboardRouter';
 
 interface MobileHomePageProps {
   user?: {
@@ -41,6 +43,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
   user = { name: "Aditya" },
   notificationCount = 3
 }) => {
+  const { userProfile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -294,7 +297,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
                 )}
               </motion.button>
               {/* Profile */}
-              <Link href="/dashboard">
+              <Link href={getDashboardUrl(userProfile)}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

@@ -178,7 +178,7 @@ const JoinTeam = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="https://t.me/jehub10"
+href="https://t.me/JharkhandEnginnersHub"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -603,7 +603,7 @@ const JoinTeam = () => {
               <span className="text-sm text-gray-600">We respect your privacy. Your information is safe with us.</span>
             </div>
             <a
-              href="https://t.me/jehub10"
+href="https://t.me/JharkhandEnginnersHub"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"

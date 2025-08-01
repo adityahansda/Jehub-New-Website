@@ -24,8 +24,8 @@ const OAuthSuccess: React.FC = () => {
         addDebug(`Auth check result: ${currentUser ? currentUser.name : 'null'}`);
         
         if (currentUser) {
-          addDebug('User found, redirecting to complete profile');
-          setTimeout(() => router.push('/complete-profile'), 1000);
+          addDebug('User found, redirecting to home page');
+          setTimeout(() => router.push('/'), 1000);
           return;
         }
         

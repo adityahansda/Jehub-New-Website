@@ -30,7 +30,7 @@ const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({ userRole }) => {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>(null);
 
-  const teamMembers = [
+  const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
       name: 'Sarah Johnson',
@@ -87,9 +87,9 @@ const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({ userRole }) => {
       phone: '+1234567893',
       permissions: ['basic_access']
     }
-  ];
+  ]);
 
-  const joinRequests = [
+  const [joinRequests, setJoinRequests] = useState([
     {
       id: 1,
       name: 'John Smith',
@@ -114,7 +114,7 @@ const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({ userRole }) => {
       appliedDate: '2024-01-12',
       resume: 'lisa_brown_resume.pdf'
     }
-  ];
+  ]);
 
   const filteredMembers = teamMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -125,10 +125,35 @@ const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({ userRole }) => {
 
   const handleApproveRequest = (requestId: number) => {
     console.log('Approving request:', requestId);
+    const request = joinRequests.find(req => req.id === requestId);
+    if (request) {
+      const newMember = {
+        id: Date.now(),
+        name: request.name,
+        email: request.email,
+        role: request.role,
+        status: 'active',
+        joinDate: new Date().toISOString().split('T')[0],
+        lastActivity: 'Just joined',
+        points: 0,
+        uploads: 0,
+        avatar: request.name.split(' ').map(n => n[0]).join(''),
+        phone: '+1234567890',
+        permissions: ['basic_access']
+      };
+      setTeamMembers(prev => [...prev, newMember]);
+      setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+      alert(`${request.name} has been approved and added to the team!`);
+    }
   };
 
   const handleRejectRequest = (requestId: number) => {
     console.log('Rejecting request:', requestId);
+    const request = joinRequests.find(req => req.id === requestId);
+    if (request) {
+      setJoinRequests(prev => prev.filter(req => req.id !== requestId));
+      alert(`${request.name}'s request has been rejected.`);
+    }
   };
 
   const handleEditMember = (member: any) => {
@@ -138,10 +163,18 @@ const TeamMemberManager: React.FC<TeamMemberManagerProps> = ({ userRole }) => {
 
   const handleBanMember = (memberId: number) => {
     console.log('Banning member:', memberId);
+    setTeamMembers(prev => prev.map(member => 
+      member.id === memberId ? { ...member, status: 'banned' } : member
+    ));
+    alert('Member has been banned.');
   };
 
   const handleUnbanMember = (memberId: number) => {
     console.log('Unbanning member:', memberId);
+    setTeamMembers(prev => prev.map(member => 
+      member.id === memberId ? { ...member, status: 'active' } : member
+    ));
+    alert('Member has been unbanned.');
   };
 
   const getStatusColor = (status: string) => {
