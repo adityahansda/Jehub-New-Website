@@ -43,7 +43,7 @@ const AccessDeniedPage: React.FC = () => {
                 {user ? (
                   <div>
                     <p className="text-red-700 mb-2">
-                      You don't have permission to access this page.
+                      You don&apos;t have permission to access this page.
                     </p>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
                       <div className="flex items-center gap-2 text-sm">
@@ -56,7 +56,7 @@ const AccessDeniedPage: React.FC = () => {
                     </div>
                     {isStudent && (
                       <p className="text-sm text-red-600">
-                        Students cannot access admin pages. You'll be redirected to your dashboard.
+                        Students cannot access admin pages. You&apos;ll be redirected to your dashboard.
                       </p>
                     )}
                     {isAdmin && (

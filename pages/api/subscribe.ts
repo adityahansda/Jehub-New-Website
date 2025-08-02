@@ -111,7 +111,7 @@ async function sendWelcomeEmail(subscriberEmail: string) {
   }
 
   // Create transporter
-  const transporter = nodemailer.createTransporter({
+  const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.SMTP_USER || 'jharkhandengineershub@gmail.com',
@@ -199,7 +199,7 @@ async function sendNotificationToTeam(subscriberEmail: string) {
     return;
   }
 
-  const transporter = nodemailer.createTransporter({
+  const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.SMTP_USER || 'jharkhandengineershub@gmail.com',
