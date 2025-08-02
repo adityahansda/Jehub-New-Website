@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import TopNavbar from '../src/components/common/TopNavbar';
@@ -69,7 +70,7 @@ export default function ModernDashboard() {
     };
 
     fetchUserStats();
-  }, [user?.email, authLoading]);
+  }, [user?.email, user, authLoading]);
 
   const handleLogout = async () => {
     try {
@@ -129,9 +130,11 @@ export default function ModernDashboard() {
           {/* Avatar */}
           <div className="relative mb-6 lg:mb-0">
             {userProfile?.profileImageUrl ? (
-              <img 
+              <Image 
                 src={userProfile.profileImageUrl} 
                 alt="Profile" 
+                width={96}
+                height={96}
                 className="w-24 h-24 rounded-2xl border border-white/30 object-cover"
               />
             ) : (

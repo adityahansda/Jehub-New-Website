@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/auth';
 import { userService } from '../../services/userService';
@@ -474,7 +475,7 @@ const UserProfileSection: React.FC = () => {
               onClick={() => setShowAvatarModal(true)}
             >
               {userProfile?.profileImageUrl ? (
-                <img src={userProfile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                <Image src={userProfile.profileImageUrl} alt="Profile" width={96} height={96} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-4xl font-bold text-gray-500 dark:text-gray-400">
                   {(profileForm.name || user?.name || 'U')[0].toUpperCase()}

@@ -37,9 +37,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (currentUser) {
         const profile = await userService.getUserProfile(currentUser.email);
         setUserProfile(profile);
+        
+        // Set user cookie if authenticated but cookie missing (for middleware)
+        if (typeof window !== 'undefined' && profile) {
+          const userData = {
+            $id: currentUser.$id,
+            name: currentUser.name,
+            email: currentUser.email,
+            role: profile.role
+          };
+          document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+        }
       }
     } catch (error) {
       console.log('No active session');
+      // Clear user cookie if no session
+      if (typeof window !== 'undefined') {
+        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
     } finally {
       setLoading(false);
     }
@@ -63,6 +78,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Fetch user profile after login
       const profile = await userService.getUserProfile(loggedInUser.email);
       setUserProfile(profile);
+      
+      // Set user cookie for middleware after successful login
+      if (typeof window !== 'undefined' && loggedInUser && profile) {
+        const userData = {
+          $id: loggedInUser.$id,
+          name: loggedInUser.name,
+          email: loggedInUser.email,
+          role: profile.role
+        };
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+        console.log('Set user cookie after login');
+      }
     } catch (error) {
       throw error;
     }
@@ -91,6 +118,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authService.logout();
       setUser(null);
       setUserProfile(null);
+      
+      // Clear user cookie on logout
+      if (typeof window !== 'undefined') {
+        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        console.log('Cleared user cookie on logout');
+      }
     } catch (error) {
       throw error;
     }

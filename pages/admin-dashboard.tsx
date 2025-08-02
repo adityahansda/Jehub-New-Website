@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import { useAuth } from '../src/contexts/AuthContext';
@@ -116,9 +117,11 @@ function AdminDashboard() {
                         {/* Avatar */}
                         <div className="relative">
                             {userProfile?.profileImageUrl ? (
-                                <img
+                                <Image
                                     src={userProfile.profileImageUrl}
                                     alt="Profile"
+                                    width={96}
+                                    height={96}
                                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-white/30 object-cover"
                                 />
                             ) : (

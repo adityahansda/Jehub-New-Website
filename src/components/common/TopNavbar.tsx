@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, User, Bell } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,9 +34,11 @@ export default function TopNavbar() {
         {/* Profile */}
         <div className="flex items-center space-x-3">
           {userProfile?.profileImageUrl ? (
-            <img 
+            <Image 
               src={userProfile.profileImageUrl} 
               alt="Profile" 
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
             />
           ) : (
