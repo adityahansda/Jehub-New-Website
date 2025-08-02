@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import UserProfileSection from '../src/components/dashboard/UserProfileSection';
 import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
+import ProtectedRoute from '../src/components/ProtectedRoute';
 import { useAuth } from '../src/contexts/AuthContext';
 import { userService } from '../src/services/userService';
 import { dashboardService, DashboardStats } from '../src/services/dashboardService';
@@ -193,9 +195,11 @@ function StudentDashboard() {
                         {/* Avatar */}
                         <div className="relative">
                             {userProfile?.profileImageUrl ? (
-                                <img
+                                <Image
                                     src={userProfile.profileImageUrl}
                                     alt="Profile"
+                                    width={96}
+                                    height={96}
                                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-white/30 object-cover"
                                 />
                             ) : (
@@ -1147,9 +1151,11 @@ function StudentDashboard() {
                             <div className="flex items-center space-x-2">
                                 <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                                 {userProfile?.profileImageUrl ? (
-                                    <img 
+                                    <Image 
                                         src={userProfile.profileImageUrl} 
                                         alt="Profile" 
+                                        width={32}
+                                        height={32}
                                         className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                                     />
                                 ) : (
@@ -1182,7 +1188,7 @@ export default function ProtectedStudentDashboard() {
 
     useEffect(() => {
         const checkAccess = async () => {
-            // Wait for user and userProfile to load
+            // Wait for user to load
             if (!user) {
                 router.push('/login');
                 return;
@@ -1193,19 +1199,8 @@ export default function ProtectedStudentDashboard() {
                 return;
             }
 
-            // Check role-based access
-            const userRole = userProfile?.role || 'user';
-            
-            // Allow access for student, user, and admin roles (admin can access student dashboard)
-            const allowedRoles = ['student', 'user', 'admin', 'manager', 'intern'];
-            
-            if (allowedRoles.includes(userRole)) {
-                setHasAccess(true);
-            } else {
-                router.push('/access-denied');
-                return;
-            }
-            
+            // Only check if user is authenticated - no role restrictions for dashboard
+            setHasAccess(true);
             setIsChecking(false);
         };
 
