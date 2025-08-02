@@ -1,329 +1,498 @@
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { User, Mail, Lock, Eye, EyeOff, GraduationCap, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/auth';
+import { userService } from '../services/userService';
+import { pointsService } from '../services/pointsService';
+import { NextSeo } from 'next-seo';
+import { AlertCircle, Check, User, Mail, Phone, GraduationCap, MessageCircle } from 'lucide-react';
+import SuccessToast from '../components/SuccessToast';
 
-const SignUp = () => {
-  const [formData, setFormData] = useState({
+interface SignupData {
+  name: string;
+  email: string;
+  phone: string;
+  college: string;
+  branch: string;
+  semester: string;
+  bio: string;
+  telegramUsername: string;
+}
+
+const SignUp: React.FC = () => {
+  const { user, refreshUserProfile } = useAuth();
+  const router = useRouter();
+  const [formData, setFormData] = useState<SignupData>({
     name: '',
     email: '',
-    password: '',
-    confirmPassword: '',
+    phone: '',
     college: '',
     branch: '',
-    semester: ''
+    semester: '',
+    bio: '',
+    telegramUsername: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [step, setStep] = useState(1);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const { register, loginWithGoogle, user } = useAuth();
-  const router = useRouter();
-
-  const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
-  const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
-
-  // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      router.push('/');
+    if (!user) {
+      // If no user is logged in, redirect to login after a short delay
+      // This allows time for OAuth flow to complete
+      const timer = setTimeout(() => {
+        router.push('/auth/login');
+      }, 3000);
+      
+      return () => clearTimeout(timer);
     }
+
+    // Pre-fill with user data from OAuth
+    setFormData(prev => ({
+      ...prev,
+      name: user.name || '',
+      email: user.email || ''
+    }));
   }, [user, router]);
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setError(''); // Clear error when user starts typing
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
-    if (!termsAccepted) {
-      setError('Please accept the terms and conditions');
-      return;
-    }
+    if (!user) return;
 
     setLoading(true);
     setError('');
-    
+
     try {
-      await register(formData.email, formData.password, formData.name);
-      router.push('/'); // Redirect to home page after successful registration
+      console.log('Starting form submission...');
+      
+      // Get referral code from session storage if exists
+      const referralCode = sessionStorage.getItem('referralCode');
+      console.log('Signup: Found referral code in session:', referralCode);
+      
+      // Calculate bonus points
+      const basePoints = 20; // Welcome bonus
+      const referralBonus = referralCode ? 50 : 0; // Referral bonus
+      const totalPoints = basePoints + referralBonus;
+      
+      // Prepare complete user profile data - only include fields that exist in database
+      const profileData = {
+        userId: user.$id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        college: formData.college || undefined,
+        branch: formData.branch || undefined,
+        semester: formData.semester || undefined,
+        bio: formData.bio || undefined,
+        telegramUsername: formData.telegramUsername || undefined,
+        isProfileComplete: true,
+        profileCompletedAt: new Date().toISOString(),
+        role: 'student' as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        // Initialize points system data - using existing database fields
+        totalPoints: totalPoints, // Welcome bonus + referral bonus
+        points: totalPoints, // Required points field
+        notesUploaded: 0,
+        notesDownloaded: 0,
+        requestsFulfilled: 0,
+        rank: 0,
+        level: 'beginner',
+        dailyLoginStreak: 1,
+        lastLoginDate: new Date().toISOString(),
+        joinDate: new Date().toISOString()
+      };
+      
+      console.log('Profile data prepared:', profileData);
+      
+      // Check if user already exists in database
+      const isRegistered = await authService.isUserRegistered(user.email);
+      console.log('User registered status:', isRegistered);
+      
+      if (!isRegistered) {
+        // Create new user profile directly in database
+        console.log('Creating new user profile in database...');
+        await userService.createUserProfile(profileData);
+        console.log('User profile created successfully');
+      } else {
+        // Update existing user profile
+        console.log('Updating existing user profile...');
+        await userService.updateUserProfile(user.email, profileData);
+        console.log('User profile updated successfully');
+      }
+
+      // Initialize points system
+      try {
+        console.log('Initializing points system...');
+        await pointsService.initializeNewUser(user.$id, user.email, user.name, referralCode || undefined);
+        console.log('Points system initialized');
+      } catch (pointsError: any) {
+        console.log('Points system already initialized or error:', pointsError.message);
+      }
+
+      // If there's a referral code, process it and add bonus points
+      if (referralCode) {
+        try {
+          console.log('Processing referral for completed profile:', referralCode);
+          await pointsService.processReferralCompletion(referralCode, user.$id, user.email);
+          
+          // Update user's points with referral bonus
+          await userService.updateUserProfile(user.email, {
+            totalPoints: totalPoints,
+            points: totalPoints
+          });
+          
+          sessionStorage.removeItem('referralCode');
+          console.log('Referral processed successfully and bonus points added');
+        } catch (referralError: any) {
+          console.log('Referral processing error:', referralError.message);
+        }
+      }
+
+      // Refresh user profile
+      await refreshUserProfile();
+      console.log('User profile refreshed');
+
+      // Show success message with points information
+      const toastMessage = referralCode 
+        ? `🎉 Sign up successful! You earned ${basePoints} welcome points + ${referralBonus} referral bonus = ${totalPoints} total points!`
+        : `🎉 Sign up successful! You earned ${basePoints} welcome points!`;
+      
+      // Display success toast
+      setSuccessMessage(toastMessage);
+      setShowSuccessToast(true);
+
+      // Redirect to home page after a short delay to show the toast
+      setTimeout(() => {
+        console.log('Redirecting to home page...');
+        router.push('/');
+      }, 3000);
+
     } catch (error: any) {
-      setError(error.message || 'Registration failed. Please try again.');
+      console.error('Error completing signup:', error);
+      setError(error.message || 'Failed to complete signup. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    setGoogleLoading(true);
-    setError('');
-    
-    try {
-      await loginWithGoogle();
-      // The redirect will be handled by the OAuth flow
-    } catch (error: any) {
-      setError(error.message || 'Google sign-up failed. Please try again.');
-      setGoogleLoading(false);
-    }
+  const nextStep = () => {
+    if (step < 2) setStep(step + 1);
   };
 
-  return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Join JEHUB
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Create your account and start learning
-          </p>
-        </div>
+  const prevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+  const isStep1Valid = formData.name && formData.email && formData.phone;
+  const isStep2Valid = formData.college && formData.branch;
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <NextSeo
+        title="Complete Your Profile - JEHUB"
+        description="Complete your profile to access all JEHUB features"
+      />
+
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Complete Your Profile</h1>
+            <p className="mt-2 text-gray-600">
+              Just a few essential details to get you started with JEHUB
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                  step >= 1 ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'
+                }`}>
+                  {step > 1 ? <Check className="w-4 h-4" /> : '1'}
+                </div>
+                <span className="ml-2 text-sm font-medium">Basic Info</span>
+              </div>
+              <div className={`flex-1 h-1 mx-4 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                  step >= 2 ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'
+                }`}>
+                  2
+                </div>
+                <span className="ml-2 text-sm font-medium">Academic Info</span>
+              </div>
+            </div>
+          </div>
+
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                <span className="text-sm text-red-700">{error}</span>
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                <p className="text-sm text-red-800">{error}</p>
               </div>
             </div>
           )}
 
-          {/* Google Sign Up Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignUp}
-            disabled={googleLoading}
-            className="w-full mb-6 bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {googleLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-            )}
-            {googleLoading ? 'Creating Account...' : 'Sign up with Google'}
-          </button>
+          {/* Form */}
+          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+            <form onSubmit={handleSubmit}>
+              {/* Step 1: Basic Information */}
+              {step === 1 && (
+                <div className="p-6 space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <User className="w-5 h-5 mr-2 text-blue-600" />
+                    Basic Information
+                  </h2>
 
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or sign up with email</span>
-            </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        disabled
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="10-digit mobile number"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      disabled={!isStep1Valid}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Academic Information */}
+              {step === 2 && (
+                <div className="p-6 space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                    <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
+                    Academic Information
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        College/University *
+                      </label>
+                      <input
+                        type="text"
+                        name="college"
+                        value={formData.college}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Indian Institute of Technology Delhi"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Branch/Department *
+                      </label>
+                      <select
+                        name="branch"
+                        value={formData.branch}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select Branch</option>
+                        <option value="computer-science">Computer Science Engineering</option>
+                        <option value="mechanical">Mechanical Engineering</option>
+                        <option value="electrical">Electrical Engineering</option>
+                        <option value="civil">Civil Engineering</option>
+                        <option value="electronics">Electronics & Communication</option>
+                        <option value="chemical">Chemical Engineering</option>
+                        <option value="aerospace">Aerospace Engineering</option>
+                        <option value="biotechnology">Biotechnology</option>
+                        <option value="information-technology">Information Technology</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Current Semester
+                      </label>
+                      <select
+                        name="semester"
+                        value={formData.semester}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select Semester</option>
+                        <option value="1">1st Semester</option>
+                        <option value="2">2nd Semester</option>
+                        <option value="3">3rd Semester</option>
+                        <option value="4">4th Semester</option>
+                        <option value="5">5th Semester</option>
+                        <option value="6">6th Semester</option>
+                        <option value="7">7th Semester</option>
+                        <option value="8">8th Semester</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <MessageCircle className="w-4 h-4 inline mr-1" />
+                        Telegram Username
+                      </label>
+                      <input
+                        type="text"
+                        name="telegramUsername"
+                        value={formData.telegramUsername}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="@username (for community groups)"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Bio
+                      </label>
+                      <textarea
+                        name="bio"
+                        value={formData.bio}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Brief description about yourself (optional)"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button
+                      type="button"
+                      onClick={prevStep}
+                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading || !isStep2Valid}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Completing...
+                        </>
+                      ) : (
+                        'Complete Profile'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </form>
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="John Doe"
-                />
+
+          {/* Benefits Info */}
+          <div className="mt-8 bg-blue-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">🎉 What&apos;s Next?</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-blue-600 font-bold">20</span>
+                </div>
+                <span>Welcome bonus points</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-green-600 font-bold">+50</span>
+                </div>
+                <span>Referral bonus (if referred)</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-purple-600 font-bold">∞</span>
+                </div>
+                <span>Access to engineering notes</span>
               </div>
             </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="email"
-                  id="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="college" className="block text-sm font-medium text-gray-700 mb-2">
-                College/University (Optional)
-              </label>
-              <div className="relative">
-                <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  id="college"
-                  value={formData.college}
-                  onChange={(e) => handleInputChange('college', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your college or university"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-2">
-                  Branch (Optional)
-                </label>
-                <select
-                  id="branch"
-                  value={formData.branch}
-                  onChange={(e) => handleInputChange('branch', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Branch</option>
-                  {branches.map(branch => (
-                    <option key={branch} value={branch}>{branch}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="semester" className="block text-sm font-medium text-gray-700 mb-2">
-                  Semester (Optional)
-                </label>
-                <select
-                  id="semester"
-                  value={formData.semester}
-                  onChange={(e) => handleInputChange('semester', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Semester</option>
-                  {semesters.map(semester => (
-                    <option key={semester} value={semester}>{semester}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                I agree to the{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
-                  Terms of Service
-                </a>
-                {' '}and{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-500">
-                  Privacy Policy
-                </a>
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign in here
-              </Link>
-            </p>
           </div>
         </div>
       </div>
-    </div>
+      
+      {/* Success Toast Notification */}
+      <SuccessToast 
+        message={successMessage}
+        isVisible={showSuccessToast}
+        onClose={() => setShowSuccessToast(false)}
+        autoClose={3000}
+      />
+    </>
   );
 };
 
