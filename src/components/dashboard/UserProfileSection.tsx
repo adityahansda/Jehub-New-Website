@@ -16,17 +16,13 @@ import {
   Save,
   User,
   Phone,
-  MapPin,
   Calendar,
   GraduationCap,
   Building,
   Users,
-  Globe,
-  Github,
-  Linkedin,
   Camera,
   Upload,
-  Star
+  MessageCircle
 } from 'lucide-react';
 
 // Helper Components
@@ -156,30 +152,14 @@ const UserProfileSection: React.FC = () => {
   const [profileForm, setProfileForm] = useState({
     name: userProfile?.name || '',
     phone: userProfile?.phone || '',
-    alternatePhone: userProfile?.alternatePhone || '',
-    collegeEmail: userProfile?.collegeEmail || '',
     dateOfBirth: userProfile?.dateOfBirth || '',
     gender: userProfile?.gender || '',
     college: userProfile?.college || '',
     branch: userProfile?.branch || '',
     semester: userProfile?.semester || '',
     year: userProfile?.year || '',
-    enrollmentNumber: userProfile?.enrollmentNumber || '',
-    currentGPA: userProfile?.currentGPA || '',
     bio: userProfile?.bio || '',
-    interests: userProfile?.interests || '',
-    skills: userProfile?.skills || '',
-    languages: userProfile?.languages || '',
-    currentAddress: userProfile?.currentAddress || '',
-    permanentAddress: userProfile?.permanentAddress || '',
-    city: userProfile?.city || '',
-    state: userProfile?.state || '',
-    country: userProfile?.country || '',
-    pincode: userProfile?.pincode || '',
-    linkedinUrl: userProfile?.linkedinUrl || '',
-    githubUrl: userProfile?.githubUrl || '',
-    portfolioUrl: userProfile?.portfolioUrl || '',
-    preferredLanguage: userProfile?.preferredLanguage || 'English'
+    telegramUsername: userProfile?.telegramUsername || ''
   });
   
   // Loading and error states
@@ -321,36 +301,19 @@ const UserProfileSection: React.FC = () => {
     }
   };
 
-  // Handle cancel edit
+  // Handle edit cancellation
   const handleCancelEdit = () => {
-    // Reset form to original values
     setProfileForm({
       name: userProfile?.name || '',
       phone: userProfile?.phone || '',
-      alternatePhone: userProfile?.alternatePhone || '',
-      collegeEmail: userProfile?.collegeEmail || '',
       dateOfBirth: userProfile?.dateOfBirth || '',
       gender: userProfile?.gender || '',
       college: userProfile?.college || '',
       branch: userProfile?.branch || '',
       semester: userProfile?.semester || '',
       year: userProfile?.year || '',
-      enrollmentNumber: userProfile?.enrollmentNumber || '',
-      currentGPA: userProfile?.currentGPA || '',
       bio: userProfile?.bio || '',
-      interests: userProfile?.interests || '',
-      skills: userProfile?.skills || '',
-      languages: userProfile?.languages || '',
-      currentAddress: userProfile?.currentAddress || '',
-      permanentAddress: userProfile?.permanentAddress || '',
-      city: userProfile?.city || '',
-      state: userProfile?.state || '',
-      country: userProfile?.country || '',
-      pincode: userProfile?.pincode || '',
-      linkedinUrl: userProfile?.linkedinUrl || '',
-      githubUrl: userProfile?.githubUrl || '',
-      portfolioUrl: userProfile?.portfolioUrl || '',
-      preferredLanguage: userProfile?.preferredLanguage || 'English'
+      telegramUsername: userProfile?.telegramUsername || ''
     });
     setIsEditMode(false);
     setSaveError('');
@@ -572,9 +535,7 @@ const UserProfileSection: React.FC = () => {
         </div>
         <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <InputField icon={User} label="Full Name" value={profileForm.name} field="name" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Mail} label="College Email" value={profileForm.collegeEmail} field="collegeEmail" editMode={isEditMode} onChange={handleInputChange} />
           <InputField icon={Phone} label="Phone Number" value={profileForm.phone} field="phone" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Phone} label="Alternate Phone" value={profileForm.alternatePhone} field="alternatePhone" editMode={isEditMode} onChange={handleInputChange} />
           <InputField icon={Calendar} label="Date of Birth" value={profileForm.dateOfBirth} field="dateOfBirth" editMode={isEditMode} onChange={handleInputChange} type="date" />
           <SelectField icon={Users} label="Gender" value={profileForm.gender} field="gender" editMode={isEditMode} onChange={handleInputChange} options={['Male', 'Female', 'Other']} />
         </div>
@@ -592,43 +553,6 @@ const UserProfileSection: React.FC = () => {
           <InputField icon={GraduationCap} label="Branch" value={profileForm.branch} field="branch" editMode={isEditMode} onChange={handleInputChange} />
           <InputField icon={GraduationCap} label="Semester" value={profileForm.semester} field="semester" editMode={isEditMode} onChange={handleInputChange} />
           <InputField icon={Calendar} label="Year" value={profileForm.year} field="year" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={User} label="Enrollment No." value={profileForm.enrollmentNumber} field="enrollmentNumber" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Star} label="Current GPA" value={profileForm.currentGPA} field="currentGPA" editMode={isEditMode} onChange={handleInputChange} />
-        </div>
-      </div>
-
-      <hr className="my-8 border-gray-200 dark:border-gray-700" />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white">Address Information</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Your current location details.</p>
-        </div>
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <InputField icon={MapPin} label="City" value={profileForm.city} field="city" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={MapPin} label="State" value={profileForm.state} field="state" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={MapPin} label="Country" value={profileForm.country} field="country" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={MapPin} label="Pincode" value={profileForm.pincode} field="pincode" editMode={isEditMode} onChange={handleInputChange} />
-          <div className="md:col-span-2 lg:col-span-3">
-            <TextareaField icon={MapPin} label="Current Address" value={profileForm.currentAddress} field="currentAddress" editMode={isEditMode} onChange={handleInputChange} />
-          </div>
-          <div className="md:col-span-2 lg:col-span-3">
-            <TextareaField icon={MapPin} label="Permanent Address" value={profileForm.permanentAddress} field="permanentAddress" editMode={isEditMode} onChange={handleInputChange} />
-          </div>
-        </div>
-      </div>
-      
-      <hr className="my-8 border-gray-200 dark:border-gray-700" />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-white">Professional Links</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Links to your professional profiles.</p>
-        </div>
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <InputField icon={Linkedin} label="LinkedIn URL" value={profileForm.linkedinUrl} field="linkedinUrl" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Github} label="GitHub URL" value={profileForm.githubUrl} field="githubUrl" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Globe} label="Portfolio URL" value={profileForm.portfolioUrl} field="portfolioUrl" editMode={isEditMode} onChange={handleInputChange} />
         </div>
       </div>
       
@@ -637,13 +561,11 @@ const UserProfileSection: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
           <h3 className="font-bold text-lg text-gray-900 dark:text-white">Additional Information</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Your bio, interests, and skills.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Your bio and social links.</p>
         </div>
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <InputField icon={Globe} label="Languages" value={profileForm.languages} field="languages" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={Star} label="Skills" value={profileForm.skills} field="skills" editMode={isEditMode} onChange={handleInputChange} />
-          <InputField icon={User} label="Interests" value={profileForm.interests} field="interests" editMode={isEditMode} onChange={handleInputChange} />
-          <div className="md:col-span-2 lg:col-span-3">
+        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField icon={MessageCircle} label="Telegram Username" value={profileForm.telegramUsername} field="telegramUsername" editMode={isEditMode} onChange={handleInputChange} />
+          <div className="md:col-span-2">
             <TextareaField icon={User} label="Bio" value={profileForm.bio} field="bio" editMode={isEditMode} onChange={handleInputChange} />
           </div>
         </div>

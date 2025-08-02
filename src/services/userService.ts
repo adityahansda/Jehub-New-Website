@@ -1,5 +1,5 @@
 import { databases, DATABASE_ID, USERS_COLLECTION_ID } from '../appwrite/config';
-import { Query } from 'appwrite';
+import { Query, ID } from 'appwrite';
 
 export interface UserProfile {
   $id?: string;
@@ -9,8 +9,6 @@ export interface UserProfile {
   
   // Contact Information
   phone?: string;
-  alternatePhone?: string;
-  collegeEmail?: string;
   
   // Personal Information
   dateOfBirth?: string;
@@ -21,27 +19,12 @@ export interface UserProfile {
   branch?: string;
   semester?: string;
   year?: string;
-  enrollmentNumber?: string;
-  currentGPA?: string;
   
   // Enhanced Personal Information
   bio?: string;
-  interests?: string;
-  skills?: string;
-  languages?: string;
-  
-  // Address Information
-  currentAddress?: string;
-  permanentAddress?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  pincode?: string;
   
   // Social Links
-  linkedinUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
+  telegramUsername?: string;
   
   // Profile Management
   profileImageUrl?: string;
@@ -51,14 +34,11 @@ export interface UserProfile {
   
   // Stats and Rankings
   totalPoints?: number;
+  points?: number;
   notesUploaded?: number;
   notesDownloaded?: number;
   requestsFulfilled?: number;
   rank?: number;
-  
-  // Preferences
-  preferredLanguage?: string;
-  notificationPreferences?: string;
   
   // User Role
   role?: 'student' | 'admin' | 'manager' | 'intern' | 'user';
@@ -82,6 +62,30 @@ export class UserService {
       return null;
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  }
+
+  // Create user profile
+  async createUserProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
+    try {
+      // Remove Appwrite-specific fields from profileData
+      const { $id, $createdAt, $updatedAt, $permissions, $collectionId, $databaseId, ...cleanProfileData } = profileData as any;
+      
+      const newProfile = await databases.createDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        ID.unique(),
+        {
+          ...cleanProfileData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      );
+
+      return newProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
       throw error;
     }
   }

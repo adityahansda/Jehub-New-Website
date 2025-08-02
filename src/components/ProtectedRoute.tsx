@@ -14,16 +14,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRoles = [], 
   requireAuth = true 
 }) => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, isVerified, loading } = useAuth();
   const router = useRouter();
   const [accessGranted, setAccessGranted] = useState(false);
 
   useEffect(() => {
     if (loading) return;
 
-    // If authentication is required but user is not logged in
-    if (requireAuth && !user) {
-      router.push('/auth/access-denied');
+    // If authentication is required but user is not logged in OR not verified in database
+    if (requireAuth && (!user || !isVerified)) {
+      if (user && !isVerified) {
+        // User is logged in via Google but not registered in database - redirect to signup
+        router.push('/auth/signup');
+      } else {
+        // User is not logged in at all - redirect to login
+        router.push('/auth/login');
+      }
       return;
     }
 
@@ -39,7 +45,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     // Access granted
     setAccessGranted(true);
-  }, [user, userProfile, loading, router, requiredRoles, requireAuth]);
+  }, [user, userProfile, isVerified, loading, router, requiredRoles, requireAuth]);
 
   // Show loading while checking authentication
   if (loading) {

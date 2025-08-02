@@ -10,10 +10,11 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
+import ProfilePicture from './ProfilePicture';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,7 +22,7 @@ const Navigation = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter();
-  const { user, userProfile, logout } = useAuth();
+  const { user, userProfile, isVerified, logout } = useAuth();
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
@@ -165,17 +166,13 @@ const Navigation = () => {
 
               {/* Authentication / User Profile Section */}
               <div className="flex items-center">
-                {user ? (
+                {user && isVerified ? (
                   <div className="relative">
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="group relative flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white transition-all duration-300 hover:scale-105"
                     >
-                      <div className="w-7 h-7 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
-                          {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      <ProfilePicture />
                       <span className="hidden sm:block text-sm">{userProfile?.name || user?.name || 'User'}</span>
                       <ChevronDown className={`h-4 w-4 text-white/70 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -201,6 +198,13 @@ const Navigation = () => {
                           >
                             <Upload className="h-5 w-5" />
                             <span>Upload Notes</span>
+                          </button>
+                          <button
+                            onClick={() => handleProfileClick('/referral')}
+                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
+                          >
+                            <Gift className="h-5 w-5" />
+                            <span>Referral Dashboard</span>
                           </button>
                           <div className="border-t border-white/10 my-2"></div>
                           <button
@@ -338,15 +342,11 @@ const Navigation = () => {
                 <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
                 <div className="mt-6">
-                  {user ? (
+                  {user && isVerified ? (
                     <div className="space-y-3">
                       {/* User Info */}
                       <div className="flex items-center space-x-3 px-4 py-3 bg-white/5 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">
-                            {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                          </span>
-                        </div>
+                        <ProfilePicture size="lg" />
                         <div className="flex-1">
                           <p className="text-white font-medium text-sm">{userProfile?.name || user?.name}</p>
                           <p className="text-white/60 text-xs">{user?.email}</p>
@@ -368,6 +368,13 @@ const Navigation = () => {
                         >
                           <Upload className="h-5 w-5" />
                           <span>Upload Notes</span>
+                        </button>
+                        <button
+                          onClick={() => handleProfileClick('/referral')}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                        >
+                          <Gift className="h-5 w-5" />
+                          <span>Referral Dashboard</span>
                         </button>
                         <button
                           onClick={handleLogout}
