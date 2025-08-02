@@ -1,5 +1,12 @@
 import { account } from '../lib/appwrite';
 import { ID } from 'appwrite';
+import { pointsService } from './pointsService';
+import { profilePictureService } from './profilePictureService';
+import { databases } from '../lib/appwrite';
+import { Query } from 'appwrite';
+
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
+const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!;
 
 export interface User {
   $id: string;
@@ -21,29 +28,58 @@ class AuthService {
     }
   }
 
-  // Login with email and password
+  // Email/password login is disabled - only Google OAuth allowed
   async login(email: string, password: string): Promise<User> {
-    try {
-      await account.createEmailPasswordSession(email, password);
-      return await this.getCurrentUser() as User;
-    } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
-    }
+    throw new Error('Email/password login is disabled. Please use Google Sign-In only.');
   }
 
-  // Register with email and password
+  // Email/password registration is disabled - only Google OAuth allowed
   async register(email: string, password: string, name: string): Promise<User> {
+    throw new Error('Email/password registration is disabled. Please use Google Sign-In only.');
+  }
+
+  // Check if email exists in Google accounts (pre-OAuth check)
+  async checkUserBeforeOAuth(email: string): Promise<{ exists: boolean; registered: boolean; message: string }> {
     try {
-      await account.create(ID.unique(), email, password, name);
-      return await this.login(email, password);
+      // Check if user is registered in our database
+      const isRegistered = await this.isUserRegistered(email);
+      
+      if (isRegistered) {
+        return {
+          exists: true,
+          registered: true,
+          message: 'User is registered and can sign in'
+        };
+      } else {
+        return {
+          exists: false,
+          registered: false,
+          message: 'User not found in database. Please sign up first.'
+        };
+      }
     } catch (error: any) {
-      throw new Error(error.message || 'Registration failed');
+      console.error('Error checking user before OAuth:', error);
+      return {
+        exists: false,
+        registered: false,
+        message: 'Error checking user status'
+      };
     }
   }
 
-  // Login with Google OAuth
-  async loginWithGoogle(): Promise<void> {
+  // Login with Google OAuth (with optional referral code) - for existing users
+  async loginWithGoogle(referralCode?: string, forceSignup: boolean = false): Promise<void> {
     try {
+      // Store referral code in session storage if provided
+      if (referralCode) {
+        sessionStorage.setItem('referralCode', referralCode);
+      }
+      
+      // Store signup intent in session storage
+      if (forceSignup) {
+        sessionStorage.setItem('forceSignup', 'true');
+      }
+      
       // The success URL should redirect to a page that handles the OAuth callback
       const successUrl = `${window.location.origin}/auth/oauth-success`;
       const failureUrl = `${window.location.origin}/auth/oauth-failure`;
@@ -55,6 +91,110 @@ class AuthService {
       );
     } catch (error: any) {
       throw new Error(error.message || 'Google login failed');
+    }
+  }
+
+  // Signup with Google OAuth - for new users
+  async signupWithGoogle(referralCode?: string): Promise<void> {
+    try {
+      // Store referral code in session storage if provided
+      if (referralCode) {
+        sessionStorage.setItem('referralCode', referralCode);
+      }
+      
+      // Mark this as a signup attempt
+      sessionStorage.setItem('isSignupFlow', 'true');
+      
+      // The success URL should redirect to a page that handles the OAuth callback
+      const successUrl = `${window.location.origin}/auth/oauth-success`;
+      const failureUrl = `${window.location.origin}/auth/oauth-failure`;
+      
+      account.createOAuth2Session(
+        'google' as any, // Type assertion to handle Appwrite OAuth provider typing
+        successUrl,
+        failureUrl
+      );
+    } catch (error: any) {
+      throw new Error(error.message || 'Google signup failed');
+    }
+  }
+
+  // Initialize user after OAuth success
+  async initializeUserAfterOAuth(): Promise<User | null> {
+    try {
+      const user = await this.getCurrentUser();
+      if (!user) return null;
+
+      // Check if user profile exists in database
+      const existingProfile = await this.getUserProfile(user.email);
+      
+      if (!existingProfile) {
+        // New user - initialize with points system
+        const referralCode = sessionStorage.getItem('referralCode');
+        await this.createUserProfile(user, referralCode || undefined);
+        
+        // Clear referral code from session
+        sessionStorage.removeItem('referralCode');
+      }
+
+      return user;
+    } catch (error: any) {
+      console.error('Error initializing user after OAuth:', error);
+      throw new Error('Failed to initialize user account');
+    }
+  }
+
+  // Create user profile in database
+  private async createUserProfile(user: User, referralCode?: string): Promise<void> {
+    try {
+      // Create user profile document
+      await databases.createDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        user.$id,
+        {
+          userId: user.$id,
+          name: user.name,
+          email: user.email,
+          joinDate: new Date().toISOString(),
+          role: 'student',
+          isProfileComplete: false
+        }
+      );
+
+      // Initialize with points system
+      await pointsService.initializeNewUser(user.$id, user.email, user.name, referralCode || undefined);
+      
+      console.log(`Created new user profile for ${user.email}`);
+    } catch (error: any) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+  }
+
+  // Check if user is registered in database (public method)
+  async isUserRegistered(email: string): Promise<boolean> {
+    try {
+      const profile = await this.getUserProfile(email);
+      return profile !== null;
+    } catch (error) {
+      console.error('Error checking user registration:', error);
+      return false;
+    }
+  }
+
+  // Get user profile from database
+  private async getUserProfile(email: string): Promise<any> {
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        [Query.equal('email', email)]
+      );
+      return response.documents.length > 0 ? response.documents[0] : null;
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      return null;
     }
   }
 

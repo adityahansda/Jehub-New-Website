@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff, Coins } from 'lucide-react';
 import { uploadWithFallback, checkUploadStatus } from '../lib/uploadService';
 import { validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
+import { pointsService } from '../services/pointsService';
 // Database operations now handled through API route
 
 
 const NotesUpload = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     branch: '',
@@ -28,6 +31,7 @@ const NotesUpload = () => {
   const [githubUrl, setGithubUrl] = useState('');
   const [uploadStatus, setUploadStatus] = useState({ github: false, local: true, message: '' });
   const [uploadMethod, setUploadMethod] = useState<string>('');
+  const [pointsAwarded, setPointsAwarded] = useState(0);
 
   // Check upload status on component mount
   useEffect(() => {
@@ -149,6 +153,23 @@ const NotesUpload = () => {
 
       const dbResult = await dbResponse.json();
       console.log('Database save successful:', dbResult);
+      
+      // Award upload bonus points to authenticated users
+      if (user) {
+        try {
+          await pointsService.awardUploadBonus(
+            user.$id,
+            user.email,
+            dbResult.noteId || 'unknown',
+            formData.title
+          );
+          setPointsAwarded(30); // Set points awarded for display
+          console.log('Upload bonus points awarded!');
+        } catch (pointsError) {
+          console.error('Error awarding upload bonus:', pointsError);
+          // Don't fail the upload if points award fails
+        }
+      }
 
       // Reset form
       setFormData({

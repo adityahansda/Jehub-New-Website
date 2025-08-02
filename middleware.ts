@@ -49,7 +49,6 @@ export function middleware(request: NextRequest) {
     '/events',
     '/blog',
     '/leaderboard',
-    '/wishlist',
     '/join-team',
     '/counselling-updates',
     '/exam-updates',

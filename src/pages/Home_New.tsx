@@ -223,12 +223,10 @@ const Home = () => {
     };
   }, []);
 
-  // Navigation handler for wishlist registration
+  // Navigation handler for wishlist registration - redirect to beta wishlist page
   const handleWishlistNavigation = () => {
-    router.push('/wishlist'); // Navigate to wishlist page
+    router.push('/beta-wishlist'); // Navigate to beta wishlist registration page
   };
-
-
 
   return (
     <>
@@ -718,7 +716,7 @@ const Home = () => {
                     onClick={handleWishlistNavigation}
                     className="px-8 py-4 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white rounded-xl font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
                   >
-                    Join Beta Wishlist Now
+                    🚀 Join Beta Wishlist
                   </button>
 
                   <p className="text-sm text-[#d1d5db]/80 mt-4">

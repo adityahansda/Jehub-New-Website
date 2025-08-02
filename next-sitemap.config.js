@@ -29,7 +29,6 @@ module.exports = {
     '/events*',
     '/blog*',
     '/leaderboard*',
-    '/wishlist*',
     '/join-team*',
     '/counselling-updates*',
     '/exam-updates*'
@@ -64,7 +63,6 @@ module.exports = {
           '/events/',
           '/blog/',
           '/leaderboard/',
-          '/wishlist/',
           '/join-team/',
           '/counselling-updates/',
           '/exam-updates/'

@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  isVerified: boolean; // New field to track database verification
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   // Check if user is logged in on app start
   useEffect(() => {
@@ -35,22 +37,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
       if (currentUser) {
-        const profile = await userService.getUserProfile(currentUser.email);
-        setUserProfile(profile);
+        // Ensure registration is verified in the database
+        const isRegistered = await authService.isUserRegistered(currentUser.email);
+        setIsVerified(isRegistered);
         
-        // Set user cookie if authenticated but cookie missing (for middleware)
-        if (typeof window !== 'undefined' && profile) {
-          const userData = {
-            $id: currentUser.$id,
-            name: currentUser.name,
-            email: currentUser.email,
-            role: profile.role
-          };
-          document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+        if (isRegistered) {
+          const profile = await userService.getUserProfile(currentUser.email);
+          setUserProfile(profile);
+          
+          // Set user cookie if authenticated but cookie missing (for middleware)
+          if (typeof window !== 'undefined' && profile) {
+            const userData = {
+              $id: currentUser.$id,
+              name: currentUser.name,
+              email: currentUser.email,
+              role: profile.role
+            };
+            document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+          }
+        } else {
+          // Keep user data but clear profile and cookie - they need to complete registration
+          setUserProfile(null);
+          console.log('User not verified in database, keeping OAuth data but clearing profile');
+          // Clear user cookie if not verified
+          if (typeof window !== 'undefined') {
+            document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+          }
         }
       }
     } catch (error) {
       console.log('No active session');
+      setUser(null);
+      setUserProfile(null);
+      setIsVerified(false);
       // Clear user cookie if no session
       if (typeof window !== 'undefined') {
         document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
@@ -118,6 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authService.logout();
       setUser(null);
       setUserProfile(null);
+      setIsVerified(false);
       
       // Clear user cookie on logout
       if (typeof window !== 'undefined') {
@@ -141,6 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     userProfile,
     loading,
+    isVerified,
     login,
     register,
     loginWithGoogle,
