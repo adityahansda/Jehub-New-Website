@@ -37,6 +37,8 @@ import EnhancedCommentsSection from '@/components/EnhancedCommentsSection';
 import ReportModal from '@/components/ReportModal';
 import ReportsSection from '@/components/ReportsSection';
 import ShareModal from '@/components/ShareModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { pointsService } from '@/services/pointsService';
 
 // Format file size in human-readable format
 function formatFileSize(bytes: number | null): string {
@@ -123,6 +125,7 @@ type Note = {
 const NotesPreview = () => {
   const router = useRouter();
   const { id } = router.query;
+  const { user } = useAuth();
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -424,6 +427,27 @@ const NotesPreview = () => {
       return;
     }
 
+    // Check download requirements
+    const requirement = await pointsService.getNoteDownloadRequirements(note.id);
+    const requiredPoints = requirement?.points || 0;
+    const isPointsRequired = requirement?.required || false;
+
+    // If points are required and user is not authenticated
+    if (isPointsRequired && !user) {
+      alert('Please sign in to download this premium note. Premium notes require points to download.');
+      return;
+    }
+
+    // If points are required, check if user has enough points
+    if (isPointsRequired && user) {
+      const userPoints = await pointsService.getUserPoints(user.$id);
+      if (userPoints.availablePoints < requiredPoints) {
+        const pointsNeeded = requiredPoints - userPoints.availablePoints;
+        alert(`Insufficient points! You need ${requiredPoints} points to download this note. You have ${userPoints.availablePoints} points. You need ${pointsNeeded} more points. Refer friends or upload notes to earn more points!`);
+        return;
+      }
+    }
+
     // Show download popup
     setDownloadPopup({
       show: true,
@@ -432,6 +456,31 @@ const NotesPreview = () => {
     });
 
     try {
+      // Spend points if required (for authenticated users only)
+      if (isPointsRequired && user && requiredPoints > 0) {
+        try {
+          const success = await pointsService.spendPoints(
+            user.$id,
+            user.email,
+            requiredPoints,
+            note.id,
+            note.title
+          );
+          
+          if (!success) {
+            throw new Error('Failed to spend points for download');
+          }
+        } catch (pointsError) {
+          console.error('Error spending points:', pointsError);
+          setDownloadPopup(prev => ({ ...prev, status: 'error' }));
+          setTimeout(() => {
+            setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
+          }, 3000);
+          alert('Failed to spend points for download. Please try again.');
+          return;
+        }
+      }
+
       // Update download count in database
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,

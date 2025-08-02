@@ -12,6 +12,7 @@ export const appwriteConfig = {
     pageIndexing: process.env.NEXT_PUBLIC_APPWRITE_PAGE_INDEXING_COLLECTION_ID || 'page_indexing',
     notifications: process.env.NEXT_PUBLIC_APPWRITE_NOTIFICATIONS_COLLECTION_ID || 'notifications',
     shares: process.env.NEXT_PUBLIC_APPWRITE_SHARES_COLLECTION_ID || 'shares_collection_id',
+    betaWishlist: process.env.NEXT_PUBLIC_APPWRITE_BETA_WISHLIST_COLLECTION_ID || 'beta_wishlist_collection',
   },
   // GitHub configuration
   github: {

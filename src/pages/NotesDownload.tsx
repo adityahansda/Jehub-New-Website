@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText, Coins, AlertTriangle } from 'lucide-react';
 import { generateNoteSlug } from '../utils/seo';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -8,6 +8,8 @@ import { checkUrlStatus } from '../lib/pdfValidation';
 import { databases } from '../lib/appwrite';
 import PageHeader from '../components/PageHeader';
 import UniversalSidebar from '../components/UniversalSidebar';
+import { useAuth } from '../contexts/AuthContext';
+import { pointsService } from '../services/pointsService';
 
 // Convert raw GitHub URL to download URL
 function convertToDownloadUrl(url: string): string {
@@ -72,10 +74,13 @@ type Note = {
 };
 
 const NotesDownload = () => {
+  const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [userPoints, setUserPoints] = useState({ availablePoints: 0, totalPoints: 0 });
+  const [pointsLoading, setPointsLoading] = useState(false);
   const [filters, setFilters] = useState({
     branch: '',
     semester: '',
@@ -101,6 +106,7 @@ const NotesDownload = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [noteRequirements, setNoteRequirements] = useState<Record<string, { required: boolean; points: number; category: string }>>({});
 
   // Load liked notes from localStorage on component mount
   useEffect(() => {
@@ -119,6 +125,27 @@ const NotesDownload = () => {
   useEffect(() => {
     localStorage.setItem('likedNotes', JSON.stringify(Array.from(likedNotes)));
   }, [likedNotes]);
+
+  // Load user points when user changes
+  useEffect(() => {
+    const loadUserPoints = async () => {
+      if (user) {
+        try {
+          setPointsLoading(true);
+          const points = await pointsService.getUserPoints(user.$id);
+          setUserPoints(points);
+        } catch (error) {
+          console.error('Error loading user points:', error);
+        } finally {
+          setPointsLoading(false);
+        }
+      } else {
+        setUserPoints({ availablePoints: 0, totalPoints: 0 });
+      }
+    };
+
+    loadUserPoints();
+  }, [user]);
 
   // Handle screen size changes
   useEffect(() => {
@@ -148,6 +175,21 @@ const NotesDownload = () => {
         
         const data = await response.json();
         setNotes(data.notes);
+        
+        // Load download requirements for all notes
+        const requirements: Record<string, { required: boolean; points: number; category: string }> = {};
+        for (const note of data.notes) {
+          try {
+            const noteReq = await pointsService.getNoteDownloadRequirements(note.id);
+            if (noteReq) {
+              requirements[note.id] = noteReq;
+            }
+          } catch (error) {
+            console.error(`Error loading requirements for note ${note.id}:`, error);
+          }
+        }
+        setNoteRequirements(requirements);
+        
       } catch (err) {
         setError('Failed to fetch notes. Please try again later.');
         console.error('Error fetching notes:', err);
@@ -176,6 +218,40 @@ const NotesDownload = () => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
+    // Check download requirements
+    const requirement = noteRequirements[noteId];
+    const requiredPoints = requirement?.points || 0;
+    const isPointsRequired = requirement?.required || false;
+
+    // If points are required and user is not authenticated
+    if (isPointsRequired && !user) {
+      alert('Please sign in to download this premium note. Premium notes require points to download.');
+      return;
+    }
+
+    // If points are required, check if user has enough points
+    if (isPointsRequired && user && userPoints.availablePoints < requiredPoints) {
+      const pointsNeeded = requiredPoints - userPoints.availablePoints;
+      const earningSuggestions = [
+        `Refer a friend: +50 pts`,
+        `Upload notes: +30 pts`,
+        `Complete profile: +20 pts`
+      ];
+      
+      const message = `⚠️ Insufficient Points!\n\n` +
+        `Required: ${requiredPoints} points\n` +
+        `Available: ${userPoints.availablePoints} points\n` +
+        `Needed: ${pointsNeeded} more points\n\n` +
+        `💡 Ways to earn points:\n` +
+        earningSuggestions.join('\n') + '\n\n' +
+        `Visit your Referral Dashboard to start earning!`;
+      
+      if (confirm(message + '\n\nWould you like to go to your Referral Dashboard now?')) {
+        window.open('/referral', '_blank');
+      }
+      return;
+    }
+
     // Show download popup
     setDownloadPopup({
       show: true,
@@ -198,6 +274,38 @@ const NotesDownload = () => {
 
       if (urlValidation.status === 'error') {
         console.warn('PDF validation failed, but attempting download anyway');
+      }
+      
+      // Spend points if required (for authenticated users only)
+      if (isPointsRequired && user && requiredPoints > 0) {
+        try {
+          const success = await pointsService.spendPoints(
+            user.$id,
+            user.email,
+            requiredPoints,
+            noteId,
+            note.title
+          );
+          
+          if (!success) {
+            throw new Error('Failed to spend points for download');
+          }
+          
+          // Update local user points
+          setUserPoints(prev => ({
+            ...prev,
+            availablePoints: prev.availablePoints - requiredPoints
+          }));
+          
+        } catch (pointsError) {
+          console.error('Error spending points:', pointsError);
+          setDownloadPopup(prev => ({ ...prev, status: 'error' }));
+          setTimeout(() => {
+            setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
+          }, 3000);
+          alert('Failed to spend points for download. Please try again.');
+          return;
+        }
       }
       
       // Try to update download count in database (gracefully handle if not authenticated)
@@ -523,6 +631,56 @@ const NotesDownload = () => {
               </div>
             </motion.div>
 
+            {/* User Points Display */}
+            {user && (
+              <motion.div 
+                className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-full p-2">
+                      <Coins className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Your Points</h3>
+                      <p className="text-sm text-gray-600">Use points to download premium notes</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {pointsLoading ? (
+                      <div className="animate-pulse">
+                        <div className="h-6 bg-gray-200 rounded w-16 mb-1"></div>
+                        <div className="h-4 bg-gray-200 rounded w-12"></div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-amber-600">
+                          {userPoints.availablePoints}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Total earned: {userPoints.totalPoints}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-amber-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Need more points?</span>
+                    <Link 
+                      href="/referral-dashboard" 
+                      className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
+                    >
+                      Refer friends & earn →
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Notes Grid/List */}
             <motion.div 
               key={`${searchTerm}-${filters.branch}-${filters.semester}-${filters.subject}-${filters.degree}-${viewMode}`}
@@ -586,9 +744,16 @@ const NotesDownload = () => {
                         {note.noteType || 'FREE'}
                       </span>
                       {/* Points Badge */}
-                      <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        {note.points} PTS
-                      </span>
+                      {noteRequirements[note.id]?.required ? (
+                        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                          <Coins className="h-3 w-3" />
+                          {noteRequirements[note.id]?.points || note.points} PTS
+                        </span>
+                      ) : (
+                        <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                          FREE
+                        </span>
+                      )}
                     </div>
 
                     {/* Header Section */}
@@ -686,13 +851,44 @@ const NotesDownload = () => {
                           <Eye className="h-4 w-4 mr-1" />
                           Preview
                         </button>
-                        <button
-                          onClick={() => handleDownload(note.id)}
-                          className="flex-1 flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-xl"
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </button>
+                        {(() => {
+                          const requirement = noteRequirements[note.id];
+                          const requiredPoints = requirement?.points || 0;
+                          const isPointsRequired = requirement?.required || false;
+                          const hasEnoughPoints = !isPointsRequired || !user || userPoints.availablePoints >= requiredPoints;
+                          const needsAuth = isPointsRequired && !user;
+                          
+                          return (
+                            <button
+                              onClick={() => handleDownload(note.id)}
+                              className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-xl ${
+                                needsAuth
+                                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'
+                                  : !hasEnoughPoints
+                                    ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed opacity-75'
+                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                              }`}
+                              title={needsAuth ? 'Sign in required' : !hasEnoughPoints ? `Need ${requiredPoints - userPoints.availablePoints} more points` : 'Download note'}
+                            >
+                              {needsAuth ? (
+                                <>
+                                  <User className="h-4 w-4 mr-1" />
+                                  Sign In
+                                </>
+                              ) : !hasEnoughPoints ? (
+                                <>
+                                  <AlertTriangle className="h-4 w-4 mr-1" />
+                                  {requiredPoints - userPoints.availablePoints} more pts needed
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="h-4 w-4 mr-1" />
+                                  {isPointsRequired ? `Download (${requiredPoints} pts)` : 'Download'}
+                                </>
+                              )}
+                            </button>
+                          );
+                        })()}
                       </div>
                       {/* Extra Tags */}
                       {note.tags.length > 0 && (

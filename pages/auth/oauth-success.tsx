@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/auth';
+import { profilePictureService } from '../../src/services/profilePictureService';
+import { userService } from '../../src/services/userService';
 
 const OAuthSuccess: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [attempts, setAttempts] = useState(0);
   const [debug, setDebug] = useState<string[]>([]);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const addDebug = (message: string) => {
     setDebug(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
@@ -20,13 +23,66 @@ const OAuthSuccess: React.FC = () => {
     const checkAuth = async () => {
       try {
         addDebug(`Checking auth (attempt ${attempts + 1})`);
+        
+        // Get the current user from Google OAuth
         const currentUser = await authService.getCurrentUser();
-        addDebug(`Auth check result: ${currentUser ? currentUser.name : 'null'}`);
+        addDebug(`Current OAuth user: ${currentUser ? currentUser.name : 'null'}`);
         
         if (currentUser) {
-          addDebug('User found, redirecting to home page');
-          setTimeout(() => router.push('/'), 1000);
-          return;
+          // Check if this is a signup flow
+          const isSignupFlow = sessionStorage.getItem('isSignupFlow') === 'true';
+          const forceSignup = sessionStorage.getItem('forceSignup') === 'true';
+          
+          addDebug(`Signup flow: ${isSignupFlow}, Force signup: ${forceSignup}`);
+          
+          // Check if user is registered in database
+          const isRegistered = await authService.isUserRegistered(currentUser.email);
+          addDebug(`User registered in database: ${isRegistered}`);
+          
+          if (!isRegistered && !isSignupFlow && !forceSignup) {
+            // User exists in Google but not in our database - redirect to signup with message
+            addDebug('User not registered, redirecting to signup');
+            alert('Please complete your registration first.');
+            setTimeout(() => router.push('/auth/signup'), 1500);
+            return;
+          }
+          
+          if (!isRegistered && (isSignupFlow || forceSignup)) {
+            // New user signing up - initialize their profile
+            addDebug('Initializing new user profile');
+            await authService.initializeUserAfterOAuth();
+            
+            // Clear signup flags
+            sessionStorage.removeItem('isSignupFlow');
+            sessionStorage.removeItem('forceSignup');
+            
+            // Redirect to home page with success message
+            addDebug('New user initialized, redirecting to home page');
+            alert('Sign-in successful!');
+            setTimeout(() => router.push('/'), 1500);
+            return;
+          }
+          
+          if (isRegistered) {
+            // Existing user - check profile completeness
+            const userProfile = await userService.getUserProfile(currentUser.email);
+            const isProfileComplete = userProfile?.isProfileComplete || false;
+            
+            addDebug(`Profile complete: ${isProfileComplete}`);
+            
+            // Clear any signup flags for existing users
+            sessionStorage.removeItem('isSignupFlow');
+            sessionStorage.removeItem('forceSignup');
+            
+            if (!isProfileComplete) {
+              addDebug('Existing user with incomplete profile, redirecting to signup');
+              setTimeout(() => router.push('/auth/signup'), 1500);
+            } else {
+              alert('Sign-in successful!');
+              setTimeout(() => router.push('/'), 1500);
+            }
+            return;
+          }
         }
         
         // Retry up to 5 times
@@ -39,14 +95,20 @@ const OAuthSuccess: React.FC = () => {
         }
       } catch (error: any) {
         addDebug(`Auth check error: ${error.message}`);
-        setTimeout(() => router.push('/auth/login?error=oauth_failed'), 1000);
+        if (error.message.includes('Failed to initialize') || error.message.includes('Account setup failed')) {
+          // User creation/initialization failed - likely not in database, redirect to signup
+          addDebug('Account setup failed, redirecting to signup page');
+          setTimeout(() => router.push('/auth/signup'), 1500);
+        } else {
+          setTimeout(() => router.push('/auth/login?error=oauth_failed'), 1000);
+        }
       }
     };
 
     // Start checking after a short delay to allow session to be established
     const timer = setTimeout(checkAuth, 1000);
     return () => clearTimeout(timer);
-  }, [attempts, router, user]);
+  }, [attempts, router, user, isNewUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
