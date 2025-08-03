@@ -167,26 +167,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Validate referral code if provided
       let referrerInfo = null;
+      let referralSuccess = false;
       if (referCode && referCode.trim()) {
         try {
-          console.log('Validating referral code for wishlist:', referCode);
+          console.log('=== WISHLIST REFERRAL VALIDATION ===');
+          console.log('Validating referral code for wishlist:', referCode.trim());
           const validation = await pointsService.validateReferralCode(referCode.trim());
           
           if (!validation.isValid) {
+            console.log('Invalid referral code:', validation.message);
             return res.status(400).json({ 
               error: `Invalid referral code: ${validation.message}` 
             });
           }
           
           referrerInfo = validation.referrer;
-          console.log('Valid referral code found:', referrerInfo.email);
+          console.log('Valid referral code found for user:', {
+            referrerEmail: referrerInfo.email,
+            referrerName: referrerInfo.name,
+            referrerId: referrerInfo.$id
+          });
 
-          // Award points to the referrer
+          // Award points to the referrer for wishlist referral
           try {
-            await pointsService.addPoints(referrerInfo.$id, referrerInfo.email, 10, 'referral_bonus', 'Points awarded for referring a wishlist registrant.');
-            console.log('Awarded 10 points to referrer:', referrerInfo.$id);
+            console.log('Awarding 10 points to referrer for wishlist referral...');
+            await pointsService.addPoints(
+              referrerInfo.$id, 
+              referrerInfo.email, 
+              10, 
+              'referral_bonus', 
+              `Wishlist referral bonus - referred ${email} to beta program`
+            );
+            console.log('Successfully awarded 10 points to referrer:', referrerInfo.$id);
+            referralSuccess = true;
           } catch (awardError) {
-            console.error('Error awarding points:', awardError);
+            console.error('Error awarding points to referrer:', awardError);
+            // Don't fail the whole registration, just log the error
+            console.error('Referral points award failed, but continuing with registration');
           }
         } catch (error) {
           console.error('Error validating referral code:', error);
@@ -212,13 +229,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Add to Google Sheets
       await addToSheet(sheets, wishlistEntry);
 
+      // Create success response with referral information
+      let successMessage = 'Successfully registered for beta wishlist!';
+      const responseData: any = {
+        name: wishlistEntry.name,
+        email: wishlistEntry.email,
+        collegeName: wishlistEntry.collegeName
+      };
+
+      if (referrerInfo && referralSuccess) {
+        successMessage += ` Your referral code was valid and ${referrerInfo.name || referrerInfo.email} has been awarded 10 points!`;
+        responseData.referralInfo = {
+          referrerName: referrerInfo.name || referrerInfo.email,
+          pointsAwarded: 10,
+          success: true
+        };
+        console.log('=== WISHLIST REFERRAL SUCCESS ===');
+        console.log(`Referral bonus awarded: ${referrerInfo.email} earned 10 points for referring ${email}`);
+      } else if (referrerInfo && !referralSuccess) {
+        successMessage += ' However, there was an issue awarding referral points. Our team will review this manually.';
+        responseData.referralInfo = {
+          referrerName: referrerInfo.name || referrerInfo.email,
+          pointsAwarded: 0,
+          success: false,
+          note: 'Points award failed - will be reviewed manually'
+        };
+      }
+
       res.status(201).json({
-        message: 'Successfully registered for beta wishlist!',
-        data: {
-          name: wishlistEntry.name,
-          email: wishlistEntry.email,
-          collegeName: wishlistEntry.collegeName
-        }
+        message: successMessage,
+        data: responseData
       });
 
     } catch (error: any) {
