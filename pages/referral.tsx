@@ -120,11 +120,22 @@ const ReferralDashboard: React.FC = () => {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const copyReferralLink = (useProduction = false) => {
-    // Allow copying either localhost or production URL
-    const baseUrl = useProduction 
-      ? (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app')
-      : (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'));
+  const copyReferralLink = () => {
+    // Use production URL by default, localhost for development
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    
+    // Use correct path - /login not /auth/login
+    const referralLink = `${baseUrl}/login?ref=${referralCode}`;
+    navigator.clipboard.writeText(referralLink);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const copyProductionReferralLink = () => {
+    // Always use production URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app';
     
     // Use correct path - /login not /auth/login
     const referralLink = `${baseUrl}/login?ref=${referralCode}`;
@@ -134,10 +145,8 @@ const ReferralDashboard: React.FC = () => {
   };
 
   const shareOnWhatsApp = () => {
-    // Use localhost for development, production URL for production
-    const baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    // Always use production URL for sharing
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app';
     
     // Use correct path - /login not /auth/login
     const referralLink = `${baseUrl}/login?ref=${referralCode}`;
@@ -147,10 +156,8 @@ const ReferralDashboard: React.FC = () => {
   };
 
   const shareOnTelegram = () => {
-    // Use localhost for development, production URL for production
-    const baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    // Always use production URL for sharing
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app';
     
     // Use correct path - /login not /auth/login
     const referralLink = `${baseUrl}/login?ref=${referralCode}`;
