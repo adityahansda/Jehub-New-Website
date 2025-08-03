@@ -2,10 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { databases } from '../../src/lib/appwrite';
 import { databaseId } from '../../src/lib/appwriteConfig';
 import { ID, Query } from 'appwrite';
+import { pointsService } from '../../src/services/pointsService';
 
 // Collection ID for beta wishlist - you may need to create this collection in Appwrite
 import { collections } from '../../src/lib/appwriteConfig';
 const BETA_WISHLIST_COLLECTION_ID = collections.betaWishlist;
+const USERS_COLLECTION_ID = collections.users;
 
 interface WishlistEntry {
   name: string;
@@ -59,6 +61,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch (error) {
         console.log('Error checking existing entries:', error);
         // Continue if collection doesn't exist yet
+      }
+
+      // Validate referral code if provided
+      let referrerInfo = null;
+      if (referCode && referCode.trim()) {
+        try {
+          console.log('Validating referral code for wishlist:', referCode);
+          const validation = await pointsService.validateReferralCode(referCode.trim());
+          
+          if (!validation.isValid) {
+            return res.status(400).json({ 
+              error: `Invalid referral code: ${validation.message}` 
+            });
+          }
+          
+          referrerInfo = validation.referrer;
+          console.log('Valid referral code found:', referrerInfo.email);
+
+          // Award points to the referrer
+          try {
+            await pointsService.addPoints(referrerInfo.$id, referrerInfo.email, 10, 'referral_bonus', 'Points awarded for referring a wishlist registrant.');
+            console.log('Awarded 10 points to referrer:', referrerInfo.$id);
+          } catch (awardError) {
+            console.error('Error awarding points:', awardError);
+          }
+        } catch (error) {
+          console.error('Error validating referral code:', error);
+          return res.status(400).json({ 
+            error: 'Failed to validate referral code. Please check the code and try again.' 
+          });
+        }
       }
 
       // Create wishlist entry
