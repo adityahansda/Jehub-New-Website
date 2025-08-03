@@ -1,5 +1,5 @@
 const { google } = require('googleapis');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config();
 
 async function validateGoogleSheetsCredentials() {
   console.log('🔍 Validating Google Sheets API credentials...\n');
