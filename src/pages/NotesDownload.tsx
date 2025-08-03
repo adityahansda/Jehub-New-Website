@@ -129,10 +129,16 @@ const NotesDownload = () => {
   // Load user points when user changes
   useEffect(() => {
     const loadUserPoints = async () => {
-      if (user) {
+      if (user && user.email) {
         try {
           setPointsLoading(true);
-          const points = await pointsService.getUserPoints(user.$id);
+          console.log('Loading points for user:', user.$id, user.email);
+          
+          // Use the new email-based method
+          const points = await pointsService.getUserPointsByEmail(user.email);
+          
+          console.log('Points from getUserPointsByEmail:', points);
+          
           setUserPoints(points);
         } catch (error) {
           console.error('Error loading user points:', error);
@@ -663,6 +669,13 @@ const NotesDownload = () => {
                         <div className="text-xs text-gray-500">
                           Total earned: {userPoints.totalPoints}
                         </div>
+                        {/* Debug info - only in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="text-xs text-red-500 mt-1">
+                            Debug: User ID: {user.$id}<br/>
+                            Raw points: {JSON.stringify(userPoints)}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -671,7 +684,7 @@ const NotesDownload = () => {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Need more points?</span>
                     <Link 
-                      href="/referral-dashboard" 
+                      href="/referral" 
                       className="text-amber-600 hover:text-amber-700 font-medium transition-colors"
                     >
                       Refer friends & earn →

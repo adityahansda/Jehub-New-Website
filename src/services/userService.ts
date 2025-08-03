@@ -1,4 +1,9 @@
-import { databases, DATABASE_ID, USERS_COLLECTION_ID } from '../appwrite/config';
+import { databases } from '../lib/appwrite';
+import { databaseId, collections } from '../lib/appwriteConfig';
+
+// Use the correct configuration
+const DATABASE_ID = databaseId;
+const USERS_COLLECTION_ID = collections.users;
 import { Query, ID } from 'appwrite';
 
 export interface UserProfile {
@@ -167,6 +172,73 @@ export class UserService {
         requestsFulfilled: 0,
         rank: 0
       };
+    }
+  }
+
+  // Get user referral code
+  async getUserReferralCode(userId: string): Promise<string | null> {
+    try {
+      const userDoc = await databases.getDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId
+      );
+      return userDoc.referralCode || null;
+    } catch (error) {
+      console.error('Error fetching user referral code:', error);
+      return null;
+    }
+  }
+
+  // Ensure user has a referral code (creates one if missing)
+  async ensureUserHasReferralCode(userId: string, userName: string, userEmail: string): Promise<string> {
+    try {
+      // First check if user already has a referral code
+      let referralCode = await this.getUserReferralCode(userId);
+      
+      if (!referralCode) {
+        // Import pointsService here to avoid circular dependency
+        const { pointsService } = await import('./pointsService');
+        
+        // Generate unique referral code
+        referralCode = await pointsService.generateUniqueReferralCode(userName, userEmail);
+        
+        // Update user profile with the new referral code
+        await this.updateUserProfileById(userId, {
+          referralCode: referralCode,
+          isReferralActive: true
+        });
+        
+        console.log(`Generated referral code for user ${userEmail}: ${referralCode}`);
+      }
+      
+      return referralCode;
+    } catch (error) {
+      console.error('Error ensuring user has referral code:', error);
+      throw error;
+    }
+  }
+
+  // Update user profile by ID (helper method)
+  async updateUserProfileById(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile> {
+    try {
+      // Remove Appwrite-specific fields from profileData
+      const { $id, $createdAt, $updatedAt, $permissions, $collectionId, $databaseId, ...cleanProfileData } = profileData as any;
+      
+      const updatedProfile = await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userId,
+        {
+          ...cleanProfileData,
+          updatedAt: new Date().toISOString()
+        }
+      );
+
+      return updatedProfile as unknown as UserProfile;
+    } catch (error) {
+      console.error('Error updating user profile by ID:', error);
+      throw error;
     }
   }
 

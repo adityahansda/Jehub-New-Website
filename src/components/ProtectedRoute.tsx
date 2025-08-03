@@ -28,7 +28,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         router.push('/auth/signup');
       } else {
         // User is not logged in at all - redirect to login
-        router.push('/auth/login');
+        router.push('/login');
       }
       return;
     }
