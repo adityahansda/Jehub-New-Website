@@ -120,11 +120,11 @@ const ReferralDashboard: React.FC = () => {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const copyReferralLink = () => {
-    // Use localhost for development, production URL for production
-    const baseUrl = process.env.NODE_ENV === 'development' 
-      ? 'http://localhost:3000' 
-      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+  const copyReferralLink = (useProduction = false) => {
+    // Allow copying either localhost or production URL
+    const baseUrl = useProduction 
+      ? (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app')
+      : (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'));
     
     // Use correct path - /login not /auth/login
     const referralLink = `${baseUrl}/login?ref=${referralCode}`;
