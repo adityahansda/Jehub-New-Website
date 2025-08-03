@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../src/contexts/AuthContext';
 import { pointsService, UserPoints, PointsTransaction } from '../src/services/pointsService';
+import { userService } from '../src/services/userService';
 import { NextSeo } from 'next-seo';
 
 interface ReferralStats {
@@ -15,7 +16,7 @@ interface ReferralStats {
 
 const ReferralDashboard: React.FC = () => {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, isVerified, userProfile } = useAuth();
   const [userPoints, setUserPoints] = useState<UserPoints>({ totalPoints: 0, availablePoints: 0, pointsSpent: 0, totalReferrals: 0 });
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [transactions, setTransactions] = useState<PointsTransaction[]>([]);
@@ -31,18 +32,37 @@ const ReferralDashboard: React.FC = () => {
     }
   }, [router.query]);
 
+  // Enhanced access control - only allow logged in and verified users
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login');
-      return;
+    if (!loading) {
+      // Case 1: No user at all - redirect to login
+      if (!user) {
+        console.log('No user found, redirecting to login');
+        router.push('/auth/login?redirect=/referral');
+        return;
+      }
+      
+      // Case 2: User exists but not verified in database - redirect to signup
+      if (user && !isVerified) {
+        console.log('User not verified in database, redirecting to signup');
+        router.push('/auth/signup?redirect=/referral');
+        return;
+      }
+      
+      // Case 3: User verified but profile incomplete - redirect to signup
+      if (user && isVerified && userProfile && !userProfile.isProfileComplete) {
+        console.log('User profile incomplete, redirecting to signup');
+        router.push('/auth/signup?redirect=/referral');
+        return;
+      }
     }
 
     const loadUserData = async () => {
     try {
       setLoadingData(true);
       
-      // Load user points
-      const points = await pointsService.getUserPoints(user!.$id);
+      // Load user points using email-based approach
+      const points = await pointsService.getUserPointsByEmail(user!.email);
       setUserPoints(points);
 
       // Load referral stats
@@ -53,11 +73,13 @@ const ReferralDashboard: React.FC = () => {
       const userTransactions = await pointsService.getUserTransactions(user!.$id, 10);
       setTransactions(userTransactions);
 
-      // Get user's referral code from the database
-      // This would typically come from the user profile
-      const userProfile = await getUserProfile();
-      if (userProfile?.referralCode) {
-        setReferralCode(userProfile.referralCode);
+      // Get user's referral code from the database using email
+      const userReferralCode = await getUserReferralCodeByEmail(user!.email);
+      if (userReferralCode) {
+        setReferralCode(userReferralCode);
+      } else {
+        console.error('No referral code found for user:', user!.email);
+        setReferralCode('ERROR');
       }
 
     } catch (error) {
@@ -67,15 +89,29 @@ const ReferralDashboard: React.FC = () => {
     }
     };
 
-    if (user) {
+    if (user && user.email) {
       loadUserData();
     }
   }, [user, loading, router]);
 
-  const getUserProfile = async () => {
-    // This would fetch from your user service
-    // For now, return a mock referral code
-    return { referralCode: 'JEH001' };
+  const getUserReferralCodeByEmail = async (email: string): Promise<string | null> => {
+    try {
+      console.log('Fetching referral code for user email:', email);
+      
+      // Get user profile by email to fetch their existing referral code
+      const userProfile = await userService.getUserProfile(email);
+      
+      if (userProfile && userProfile.referralCode) {
+        console.log('Found existing referral code:', userProfile.referralCode);
+        return userProfile.referralCode;
+      } else {
+        console.warn('No referral code found for user:', email);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching referral code:', error);
+      return null;
+    }
   };
 
   const copyReferralCode = () => {
@@ -85,27 +121,104 @@ const ReferralDashboard: React.FC = () => {
   };
 
   const copyReferralLink = () => {
-    const referralLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'}/auth/login?ref=${referralCode}`;
+    // Use localhost for development, production URL for production
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    
+    // Use correct path - /login not /auth/login
+    const referralLink = `${baseUrl}/login?ref=${referralCode}`;
     navigator.clipboard.writeText(referralLink);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const shareOnWhatsApp = () => {
-    const referralLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'}/auth/login?ref=${referralCode}`;
+    // Use localhost for development, production URL for production
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    
+    // Use correct path - /login not /auth/login
+    const referralLink = `${baseUrl}/login?ref=${referralCode}`;
     const message = `🎓 Join JEHUB - Get Engineering Notes & Earn Points!\n\nUse my referral link to get 20 bonus points:\n${referralLink}\n\n✅ Free engineering notes\n✅ Earn points for downloads\n✅ Refer friends and earn more!\n\n#JEHUB #EngineeringNotes #StudyMaterials`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
   const shareOnTelegram = () => {
-    const referralLink = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'}/auth/login?ref=${referralCode}`;
+    // Use localhost for development, production URL for production
+    const baseUrl = process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+    
+    // Use correct path - /login not /auth/login
+    const referralLink = `${baseUrl}/login?ref=${referralCode}`;
     const message = `🎓 Join JEHUB - Engineering Notes Platform!\n\nGet 20 bonus points with my referral link: ${referralLink}\n\n✨ Features:\n• Free engineering notes\n• Points-based download system\n• Earn points by referring friends\n• Upload your notes for bonus points\n\nJoin now and start earning points! 🚀`;
     const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`;
     window.open(telegramUrl, '_blank');
   };
 
-  if (loading || loadingData) {
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking access permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied for unauthorized users
+  if (!user || !isVerified || (userProfile && !userProfile.isProfileComplete)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h2>
+            <p className="text-gray-600 mb-6">
+              {!user ? 'Please sign in to access your referral dashboard.' : 
+               !isVerified ? 'Please complete your account setup to access referrals.' :
+               'Please complete your profile to access the referral system.'}
+            </p>
+            <div className="space-y-3">
+              {!user ? (
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Sign In
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.push('/auth/signup')}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Complete Profile
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/')}
+                className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while fetching user data
+  if (loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -252,7 +365,12 @@ const ReferralDashboard: React.FC = () => {
                   <div className="flex">
                     <input
                       type="text"
-                      value={`${process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app'}/auth/login?ref=${referralCode}`}
+                      value={(() => {
+                        const baseUrl = process.env.NODE_ENV === 'development' 
+                          ? 'http://localhost:3000' 
+                          : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+                        return `${baseUrl}/login?ref=${referralCode}`;
+                      })()}
                       readOnly
                       className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 text-gray-900 text-sm"
                     />

@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   sendPasswordRecovery: (email: string) => Promise<void>;
   refreshUserProfile: () => Promise<void>;
+  forceRefreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -29,7 +30,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is logged in on app start
   useEffect(() => {
-    checkAuthStatus();
+    const timer = setTimeout(() => {
+      checkAuthStatus();
+    }, 100); // Small delay to prevent conflicts with OAuth flow
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const checkAuthStatus = async () => {
@@ -84,9 +89,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const profile = await userService.getUserProfile(user.email);
         setUserProfile(profile);
+        
+        // Update isVerified status
+        const isRegistered = await authService.isUserRegistered(user.email);
+        setIsVerified(isRegistered);
+        
+        // Update cookie if user is verified
+        if (isRegistered && profile && typeof window !== 'undefined') {
+          const userData = {
+            $id: user.$id,
+            name: user.name,
+            email: user.email,
+            role: profile.role
+          };
+          document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+        }
       } catch (error) {
         console.error('Error refreshing user profile:', error);
       }
+    }
+  };
+
+  // Force complete refresh of auth state
+  const forceRefreshAuth = async () => {
+    setLoading(true);
+    try {
+      await checkAuthStatus();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -168,6 +198,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     sendPasswordRecovery,
     refreshUserProfile,
+    forceRefreshAuth,
   };
 
   return (

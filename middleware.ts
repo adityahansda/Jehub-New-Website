@@ -19,7 +19,6 @@ export function middleware(request: NextRequest) {
   const authPages = [
     '/login',
     '/signup',
-    '/auth/login',
     '/auth/signup',
     '/auth/oauth-success',
     '/auth/oauth-failure',

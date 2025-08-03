@@ -4,19 +4,28 @@ import { useRouter } from 'next/router';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
+import { pointsService } from '../services/pointsService';
 import { NextSeo } from 'next-seo';
 
 const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [referralCode, setReferralCode] = useState<string>('');
+  const [referralValidation, setReferralValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    referrer?: any;
+  } | null>(null);
+  const [validatingReferral, setValidatingReferral] = useState(false);
 
-  const { user, isVerified } = useAuth();
+  const { user, isVerified, userProfile } = useAuth();
   const router = useRouter();
 
   // Check for errors and referral code in URL params
   useEffect(() => {
+    console.log('Router query:', router.query); // Debug log
     if (router.query.error) {
+      console.log('Error found:', router.query.error); // Debug log
       switch (router.query.error) {
         case 'oauth_failed':
           setError('Google sign-in failed. Please try again.');
@@ -27,7 +36,10 @@ const Login = () => {
           return;
         case 'not_registered':
           const email = router.query.email as string;
-          setError(`Account with email ${email} is not registered. Please sign up first.`);
+          setError(email 
+            ? `Account with email ${email} is not registered. Please sign up first.`
+            : 'Account is not registered. Please sign up first.'
+          );
           break;
         default:
           setError('An error occurred. Please try again.');
@@ -36,31 +48,58 @@ const Login = () => {
 
     // Check for referral code in URL
     if (router.query.ref && typeof router.query.ref === 'string') {
-      setReferralCode(router.query.ref);
+      const refCode = router.query.ref;
+      setReferralCode(refCode);
+      // Store referral code in session storage for signup process
+      sessionStorage.setItem('referralCode', refCode);
+      console.log('Referral code stored in session:', refCode);
+      
+      // Validate the referral code
+      validateReferralCode(refCode);
     }
   }, [router.query, router]);
+  
+  // Function to validate referral code
+  const validateReferralCode = async (code: string) => {
+    setValidatingReferral(true);
+    try {
+      const validation = await pointsService.validateReferralCode(code);
+      setReferralValidation(validation);
+      console.log('Referral validation result:', validation);
+    } catch (error) {
+      console.error('Error validating referral code:', error);
+      setReferralValidation({
+        isValid: false,
+        message: 'Error validating referral code. Please try again.'
+      });
+    } finally {
+      setValidatingReferral(false);
+    }
+  };
 
   // Redirect if already logged in and verified
   useEffect(() => {
-    if (user && isVerified) {
-      alert('You are already signed in.');
+    if (user && isVerified && userProfile?.isProfileComplete) {
+      console.log('User already authenticated and profile complete, redirecting to home');
       router.push('/');
       return;
-    } else if (user && !isVerified) {
-      // User is authenticated but not registered in database - redirect to signup
+    } else if (user && isVerified && !userProfile?.isProfileComplete) {
+      console.log('User authenticated but profile incomplete, redirecting to signup');
       router.push('/auth/signup');
+      return;
+    } else if (user && !isVerified) {
+      console.log('User authenticated but not verified in database, redirecting to signup');
+      router.push('/auth/signup');
+      return;
     }
-  }, [user, isVerified, router]);
-
+  }, [user, isVerified, userProfile, router]);
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError('');
 
     try {
-      // Always allow Google login - registration check happens in OAuth callback
-      // Pass referral code to auth service
-      await authService.loginWithGoogle(referralCode || undefined);
+      await authService.loginWithGoogle();
       // The redirect will be handled by the OAuth flow
     } catch (error: any) {
       setError(error.message || 'Google sign-in failed. Please try again.');
@@ -73,11 +112,10 @@ const Login = () => {
     setError('');
 
     try {
-      // Redirect to signup with Google
-      await authService.signupWithGoogle(referralCode || undefined);
-      // The redirect will be handled by the OAuth flow
+      // Redirect to signup page
+      router.push('/auth/signup');
     } catch (error: any) {
-      setError(error.message || 'Google sign-up failed. Please try again.');
+      setError(error.message || 'Redirect failed. Please try again.');
       setGoogleLoading(false);
     }
   };
@@ -133,6 +171,14 @@ const Login = () => {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-red-800">{error}</p>
+                  {router.query.error === 'not_registered' && (
+                    <button
+                      onClick={() => router.push('/auth/signup')}
+                      className="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                    >
+                      Go to Sign Up
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

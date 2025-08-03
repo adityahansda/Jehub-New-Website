@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <canvas id="canvas" width="144" height="144"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Create gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 144, 144);
+        gradient.addColorStop(0, '#2563eb');
+        gradient.addColorStop(1, '#1d4ed8');
+        
+        // Draw background
+        ctx.fillStyle = gradient;
+        ctx.roundRect(0, 0, 144, 144, 20);
+        ctx.fill();
+        
+        // Draw text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('JEHUB', 72, 72);
+        
+        // Convert to blob and download
+        canvas.toBlob(function(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'icon-144x144.png';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

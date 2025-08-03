@@ -10,13 +10,12 @@ class MyDocument extends Document {
     return (
       <Html lang="en-IN">
         <Head>
-          {/* Preload critical resources */}
+          {/* Preload critical resources - using Google Fonts instead */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link
-            rel="preload"
-            href="/fonts/inter-var.woff2"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
           />
           
           {/* DNS prefetch for external resources */}
@@ -37,9 +36,8 @@ class MyDocument extends Document {
           <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
           <meta name="msapplication-TileColor" content="#1f2937" />
           
-          {/* Security headers */}
+          {/* Security headers - Note: X-Frame-Options should be set via HTTP headers, not meta tags */}
           <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-          <meta httpEquiv="X-Frame-Options" content="DENY" />
           <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
           
           {/* Add Google Analytics if you have a tracking ID */}

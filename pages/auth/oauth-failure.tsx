@@ -6,9 +6,9 @@ const OAuthFailure: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to login page after 3 seconds
+    // Simple redirect to login with error after 3 seconds
     const timer = setTimeout(() => {
-      router.push('/auth/login?error=oauth_failed');
+      router.push('/login?error=oauth_failed');
     }, 3000);
 
     return () => clearTimeout(timer);

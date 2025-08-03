@@ -20,7 +20,7 @@ interface SignupData {
 }
 
 const SignUp: React.FC = () => {
-  const { user, refreshUserProfile } = useAuth();
+  const { user, refreshUserProfile, forceRefreshAuth } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState<SignupData>({
     name: '',
@@ -43,7 +43,7 @@ const SignUp: React.FC = () => {
       // If no user is logged in, redirect to login after a short delay
       // This allows time for OAuth flow to complete
       const timer = setTimeout(() => {
-        router.push('/auth/login');
+        router.push('/login');
       }, 3000);
       
       return () => clearTimeout(timer);
@@ -81,7 +81,21 @@ const SignUp: React.FC = () => {
       
       // Calculate bonus points
       const basePoints = 20; // Welcome bonus
-      const referralBonus = referralCode ? 50 : 0; // Referral bonus
+      let referralBonus = 0; // Initialize referral bonus
+      if (referralCode) {
+        console.log('Validating referral code:', referralCode);
+        const validation = await pointsService.validateReferralCode(referralCode);
+        console.log('Referral validation result:', validation);
+
+        if (!validation.isValid) {
+          alert(validation.message);
+          setLoading(false);
+          return;
+        }
+
+        referralBonus = 50; // Valid referral bonus
+      }
+
       const totalPoints = basePoints + referralBonus;
       
       // Prepare complete user profile data - only include fields that exist in database
@@ -159,9 +173,9 @@ const SignUp: React.FC = () => {
         }
       }
 
-      // Refresh user profile
-      await refreshUserProfile();
-      console.log('User profile refreshed');
+      // Force refresh auth context to update all user state
+      await forceRefreshAuth();
+      console.log('Auth context fully refreshed');
 
       // Show success message with points information
       const toastMessage = referralCode 

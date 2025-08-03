@@ -439,8 +439,8 @@ const NotesPreview = () => {
     }
 
     // If points are required, check if user has enough points
-    if (isPointsRequired && user) {
-      const userPoints = await pointsService.getUserPoints(user.$id);
+    if (isPointsRequired && user && user.email) {
+      const userPoints = await pointsService.getUserPointsByEmail(user.email);
       if (userPoints.availablePoints < requiredPoints) {
         const pointsNeeded = requiredPoints - userPoints.availablePoints;
         alert(`Insufficient points! You need ${requiredPoints} points to download this note. You have ${userPoints.availablePoints} points. You need ${pointsNeeded} more points. Refer friends or upload notes to earn more points!`);
