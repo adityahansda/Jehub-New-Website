@@ -1,27 +1,18 @@
-# Robots.txt for JEHUB - Jharkhand Engineer's Hub
-# Legitimate educational platform for engineering notes
-
+# *
 User-agent: *
 Allow: /
-Allow: /about
-Allow: /team
-Allow: /referral
-Allow: /notes/download
-
-# Disallow sensitive/admin areas to prevent security scanning
 Disallow: /admin/
-Disallow: /admin-dashboard/
 Disallow: /api/
+Disallow: /test/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /dashboard/
+Disallow: /admin-dashboard/
 Disallow: /auth/
 Disallow: /login
 Disallow: /signup
-Disallow: /dashboard/
 Disallow: /settings/
 Disallow: /notifications/
-Disallow: /_next/
-Disallow: /private/
-Disallow: /test/
-Disallow: /debug-dashboard/
 Disallow: /notes-upload/
 Disallow: /notes-request/
 Disallow: /notes/upload/
@@ -37,15 +28,9 @@ Disallow: /leaderboard/
 Disallow: /join-team/
 Disallow: /counselling-updates/
 Disallow: /exam-updates/
-Disallow: /*.pdf$
-Disallow: /beta-wishlist/
 
-# Prevent crawling of dynamic user content
-Disallow: /*?*
-Disallow: /*#*
-
-# Host declaration
+# Host
 Host: https://jehub.vercel.app
 
-# Sitemap location
+# Sitemaps
 Sitemap: https://jehub.vercel.app/sitemap.xml

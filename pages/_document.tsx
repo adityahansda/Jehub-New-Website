@@ -36,6 +36,9 @@ class MyDocument extends Document {
           <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
           <meta name="msapplication-TileColor" content="#1f2937" />
           
+          {/* Google Site Verification */}
+          <meta name="google-site-verification" content="zuwUKuvPsoZRnJPKdK3kpBi_R8RTaV29D5ezuDcKbcI" />
+          
           {/* Security headers - Note: X-Frame-Options should be set via HTTP headers, not meta tags */}
           <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
           <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
