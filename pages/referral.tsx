@@ -92,7 +92,7 @@ const ReferralDashboard: React.FC = () => {
     if (user && user.email) {
       loadUserData();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, isVerified, userProfile]);
 
   const getUserReferralCodeByEmail = async (email: string): Promise<string | null> => {
     try {

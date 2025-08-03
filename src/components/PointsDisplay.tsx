@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Coins, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,17 +22,17 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
   });
   const [loading, setLoading] = useState(false);
 
-  const loadUserPoints = async () => {
+  const loadUserPoints = useCallback(async () => {
     if (user && user.email) {
       try {
         setLoading(true);
         console.log('PointsDisplay: Loading points for user:', user.$id, user.email);
-        
+
         // Use the new email-based method
         const userPoints = await pointsService.getUserPointsByEmail(user.email);
-        
+
         console.log('PointsDisplay: Points from getUserPointsByEmail:', userPoints);
-        
+
         setPoints(userPoints);
       } catch (error) {
         console.error('Error loading user points:', error);
@@ -47,11 +47,11 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
         totalReferrals: 0
       });
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadUserPoints();
-  }, [user, userProfile]); // Also refresh when userProfile changes
+  }, [loadUserPoints, userProfile]); // Also refresh when userProfile changes
 
   // Refresh points periodically
   useEffect(() => {
@@ -62,7 +62,7 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, loadUserPoints]);
 
   if (!user) {
     return (

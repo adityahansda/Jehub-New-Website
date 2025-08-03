@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { account } from '../../src/lib/appwrite';
 import { authService } from '../../src/services/auth';
@@ -14,21 +14,14 @@ const OAuthDebug: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const addLog = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'error' | 'success' = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
     setLogs(prev => [...prev, logEntry]);
     console.log(logEntry);
-  };
+  }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      addLog('OAuth Debug page loaded');
-      checkCurrentSession();
-    }
-  }, [isClient]);
-
-  const checkCurrentSession = async () => {
+  const checkCurrentSession = useCallback(async () => {
     try {
       addLog('Checking current session...');
       
@@ -63,7 +56,14 @@ const OAuthDebug: React.FC = () => {
     } catch (error: any) {
       addLog(`Session check error: ${error.message}`, 'error');
     }
-  };
+  }, [addLog]);
+
+  useEffect(() => {
+    if (isClient) {
+      addLog('OAuth Debug page loaded');
+      checkCurrentSession();
+    }
+  }, [isClient, addLog, checkCurrentSession]);
 
   const testOAuth = async () => {
     addLog('Starting OAuth test...');
@@ -261,10 +261,10 @@ const OAuthDebug: React.FC = () => {
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-6">
           <h3 className="text-lg font-semibold text-yellow-800 mb-3">🔧 Troubleshooting Steps</h3>
           <ol className="text-sm text-yellow-700 space-y-2 list-decimal list-inside">
-            <li>First, click "Health Check" to ensure Appwrite is reachable</li>
-            <li>If you're already logged in, check the session information above</li>
-            <li>Try "Test OAuth (Service)" to test the normal OAuth flow</li>
-            <li>If that fails, try "Test OAuth (Direct)" to test direct Appwrite calls</li>
+            <li>First, click &quot;Health Check&quot; to ensure Appwrite is reachable</li>
+            <li>If you&apos;re already logged in, check the session information above</li>
+            <li>Try &quot;Test OAuth (Service)&quot; to test the normal OAuth flow</li>
+            <li>If that fails, try &quot;Test OAuth (Direct)&quot; to test direct Appwrite calls</li>
             <li>Check the debug logs for detailed error information</li>
             <li>Common issues:
               <ul className="ml-4 mt-2 space-y-1 list-disc list-inside">

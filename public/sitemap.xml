@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://jehub.vercel.app</loc><lastmod>2025-08-03T10:49:02.499Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
-<url><loc>https://jehub.vercel.app/about</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
-<url><loc>https://jehub.vercel.app/admin</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/beta-wishlist</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/debug-dashboard</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/notes-download</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/notes/download</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
-<url><loc>https://jehub.vercel.app/referral</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/team</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/team/join-team</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/team/old-team-members</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/test-pdf</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-<url><loc>https://jehub.vercel.app/test-profile</loc><lastmod>2025-08-03T10:49:02.500Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+<url><loc>https://jehub.vercel.app/about</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+<url><loc>https://jehub.vercel.app/admin</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/beta-wishlist</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/debug-dashboard</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/notes-download</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/notes/download</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>daily</changefreq><priority>1</priority></url>
+<url><loc>https://jehub.vercel.app/referral</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/team</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/team/join-team</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/team/old-team-members</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/test-pdf</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+<url><loc>https://jehub.vercel.app/test-profile</loc><lastmod>2025-08-03T17:29:26.112Z</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>
