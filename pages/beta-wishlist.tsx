@@ -47,8 +47,15 @@ const WishlistRegistration: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post('/api/beta-wishlist', form);
-      setMessage(response.data.message);
+      const response = await axios.post('/api/beta-wishlist-sheets', form);
+      
+      let message = response.data.message;
+      // Add referral code success message if applicable
+      if (form.referCode && form.referCode.trim()) {
+        message += ' Your referral code was valid and the referrer has been awarded 10 points!';
+      }
+      
+      setMessage(message);
       setForm({
         name: '',
         branch: '',
@@ -228,7 +235,7 @@ const WishlistRegistration: React.FC = () => {
 
               {/* Refer Code */}
               <div>
-                <label htmlFor="referCode" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="referCode" className="block text-sm font-medium text-gray-300 mb-2">
                   {fieldLabels.referCode}
                 </label>
                 <input
@@ -237,7 +244,7 @@ const WishlistRegistration: React.FC = () => {
                   name="referCode"
                   value={form.referCode}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                   placeholder="Enter referral code if you have one"
                 />
               </div>
