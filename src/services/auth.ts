@@ -67,25 +67,14 @@ class AuthService {
     }
   }
 
-  // Login with Google OAuth (with optional referral code) - for existing users
-  async loginWithGoogle(referralCode?: string, forceSignup: boolean = false): Promise<void> {
+  // Simple Google OAuth login
+  async loginWithGoogle(): Promise<void> {
     try {
-      // Store referral code in session storage if provided
-      if (referralCode) {
-        sessionStorage.setItem('referralCode', referralCode);
-      }
-      
-      // Store signup intent in session storage
-      if (forceSignup) {
-        sessionStorage.setItem('forceSignup', 'true');
-      }
-      
-      // The success URL should redirect to a page that handles the OAuth callback
       const successUrl = `${window.location.origin}/auth/oauth-success`;
       const failureUrl = `${window.location.origin}/auth/oauth-failure`;
       
       account.createOAuth2Session(
-        'google' as any, // Type assertion to handle Appwrite OAuth provider typing
+        'google' as any,
         successUrl,
         failureUrl
       );
@@ -94,23 +83,14 @@ class AuthService {
     }
   }
 
-  // Signup with Google OAuth - for new users
-  async signupWithGoogle(referralCode?: string): Promise<void> {
+  // Simple Google OAuth signup
+  async signupWithGoogle(): Promise<void> {
     try {
-      // Store referral code in session storage if provided
-      if (referralCode) {
-        sessionStorage.setItem('referralCode', referralCode);
-      }
-      
-      // Mark this as a signup attempt
-      sessionStorage.setItem('isSignupFlow', 'true');
-      
-      // The success URL should redirect to a page that handles the OAuth callback
       const successUrl = `${window.location.origin}/auth/oauth-success`;
       const failureUrl = `${window.location.origin}/auth/oauth-failure`;
       
       account.createOAuth2Session(
-        'google' as any, // Type assertion to handle Appwrite OAuth provider typing
+        'google' as any,
         successUrl,
         failureUrl
       );
@@ -119,28 +99,13 @@ class AuthService {
     }
   }
 
-  // Initialize user after OAuth success
-  async initializeUserAfterOAuth(): Promise<User | null> {
+  // Create new user profile (for signup flow)
+  async createNewUserProfile(user: User, referralCode?: string): Promise<void> {
     try {
-      const user = await this.getCurrentUser();
-      if (!user) return null;
-
-      // Check if user profile exists in database
-      const existingProfile = await this.getUserProfile(user.email);
-      
-      if (!existingProfile) {
-        // New user - initialize with points system
-        const referralCode = sessionStorage.getItem('referralCode');
-        await this.createUserProfile(user, referralCode || undefined);
-        
-        // Clear referral code from session
-        sessionStorage.removeItem('referralCode');
-      }
-
-      return user;
+      await this.createUserProfile(user, referralCode);
     } catch (error: any) {
-      console.error('Error initializing user after OAuth:', error);
-      throw new Error('Failed to initialize user account');
+      console.error('Error creating new user profile:', error);
+      throw new Error('Failed to create user account');
     }
   }
 
@@ -175,6 +140,11 @@ class AuthService {
   // Check if user is registered in database (public method)
   async isUserRegistered(email: string): Promise<boolean> {
     try {
+      if (!email) {
+        console.error('Email is required for user registration check');
+        return false;
+      }
+
       const profile = await this.getUserProfile(email);
       return profile !== null;
     } catch (error) {
@@ -186,6 +156,10 @@ class AuthService {
   // Get user profile from database
   private async getUserProfile(email: string): Promise<any> {
     try {
+      if (!DATABASE_ID || !USERS_COLLECTION_ID) {
+        throw new Error('Missing database configuration');
+      }
+
       const response = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,

@@ -1,130 +1,167 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/auth';
-import { profilePictureService } from '../../src/services/profilePictureService';
-import { userService } from '../../src/services/userService';
+import { account } from '../../src/lib/appwrite';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 const OAuthSuccess: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth();
-  const [attempts, setAttempts] = useState(0);
+  const { forceRefreshAuth } = useAuth();
+  const [checking, setChecking] = useState(true);
   const [debug, setDebug] = useState<string[]>([]);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const hasProcessed = useRef(false);
 
   const addDebug = (message: string) => {
     setDebug(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
   useEffect(() => {
-    addDebug('OAuth success page loaded');
-    addDebug(`Current user: ${user ? user.name : 'null'}`);
-    
-    const checkAuth = async () => {
+    // Prevent multiple executions in React StrictMode
+    if (hasProcessed.current) {
+      return;
+    }
+    hasProcessed.current = true;
+
+    const handleOAuthSuccess = async () => {
       try {
-        addDebug(`Checking auth (attempt ${attempts + 1})`);
+        addDebug('OAuth success page loaded - checking URL parameters...');
+        console.log('OAuth Success: Initiating check...');
         
-        // Get the current user from Google OAuth
-        const currentUser = await authService.getCurrentUser();
-        addDebug(`Current OAuth user: ${currentUser ? currentUser.name : 'null'}`);
+        // Check URL parameters for OAuth success indicators
+        const urlParams = new URLSearchParams(window.location.search);
+        const fragment = window.location.hash.substring(1);
+        const fragmentParams = new URLSearchParams(fragment);
         
-        if (currentUser) {
-          // Check if this is a signup flow
-          const isSignupFlow = sessionStorage.getItem('isSignupFlow') === 'true';
-          const forceSignup = sessionStorage.getItem('forceSignup') === 'true';
-          
-          addDebug(`Signup flow: ${isSignupFlow}, Force signup: ${forceSignup}`);
-          
-          // Check if user is registered in database
-          const isRegistered = await authService.isUserRegistered(currentUser.email);
-          addDebug(`User registered in database: ${isRegistered}`);
-          
-          if (!isRegistered && !isSignupFlow && !forceSignup) {
-            // User exists in Google but not in our database - redirect to signup with message
-            addDebug('User not registered, redirecting to signup');
-            alert('Please complete your registration first.');
-            setTimeout(() => router.push('/auth/signup'), 1500);
-            return;
+        addDebug(`URL search params: ${window.location.search}`);
+        addDebug(`URL fragment: ${window.location.hash}`);
+        
+        // Look for OAuth success indicators in URL
+        const hasOAuthSuccess = urlParams.has('success') || 
+                              fragmentParams.has('success') ||
+                              urlParams.has('userId') ||
+                              fragmentParams.has('userId') ||
+                              window.location.pathname.includes('oauth-success');
+        
+        if (!hasOAuthSuccess) {
+          addDebug('No OAuth success indicators found in URL');
+          router.replace('/login?error=oauth_failed');
+          return;
+        }
+        
+        addDebug('OAuth success indicators found, attempting to establish session...');
+        
+        // Try to create session from URL parameters if available
+        const userId = urlParams.get('userId') || fragmentParams.get('userId');
+        const secret = urlParams.get('secret') || fragmentParams.get('secret');
+        
+        if (userId && secret) {
+          addDebug(`Found OAuth parameters: userId=${userId}, secret=***`);
+          try {
+            await account.createSession(userId, secret);
+            addDebug('Session created successfully from OAuth parameters');
+          } catch (sessionError: any) {
+            addDebug(`Session creation failed: ${sessionError.message}`);
+            // Continue to try other methods
           }
+        }
+        
+        // Wait a moment for any session to be established
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Try to get the current user with retries
+        let currentUser = null;
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (!currentUser && attempts < maxAttempts) {
+          attempts++;
+          addDebug(`Attempt ${attempts} to get current user...`);
           
-          if (!isRegistered && (isSignupFlow || forceSignup)) {
-            // New user signing up - initialize their profile
-            addDebug('Initializing new user profile');
-            await authService.initializeUserAfterOAuth();
-            
-            // Clear signup flags
-            sessionStorage.removeItem('isSignupFlow');
-            sessionStorage.removeItem('forceSignup');
-            
-            // Redirect to home page with success message
-            addDebug('New user initialized, redirecting to home page');
-            alert('Sign-in successful!');
-            setTimeout(() => router.push('/'), 1500);
-            return;
-          }
-          
-          if (isRegistered) {
-            // Existing user - check profile completeness
-            const userProfile = await userService.getUserProfile(currentUser.email);
-            const isProfileComplete = userProfile?.isProfileComplete || false;
-            
-            addDebug(`Profile complete: ${isProfileComplete}`);
-            
-            // Clear any signup flags for existing users
-            sessionStorage.removeItem('isSignupFlow');
-            sessionStorage.removeItem('forceSignup');
-            
-            if (!isProfileComplete) {
-              addDebug('Existing user with incomplete profile, redirecting to signup');
-              setTimeout(() => router.push('/auth/signup'), 1500);
-            } else {
-              alert('Sign-in successful!');
-              setTimeout(() => router.push('/'), 1500);
+          try {
+            currentUser = await authService.getCurrentUser();
+            if (currentUser) {
+              addDebug(`Successfully authenticated user: ${currentUser.email}`);
+              break;
             }
-            return;
+          } catch (error: any) {
+            addDebug(`Attempt ${attempts} failed: ${error.message}`);
+          }
+          
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
         }
         
-        // Retry up to 5 times
-        if (attempts < 5) {
-          setAttempts(prev => prev + 1);
-          setTimeout(checkAuth, 1000);
-        } else {
-          addDebug('Max attempts reached, redirecting to login with error');
-          setTimeout(() => router.push('/auth/login?error=oauth_failed'), 1000);
+        if (!currentUser) {
+          console.error('OAuth Success: No authenticated user found after all attempts');
+          addDebug('No authenticated user found - this indicates OAuth configuration issue');
+          addDebug('Please check Appwrite OAuth settings and Google Cloud Console');
+          router.replace('/login?error=oauth_failed');
+          return;
         }
+        
+        if (!currentUser.email) {
+          console.error('OAuth Success: User email is missing');
+          addDebug('User email is missing from OAuth response');
+          router.replace('/login?error=oauth_failed');
+          return;
+        }
+        
+        addDebug(`User authenticated: ${currentUser.email}`);
+        
+        // Check if user is registered in our database
+        const isRegistered = await authService.isUserRegistered(currentUser.email);
+        addDebug(`User registered in database: ${isRegistered}`);
+        
+        if (isRegistered) {
+          console.log('OAuth Success: User is registered, redirecting to home');
+          addDebug('User is registered, refreshing auth context and redirecting to home');
+          
+          // Refresh auth context first
+          await forceRefreshAuth();
+          
+          // Small delay to ensure state is updated
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Redirect to home
+          router.replace('/');
+        } else {
+          console.log('OAuth Success: User not registered, redirecting to signup');
+          addDebug('User not registered, redirecting to signup page');
+          
+          // Refresh auth context to ensure user state is correct
+          await forceRefreshAuth();
+          
+          // Don't logout - keep the OAuth session for signup
+          router.replace('/auth/signup');
+        }
+        
       } catch (error: any) {
-        addDebug(`Auth check error: ${error.message}`);
-        if (error.message.includes('Failed to initialize') || error.message.includes('Account setup failed')) {
-          // User creation/initialization failed - likely not in database, redirect to signup
-          addDebug('Account setup failed, redirecting to signup page');
-          setTimeout(() => router.push('/auth/signup'), 1500);
-        } else {
-          setTimeout(() => router.push('/auth/login?error=oauth_failed'), 1000);
-        }
+        console.error('OAuth Success: Error occurred:', error);
+        addDebug(`Error: ${error.message || 'Unknown error occurred'}`);
+        router.replace('/login?error=oauth_failed');
+      } finally {
+        setChecking(false);
       }
     };
-
-    // Start checking after a short delay to allow session to be established
-    const timer = setTimeout(checkAuth, 1000);
-    return () => clearTimeout(timer);
-  }, [attempts, router, user, isNewUser]);
+    
+    handleOAuthSuccess();
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center max-w-lg">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        {checking && (
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        )}
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Completing Sign In...
+          {checking ? 'Completing Sign In...' : 'Redirecting...'}
         </h2>
         <p className="text-gray-600 mb-4">
-          Please wait while we complete your Google sign-in.
-        </p>
-        <p className="text-sm text-gray-500 mb-4">
-          Attempt {attempts + 1} of 5
+          Please wait while we process your Google sign-in.
         </p>
         
-        {/* Debug information - remove in production */}
+        {/* Debug information - only in development */}
         {process.env.NODE_ENV === 'development' && debug.length > 0 && (
           <div className="mt-6 p-4 bg-gray-100 rounded-lg text-left">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Debug Log:</h3>
