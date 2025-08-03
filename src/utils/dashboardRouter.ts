@@ -13,7 +13,10 @@ export function getDashboardUrl(userProfile: UserProfile | null): string {
     return '/dashboard';
   }
 
-  switch (userProfile.role) {
+  // Convert role to lowercase for case-insensitive comparison
+  const role = userProfile.role.toLowerCase();
+
+  switch (role) {
     case 'admin':
       return '/admin-dashboard';
     case 'manager':
@@ -40,7 +43,9 @@ export function getRolePriority(role: UserRole): number {
     'user': 1
   };
   
-  return priorities[role] || 1;
+  // Convert to lowercase for case-insensitive comparison
+  const normalizedRole = role.toLowerCase() as UserRole;
+  return priorities[normalizedRole] || 1;
 }
 
 /**

@@ -1,4 +1,5 @@
-import { Client, Databases, Account, Storage } from 'appwrite';
+import { Client, Databases, Account, Storage, Messaging } from 'appwrite';
+import { appwriteConfig } from './appwriteConfig';
 
 const client = new Client();
 
@@ -29,5 +30,7 @@ client.setLocale('en');
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
+export const messaging = new Messaging(client);
+
 
 export default client;

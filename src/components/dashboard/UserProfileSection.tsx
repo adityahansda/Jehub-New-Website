@@ -800,7 +800,7 @@ const UserProfileSection: React.FC = () => {
               <div className="flex flex-col items-center justify-center">
                 <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600 mb-4">
                   {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <Image src={previewUrl} alt="Preview" className="w-full h-full object-cover" width={160} height={160} />
                   ) : (
                     <div className="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                       <Camera className="w-12 h-12 text-gray-400 dark:text-gray-500" />

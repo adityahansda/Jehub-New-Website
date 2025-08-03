@@ -237,6 +237,82 @@ const Home = () => {
           content="JEHUB is a student-powered academic platform built for students, by students. Upload, explore, and earn from your class notes."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="google-site-verification" content="RqBYoA-qnnigXoG07czwhn7O3vebF-hVI1KzK2O5BvM" />
+        
+        {/* SEO Meta Tags */}
+        <meta name="keywords" content="student notes, academic resources, class notes, study materials, engineering notes, college notes, student platform, note sharing, education, learning resources" />
+        <meta name="author" content="JEHUB Team" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://jehub.vercel.app/" />
+        <meta property="og:title" content="JEHUB - Centralizing Academic Resources for Every Student" />
+        <meta property="og:description" content="JEHUB is a student-powered academic platform built for students, by students. Upload, explore, and earn from your class notes." />
+        <meta property="og:image" content="https://jehub.vercel.app/og-image.jpg" />
+        <meta property="og:site_name" content="JEHUB" />
+        <meta property="og:locale" content="en_US" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://jehub.vercel.app/" />
+        <meta property="twitter:title" content="JEHUB - Centralizing Academic Resources for Every Student" />
+        <meta property="twitter:description" content="JEHUB is a student-powered academic platform built for students, by students. Upload, explore, and earn from your class notes." />
+        <meta property="twitter:image" content="https://jehub.vercel.app/og-image.jpg" />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://jehub.vercel.app/" />
+        
+        {/* Structured Data - Organization */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "JEHUB",
+              "alternateName": "Jharkhand Engineer's Hub",
+              "url": "https://jehub.vercel.app",
+              "logo": "https://jehub.vercel.app/logo.png",
+              "description": "JEHUB is a student-powered academic platform built for students, by students. Upload, explore, and earn from your class notes.",
+              "foundingDate": "2024",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "India",
+                "addressRegion": "Jharkhand"
+              },
+              "sameAs": [
+                "https://t.me/JharkhandEnginnersHub",
+                "https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU"
+              ]
+            })
+          }}
+        />
+        
+        {/* Structured Data - Website */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "JEHUB",
+              "alternateName": "Jharkhand Engineer's Hub",
+              "url": "https://jehub.vercel.app",
+              "description": "Centralizing Academic Resources for Every Student",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://jehub.vercel.app/search?q={search_term_string}"
+                },
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
       </Head>
 
       <div className="min-h-screen bg-[#0e0e10] text-[#d1d5db]">

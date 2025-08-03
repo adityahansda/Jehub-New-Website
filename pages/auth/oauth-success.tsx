@@ -146,7 +146,7 @@ const OAuthSuccess: React.FC = () => {
     };
     
     handleOAuthSuccess();
-  }, [router]);
+  }, [router, forceRefreshAuth]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
