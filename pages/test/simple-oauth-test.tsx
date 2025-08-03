@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { authService } from '../../src/services/auth';
 
 const SimpleOAuthTest: React.FC = () => {
@@ -10,7 +10,7 @@ const SimpleOAuthTest: React.FC = () => {
     setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   };
 
-  const checkCurrentSession = async () => {
+  const checkCurrentSession = useCallback(async () => {
     try {
       addLog('Checking current session...');
       const user = await authService.getCurrentUser();
@@ -28,7 +28,7 @@ const SimpleOAuthTest: React.FC = () => {
     } catch (error: any) {
       addLog(`Session check failed: ${error.message}`);
     }
-  };
+  }, []);
 
   const testGoogleOAuth = async () => {
     try {
@@ -59,7 +59,7 @@ const SimpleOAuthTest: React.FC = () => {
 
   useEffect(() => {
     checkCurrentSession();
-  }, []);
+  }, [checkCurrentSession]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">

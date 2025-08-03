@@ -6,6 +6,7 @@ import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import { useAuth } from '../src/contexts/AuthContext';
 
 // Admin Components
+import NotesDownloadManager from '../src/components/admin/NotesDownloadManager';
 import PageManagement from '../src/components/admin/PageManagement';
 import UserAccountManager from '../src/components/admin/UserAccountManager';
 import TeamMemberManager from '../src/components/admin/TeamMemberManager';
@@ -14,7 +15,7 @@ import SystemSettings from '../src/components/admin/SystemSettings';
 import NotificationsManager from '../src/components/admin/NotificationsManager';
 import BroadcastSection from '../src/components/admin/BroadcastSection';
 import LeaderboardControl from '../src/components/admin/LeaderboardControl';
-import NotesDownloadManager from '../src/components/admin/NotesDownloadManager';
+import AppwriteMessaging from '../src/components/admin/AppwriteMessaging';
 
 import {
     BarChart3,
@@ -172,7 +173,7 @@ function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Admin Action Buttons */}
+                {/* Admin Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                             <button 
                                 onClick={() => setActiveSection('system')}
@@ -181,13 +182,13 @@ function AdminDashboard() {
                                 <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                                 <span>Settings</span>
                             </button>
-                            <button 
-                                onClick={() => setActiveSection('users')}
-                                className="w-full bg-white hover:bg-gray-100 text-orange-600 px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2"
-                            >
+                        <button 
+                            onClick={() => setActiveSection('users')}
+                            className="w-full bg-white hover:bg-gray-100 text-orange-600 px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2"
+                        >
                                 <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                                <span>Manage Users</span>
-                            </button>
+                        <span>Manage Users</span>
+                        </button>
                         </div>
                     </div>
                 </div>
@@ -308,8 +309,8 @@ function AdminDashboard() {
                     {[
                         { icon: Users, label: "Manage Users", color: "blue", section: "users" },
                         { icon: FileText, label: "Notes Center", color: "green", section: "notes" },
-                        { icon: Settings, label: "System Settings", color: "purple", section: "system" },
-                        { icon: Bell, label: "Notifications", color: "orange", section: "notifications" }
+                        { icon: MessageSquare, label: "Messaging", color: "purple", section: "messaging" },
+                        { icon: Settings, label: "System Settings", color: "orange", section: "system" }
                     ].map((action, index) => (
                         <button 
                             key={index} 
@@ -351,6 +352,8 @@ case 'notes':
                 return <LeaderboardControl userRole={userRole} />;
             case 'pages':
                 return <PageManagement />;
+            case 'messaging':
+                return <AppwriteMessaging />;
             default:
                 return renderDashboardContent();
         }
@@ -447,6 +450,7 @@ case 'notes':
                                                 { key: 'notes', label: 'Notes Center', icon: FileText },
                                                 { key: 'team', label: 'Team Management', icon: UserCheck },
                                                 { key: 'pages', label: 'Page Management', icon: Globe },
+                                                { key: 'messaging', label: 'Messaging', icon: MessageSquare },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
                                                 const active = activeSection === item.key;
@@ -551,26 +555,35 @@ export default function ProtectedAdminDashboard() {
 
     useEffect(() => {
         const checkAccess = async () => {
+            console.log('Checking access...');
+            console.log('User:', user);
+            console.log('UserProfile:', userProfile);
+
             // Wait for user and userProfile to load
             if (!user) {
+                console.log('No user detected, redirecting to login.');
                 router.push('/login');
                 return;
             }
 
             // If userProfile is still loading, wait a bit
             if (userProfile === undefined) {
+                console.log('UserProfile still loading...');
                 return;
             }
 
             // Check role-based access
-            const userRole = userProfile?.role || 'user';
-            
+            const userRole = (userProfile?.role || 'user').toLowerCase();
+            console.log('User role:', userRole);
+
             // Only allow access for admin roles
             const allowedRoles = ['admin', 'manager', 'intern'];
-            
+
             if (allowedRoles.includes(userRole)) {
+                console.log('Access granted.');
                 setHasAccess(true);
             } else {
+                console.log('Access denied, redirecting.');
                 // Redirect students to student dashboard
                 if (userRole === 'student' || userRole === 'user') {
                     router.push('/dashboard');
@@ -579,7 +592,7 @@ export default function ProtectedAdminDashboard() {
                 }
                 return;
             }
-            
+
             setIsChecking(false);
         };
 

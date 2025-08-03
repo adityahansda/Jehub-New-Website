@@ -183,6 +183,10 @@ const Navigation = () => {
                         <div className="p-4 border-b border-white/10">
                           <p className="text-white font-medium">{userProfile?.name || user?.name}</p>
                           <p className="text-white/60 text-sm">{user?.email}</p>
+                          {/* Debug: Show user role */}
+                          {process.env.NODE_ENV === 'development' && userProfile?.role && (
+                            <p className="text-yellow-400 text-xs mt-1">Role: {userProfile.role}</p>
+                          )}
                         </div>
                         <div className="py-2">
                           <button
@@ -315,26 +319,23 @@ const Navigation = () => {
                 <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
               </div>
 
-              {/* Enhanced Additional Links */}
-              <div className="space-y-2">
-                {[
-                  { href: '/dashboard', label: 'Dashboard', icon: GraduationCap }
-                ].map((item) => {
-                  const IconComponent = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="group w-full flex items-center space-x-4 px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300 hover:scale-105"
-                    >
-                      <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all duration-300">
-                        <IconComponent className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                      </div>
-                      <span className="font-medium">{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
+              {/* Enhanced Additional Links - Only show dashboard for verified users */}
+              {user && isVerified && (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      router.push(getDashboardUrl(userProfile));
+                    }}
+                    className="group w-full flex items-center space-x-4 px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all duration-300">
+                      <GraduationCap className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <span className="font-medium">Dashboard</span>
+                  </button>
+                </div>
+              )}
 
               {/* Enhanced Auth Section */}
               <div className="relative mt-8 pt-6">

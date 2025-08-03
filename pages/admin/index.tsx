@@ -268,7 +268,7 @@ export default function ProtectedAdminDashboard() {
             }
 
             // Check role-based access
-            const userRole = userProfile?.role || 'user';
+            const userRole = (userProfile?.role || 'user').toLowerCase();
             
             // Only allow access for admin, manager, and intern roles
             const allowedRoles = ['admin', 'manager', 'intern'];
