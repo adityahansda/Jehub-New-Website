@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -122,9 +123,26 @@ const Login = () => {
 
   return (
     <>
+      <Head>
+        {/* Page-specific security meta tags */}
+        <meta name="login-type" content="oauth-only" />
+        <meta name="authentication-method" content="google-oauth" />
+        <meta name="credential-policy" content="google-oauth-only" />
+        <meta name="form-purpose" content="oauth-redirect" />
+        <link rel="canonical" href="https://jehub.vercel.app/login" />
+      </Head>
+      
       <NextSeo
-        title="Login - JEHUB"
-        description="Sign in to JEHUB to access engineering notes and earn points"
+        title="Secure Login - JEHUB | Jharkhand Engineer's Hub"
+        description="Secure OAuth login to JEHUB - Access engineering study materials and notes with Google authentication"
+        canonical="https://jehub.vercel.app/login"
+        openGraph={{
+          title: 'Secure Login - JEHUB',
+          description: 'Access engineering study materials with secure Google authentication',
+          url: 'https://jehub.vercel.app/login',
+          type: 'website',
+          site_name: 'JEHUB - Jharkhand Engineer\'s Hub'
+        }}
       />
 
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

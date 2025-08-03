@@ -40,28 +40,26 @@ class MyDocument extends Document {
           <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
           <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
           
-          {/* Add Google Analytics if you have a tracking ID */}
-          {process.env.NEXT_PUBLIC_GA_ID && (
-            <>
-              <script
-                async
-                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              />
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-                      page_title: document.title,
-                      page_location: window.location.href,
-                    });
-                  `,
-                }}
-              />
-            </>
-          )}
+          {/* Google Analytics - Using G-7ZWQNF3BVC */}
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=G-7ZWQNF3BVC`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-7ZWQNF3BVC', {
+                    page_title: document.title,
+                    page_location: window.location.href,
+                  });
+                `,
+              }}
+            />
+          </>
         </Head>
         <body>
           <Main />
