@@ -229,7 +229,8 @@ const Home = () => {
   };
 
   return (
-    <>
+<>
+      <div className="pt-20" />
       <Head>
         <title>JEHUB - Centralizing Academic Resources for Every Student</title>
         <meta
