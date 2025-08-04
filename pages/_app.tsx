@@ -8,6 +8,8 @@ import { ThemeProvider } from '../src/contexts/ThemeContext'
 import { useRouter } from 'next/router'
 import { DefaultSeo } from 'next-seo'
 import SEO from '../next-seo.config'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter()
@@ -61,6 +63,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <AuthProvider>
           <NavigationProvider>
             <DefaultSeo {...SEO} />
+            <ToastContainer />
             {shouldUseLayout ? (
               <Layout>
                 <Component {...pageProps} />

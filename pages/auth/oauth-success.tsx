@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { authService } from '../../src/services/auth';
 import { account } from '../../src/lib/appwrite';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { profilePictureService } from '../../src/services/profilePictureService';
+import { extractGoogleProfilePictureUrl } from '../../src/lib/profileUtils';
 
 const OAuthSuccess: React.FC = () => {
   const router = useRouter();
@@ -108,6 +110,72 @@ const OAuthSuccess: React.FC = () => {
         }
         
         addDebug(`User authenticated: ${currentUser.email}`);
+        
+        // Try to fetch and store Google profile picture
+        try {
+          addDebug('Attempting to fetch Google profile picture...');
+          
+          // Get current session to access OAuth tokens
+          const session = await account.getSession('current');
+          addDebug(`Session data: ${JSON.stringify({ 
+            $id: session.$id, 
+            provider: session.provider,
+            hasAccessToken: !!session.providerAccessToken,
+            hasRefreshToken: !!session.providerRefreshToken
+          })}`);
+          
+          if (session && session.providerAccessToken) {
+            addDebug('Found OAuth access token, fetching user info...');
+            
+            // Fetch Google user info including profile picture
+            const googleUserInfo = await profilePictureService.fetchGoogleUserInfo(session.providerAccessToken);
+            addDebug(`Google user info response: ${JSON.stringify(googleUserInfo)}`);
+            
+            if (googleUserInfo && googleUserInfo.picture) {
+              addDebug(`Found Google profile picture: ${googleUserInfo.picture}`);
+              
+              // Save the profile picture URL to user profile
+              const savedPictureUrl = await profilePictureService.saveProfilePictureFromGoogle(
+                currentUser.$id,
+                currentUser.email,
+                googleUserInfo.picture
+              );
+              
+              if (savedPictureUrl) {
+                addDebug('Successfully saved Google profile picture to user profile');
+              } else {
+                addDebug('Failed to save Google profile picture');
+              }
+            } else {
+              addDebug('No profile picture found in Google user info or failed to fetch');
+              addDebug(`GoogleUserInfo structure: ${JSON.stringify(googleUserInfo)}`);
+            }
+          } else {
+            addDebug('No OAuth access token available - cannot fetch profile picture');
+            addDebug('This might be an Appwrite configuration issue or Google OAuth scope issue');
+            
+            // Try alternative approach - check if user already has profile data in Appwrite prefs
+            if (currentUser.prefs && currentUser.prefs.picture) {
+              addDebug(`Found profile picture in user prefs: ${currentUser.prefs.picture}`);
+              
+              const savedPictureUrl = await profilePictureService.saveProfilePictureFromGoogle(
+                currentUser.$id,
+                currentUser.email,
+                currentUser.prefs.picture
+              );
+              
+              if (savedPictureUrl) {
+                addDebug('Successfully saved profile picture from user prefs');
+              }
+            } else {
+              addDebug('No profile picture found in user prefs either');
+            }
+          }
+        } catch (profileError: any) {
+          addDebug(`Error fetching Google profile picture: ${profileError.message}`);
+          console.error('Error fetching Google profile picture:', profileError);
+          // Don't fail the entire login process if profile picture fetch fails
+        }
         
         // Check if user is registered in our database
         const isRegistered = await authService.isUserRegistered(currentUser.email);

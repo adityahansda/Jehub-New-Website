@@ -112,6 +112,24 @@ class AuthService {
   // Create user profile in database
   private async createUserProfile(user: User, referralCode?: string): Promise<void> {
     try {
+      // Try to get Google profile picture if available
+      let profileImageUrl: string | null = null;
+      
+      try {
+        const session = await account.getSession('current');
+        if (session && session.providerAccessToken) {
+          const { profilePictureService } = await import('./profilePictureService');
+          const googleUserInfo = await profilePictureService.fetchGoogleUserInfo(session.providerAccessToken);
+          
+          if (googleUserInfo && googleUserInfo.picture) {
+            profileImageUrl = googleUserInfo.picture;
+            console.log(`Found Google profile picture for ${user.email}: ${profileImageUrl}`);
+          }
+        }
+      } catch (profileError) {
+        console.log('Could not fetch Google profile picture during user creation:', profileError);
+      }
+      
       // Create user profile document
       await databases.createDocument(
         DATABASE_ID,
@@ -123,7 +141,8 @@ class AuthService {
           email: user.email,
           joinDate: new Date().toISOString(),
           role: 'student',
-          isProfileComplete: false
+          isProfileComplete: false,
+          ...(profileImageUrl && { profileImageUrl })
         }
       );
 

@@ -39,6 +39,7 @@ import ReportsSection from '@/components/ReportsSection';
 import ShareModal from '@/components/ShareModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { pointsService } from '@/services/pointsService';
+import { showError, showWarning } from '@/utils/toast';
 
 // Format file size in human-readable format
 function formatFileSize(bytes: number | null): string {
@@ -429,12 +430,12 @@ const NotesPreview = () => {
 
     // Check download requirements
     const requirement = await pointsService.getNoteDownloadRequirements(note.id);
-    const requiredPoints = requirement?.points || 0;
-    const isPointsRequired = requirement?.required || false;
+    const requiredPoints = requirement?.points || note.points || 0;
+    const isPointsRequired = requiredPoints > 0;
 
     // If points are required and user is not authenticated
     if (isPointsRequired && !user) {
-      alert('Please sign in to download this premium note. Premium notes require points to download.');
+      showWarning('Please sign in to download this premium note. Premium notes require points to download.');
       return;
     }
 
@@ -443,7 +444,7 @@ const NotesPreview = () => {
       const userPoints = await pointsService.getUserPointsByEmail(user.email);
       if (userPoints.availablePoints < requiredPoints) {
         const pointsNeeded = requiredPoints - userPoints.availablePoints;
-        alert(`Insufficient points! You need ${requiredPoints} points to download this note. You have ${userPoints.availablePoints} points. You need ${pointsNeeded} more points. Refer friends or upload notes to earn more points!`);
+        showError(`Insufficient points! You need ${requiredPoints} points to download this note. You have ${userPoints.availablePoints} points. You need ${pointsNeeded} more points. Refer friends or upload notes to earn more points!`);
         return;
       }
     }
@@ -476,7 +477,7 @@ const NotesPreview = () => {
           setTimeout(() => {
             setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
           }, 3000);
-          alert('Failed to spend points for download. Please try again.');
+          showError('Failed to spend points for download. Please try again.');
           return;
         }
       }
@@ -725,7 +726,7 @@ const NotesPreview = () => {
 
     } catch (error) {
       console.error('Error submitting comment:', error);
-      alert('Failed to submit comment. Please try again.');
+      showError('Failed to submit comment. Please try again.');
     } finally {
       setSubmittingComment(false);
     }
@@ -777,7 +778,7 @@ const NotesPreview = () => {
     setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
   };
 
-  // Generate avatar URL based on name or email
+  // Generate avatar URL based on name or email using enhanced utilities
   const getAvatarUrl = (identifier: string) => {
     if (!identifier) return 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop';
 
@@ -984,8 +985,12 @@ const NotesPreview = () => {
                     ))}
                   </div>
                 </div>
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start">
-                  {note.points} pts
+                <div className={`px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start ${
+                  note.points > 0 
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
+                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                }`}>
+                  {note.points > 0 ? `${note.points} PTS` : 'FREE'}
                 </div>
               </div>
 
@@ -1303,29 +1308,49 @@ const NotesPreview = () => {
               <h3 className="text-lg font-bold text-gray-900 mb-4">Uploader</h3>
               <div className="flex items-center gap-3 mb-4">
                 <Image
-                  src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${note.uploader.toLowerCase().replace(/\s+/g, '')}&backgroundColor=b6e3f4&size=150`}
                   alt={note.uploader}
                   width={48}
                   height={48}
-                  className="w-12 h-12 rounded-full border-2 border-white shadow-md"
+                  className="w-12 h-12 rounded-full border-2 border-white shadow-md bg-blue-50"
+                  onError={(e) => {
+                    // Fallback to generated avatar if profile image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${note.uploader.toLowerCase().replace(/\s+/g, '')}&backgroundColor=b6e3f4&size=150`;
+                  }}
                 />
                 <div>
                   <h4 className="font-semibold text-gray-900">{note.uploader}</h4>
-                  <p className="text-sm text-gray-600">Scholar Level</p>
+                  <p className="text-sm text-gray-600">
+                    {note.uploaderDetails?.totalPoints && note.uploaderDetails.totalPoints > 500 ? 'Scholar Level' :
+                     note.uploaderDetails?.totalPoints && note.uploaderDetails.totalPoints > 200 ? 'Contributor' :
+                     'Member'}
+                  </p>
                 </div>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Notes Uploaded</span>
-                  <span className="font-semibold">15</span>
+                  <span className="font-semibold">{note.uploaderDetails?.notesUploaded || 1}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Total Points</span>
-                  <span className="font-semibold">2,450</span>
+                  <span className="font-semibold">{note.uploaderDetails?.totalPoints || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Member Since</span>
-                  <span className="font-semibold">Aug 2023</span>
+                  <span className="font-semibold">
+                    {note.uploaderDetails?.memberSince ? 
+                      new Date(note.uploaderDetails.memberSince).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short' 
+                      }) : 
+                      new Date(note.uploadDate).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short' 
+                      })
+                    }
+                  </span>
                 </div>
               </div>
               <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">

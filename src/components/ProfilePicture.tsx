@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
-import { profilePictureService } from '../services/profilePictureService';
+import { getBestProfilePictureUrl, generateUserInitials } from '../lib/profileUtils';
 
 interface ProfilePictureProps {
   size?: 'sm' | 'md' | 'lg';
@@ -11,11 +11,19 @@ interface ProfilePictureProps {
 const ProfilePicture: React.FC<ProfilePictureProps> = ({ size = 'md', className = '' }) => {
   const { user, userProfile } = useAuth();
 
-  if (!user || !userProfile) {
+  if (!user) {
     return null;
   }
 
-  const profileImageUrl = userProfile.profileImageUrl;
+  // Get the best available profile picture URL
+  const profileImageUrl = getBestProfilePictureUrl(
+    userProfile || undefined,
+    user.$id,
+    userProfile?.name || user.name
+  );
+  
+  // Generate user initials for fallback
+  const initials = generateUserInitials(userProfile?.name || user.name);
   
   // Size configurations
   const sizeConfig = {
@@ -42,22 +50,50 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({ size = 'md', className 
   const config = sizeConfig[size];
   const finalClassName = `${config.className} rounded-full ${className}`;
 
-  if (profileImageUrl) {
+  // Check if we have a valid profile image URL (not just a fallback)
+  const hasRealProfilePicture = userProfile?.profileImageUrl && (
+    userProfile.profileImageUrl.includes('googleusercontent.com') ||
+    userProfile.profileImageUrl.includes('googleapis.com') ||
+    userProfile.profileImageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+  );
+
+  if (hasRealProfilePicture) {
     // Display actual profile picture if available
     return (
       <Image
-        src={profileImageUrl}
+        src={userProfile.profileImageUrl!}
         alt={userProfile.name || user.name}
         className={finalClassName}
         width={config.width}
         height={config.height}
+        onError={(e) => {
+          // Fallback to initials if image fails to load
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
       />
     );
   }
 
-  // Fallback to initials if profile picture doesn't exist
-  const initials = profilePictureService.generateInitials(userProfile.name || user.name);
+  // Fallback to generated avatar or initials
+  if (profileImageUrl && !hasRealProfilePicture) {
+    return (
+      <Image
+        src={profileImageUrl}
+        alt={userProfile?.name || user.name}
+        className={finalClassName}
+        width={config.width}
+        height={config.height}
+        onError={(e) => {
+          // If generated avatar fails, show initials
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+        }}
+      />
+    );
+  }
 
+  // Ultimate fallback to initials
   return (
     <div className={`${config.className} bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center ${className}`}>
       <span className={`text-white font-semibold ${config.textSize}`}>

@@ -24,6 +24,7 @@ class ProfilePictureService {
    */
   async fetchGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo | null> {
     try {
+      // First try direct API call
       const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -38,8 +39,28 @@ class ProfilePictureService {
       const userInfo: GoogleUserInfo = await response.json();
       return userInfo;
     } catch (error) {
-      console.error('Error fetching Google user info:', error);
-      return null;
+      console.error('Error fetching Google user info directly, trying API route:', error);
+      
+      // Fallback to API route if direct call fails (e.g., due to CORS)
+      try {
+        const apiResponse = await fetch('/api/fetch-google-profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ accessToken }),
+        });
+
+        if (!apiResponse.ok) {
+          throw new Error(`API route failed: ${apiResponse.status}`);
+        }
+
+        const { userInfo } = await apiResponse.json();
+        return userInfo;
+      } catch (apiError) {
+        console.error('Error fetching Google user info via API route:', apiError);
+        return null;
+      }
     }
   }
 

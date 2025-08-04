@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText, Coins, AlertTriangle } from 'lucide-react';
 import { generateNoteSlug } from '../utils/seo';
+import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '../utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
@@ -226,12 +227,12 @@ const NotesDownload = () => {
 
     // Check download requirements
     const requirement = noteRequirements[noteId];
-    const requiredPoints = requirement?.points || 0;
-    const isPointsRequired = requirement?.required || false;
+    const requiredPoints = requirement?.points || note.points || 0;
+    const isPointsRequired = requiredPoints > 0;
 
     // If points are required and user is not authenticated
     if (isPointsRequired && !user) {
-      alert('Please sign in to download this premium note. Premium notes require points to download.');
+      showWarning('Please sign in to download this premium note. Premium notes require points to download.');
       return;
     }
 
@@ -244,17 +245,11 @@ const NotesDownload = () => {
         `Complete profile: +20 pts`
       ];
       
-      const message = `⚠️ Insufficient Points!\n\n` +
-        `Required: ${requiredPoints} points\n` +
-        `Available: ${userPoints.availablePoints} points\n` +
-        `Needed: ${pointsNeeded} more points\n\n` +
-        `💡 Ways to earn points:\n` +
-        earningSuggestions.join('\n') + '\n\n' +
-        `Visit your Referral Dashboard to start earning!`;
+      const message = `Insufficient Points! Required: ${requiredPoints} points, Available: ${userPoints.availablePoints} points, Needed: ${pointsNeeded} more points. Ways to earn: Refer a friend (+50 pts), Upload notes (+30 pts), Complete profile (+20 pts). Would you like to go to your Referral Dashboard?`;
       
-      if (confirm(message + '\n\nWould you like to go to your Referral Dashboard now?')) {
+      showConfirmation(message, () => {
         window.open('/referral', '_blank');
-      }
+      });
       return;
     }
 
@@ -274,7 +269,7 @@ const NotesDownload = () => {
         setTimeout(() => {
           setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
         }, 3000);
-        alert('This PDF has been deleted from GitHub and is no longer available. Please contact the administrator.');
+        showError('This PDF has been deleted from GitHub and is no longer available. Please contact the administrator.');
         return;
       }
 
@@ -309,7 +304,7 @@ const NotesDownload = () => {
           setTimeout(() => {
             setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
           }, 3000);
-          alert('Failed to spend points for download. Please try again.');
+          showError('Failed to spend points for download. Please try again.');
           return;
         }
       }
@@ -441,7 +436,7 @@ const NotesDownload = () => {
       
       // Show a subtle notification that likes require authentication
       setTimeout(() => {
-        alert('Note: Likes are saved locally. Sign in to sync your preferences across devices.');
+        showInfo('Note: Likes are saved locally. Sign in to sync your preferences across devices.');
       }, 100);
     }
   };
@@ -460,11 +455,11 @@ const NotesDownload = () => {
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(shareText).then(() => {
-        alert('Link with message copied to clipboard!');
+        showSuccess('Link with message copied to clipboard!');
       }).catch(() => {
         // If clipboard fails, just copy the URL
         navigator.clipboard.writeText(shareUrl).then(() => {
-          alert('Link copied to clipboard!');
+          showSuccess('Link copied to clipboard!');
         });
       });
     }
@@ -748,25 +743,25 @@ const NotesDownload = () => {
                   <div className="p-4 sm:p-5 flex flex-col h-full relative">
                     {/* Badges - Top Corner */}
                     <div className="absolute top-2 right-2 z-10 flex gap-2">
-                      {/* Note Type Badge */}
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                        note.noteType === 'premium' 
-                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {note.noteType || 'FREE'}
-                      </span>
-                      {/* Points Badge */}
-                      {noteRequirements[note.id]?.required ? (
-                        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Coins className="h-3 w-3" />
-                          {noteRequirements[note.id]?.points || note.points} PTS
-                        </span>
-                      ) : (
-                        <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                          FREE
-                        </span>
-                      )}
+                      {/* Single Badge showing either Points Required or Free */}
+                      {(() => {
+                        const requiredPoints = noteRequirements[note.id]?.points || note.points || 0;
+                        
+                        if (requiredPoints > 0) {
+                          return (
+                            <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
+                              <Coins className="h-3 w-3" />
+                              {requiredPoints} PTS
+                            </span>
+                          );
+                        } else {
+                          return (
+                            <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md">
+                              FREE
+                            </span>
+                          );
+                        }
+                      })()} 
                     </div>
 
                     {/* Header Section */}
@@ -866,8 +861,8 @@ const NotesDownload = () => {
                         </button>
                         {(() => {
                           const requirement = noteRequirements[note.id];
-                          const requiredPoints = requirement?.points || 0;
-                          const isPointsRequired = requirement?.required || false;
+                          const requiredPoints = requirement?.points || note.points || 0;
+                          const isPointsRequired = requiredPoints > 0;
                           const hasEnoughPoints = !isPointsRequired || !user || userPoints.availablePoints >= requiredPoints;
                           const needsAuth = isPointsRequired && !user;
                           

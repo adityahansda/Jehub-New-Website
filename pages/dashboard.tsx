@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { showInfo } from '../src/utils/toast';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import UserProfileSection from '../src/components/dashboard/UserProfileSection';
 import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
@@ -194,13 +195,22 @@ function StudentDashboard() {
                     <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start lg:space-x-8 space-y-6 lg:space-y-0">
                         {/* Avatar */}
                         <div className="relative">
-                            {userProfile?.profileImageUrl ? (
+                            {userProfile?.profileImageUrl && (
+                              userProfile.profileImageUrl.includes('googleusercontent.com') ||
+                              userProfile.profileImageUrl.includes('googleapis.com') ||
+                              userProfile.profileImageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                            ) ? (
                                 <Image
                                     src={userProfile.profileImageUrl}
                                     alt="Profile"
                                     width={96}
                                     height={96}
                                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-white/30 object-cover"
+                                    onError={(e) => {
+                                        // Show initials fallback if image fails to load
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                    }}
                                 />
                             ) : (
                                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 flex items-center justify-center">
@@ -973,7 +983,7 @@ function StudentDashboard() {
                                     onClick={() => {
                                         setShowPremiumPopup(false);
                                         // You can add contact admin functionality here
-                                        alert('Contact admin functionality would be implemented here');
+                                        showInfo('Contact admin functionality would be implemented here');
                                     }}
                                     className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                                 >

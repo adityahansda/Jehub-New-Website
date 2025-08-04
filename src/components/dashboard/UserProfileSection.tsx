@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/auth';
 import { userService } from '../../services/userService';
+import { getBestProfilePictureUrl, generateUserInitials } from '../../lib/profileUtils';
+import UserAvatar from '../common/UserAvatar';
 import {
   Lock,
   Mail,
@@ -437,13 +439,17 @@ const UserProfileSection: React.FC = () => {
               className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-offset-2 ring-offset-gray-50 dark:ring-offset-gray-800 ring-blue-500 cursor-pointer hover:ring-blue-600 transition-all"
               onClick={() => setShowAvatarModal(true)}
             >
-              {userProfile?.profileImageUrl ? (
-                <Image src={userProfile.profileImageUrl} alt="Profile" width={96} height={96} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-4xl font-bold text-gray-500 dark:text-gray-400">
-                  {(profileForm.name || user?.name || 'U')[0].toUpperCase()}
-                </div>
-              )}
+              <UserAvatar 
+                user={{
+                  $id: user?.$id,
+                  name: profileForm.name || user?.name,
+                  email: user?.email,
+                  profileImageUrl: userProfile?.profileImageUrl
+                }}
+                size="xl"
+                className="w-full h-full ring-0"
+                fallbackColor="blue"
+              />
               {/* Hover overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
                 <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
