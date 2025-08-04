@@ -15,6 +15,9 @@
     "db:auto-index": "node scripts/auto-index-manager.js",
     "db:monitor": "node scripts/monitor-indexes.js",
     "migrate:subscribers": "node scripts/migrate-subscribers-to-appwrite.js",
+    "migrate:points:dry-run": "node -r dotenv/config scripts/migrate-points-field.js dry-run",
+    "migrate:points": "node -r dotenv/config scripts/migrate-points-field.js migrate",
+    "migrate:points:cleanup": "node -r dotenv/config scripts/migrate-points-field.js cleanup",
     "postbuild": "next-sitemap",
     "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },

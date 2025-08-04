@@ -115,7 +115,6 @@ const SignUp: React.FC = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         // Initialize points system data - using existing database fields
-        totalPoints: totalPoints, // Welcome bonus + referral bonus
         points: totalPoints, // Required points field
         notesUploaded: 0,
         notesDownloaded: 0,
@@ -162,7 +161,6 @@ const SignUp: React.FC = () => {
           
           // Update user's points with referral bonus
           await userService.updateUserProfile(user.email, {
-            totalPoints: totalPoints,
             points: totalPoints
           });
           

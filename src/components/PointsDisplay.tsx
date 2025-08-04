@@ -15,7 +15,7 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
 }) => {
   const { user, userProfile } = useAuth();
   const [points, setPoints] = useState<UserPoints>({
-    totalPoints: 0,
+    points: 0,
     availablePoints: 0,
     pointsSpent: 0,
     totalReferrals: 0
@@ -41,7 +41,7 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
       }
     } else {
       setPoints({
-        totalPoints: 0,
+        points: 0,
         availablePoints: 0,
         pointsSpent: 0,
         totalReferrals: 0
@@ -81,7 +81,7 @@ const PointsDisplay: React.FC<PointsDisplayProps> = ({
       <Link 
         href="/referral"
         className="flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group"
-        title={`Available: ${points.availablePoints} | Total: ${points.totalPoints} | Spent: ${points.pointsSpent}`}
+        title={`Available: ${points.availablePoints} | Total: ${points.points} | Spent: ${points.pointsSpent}`}
       >
         <div className="flex items-center gap-1">
           <Coins className="w-4 h-4 text-blue-600" />

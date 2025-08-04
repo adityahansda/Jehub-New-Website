@@ -24,7 +24,7 @@ interface DatabaseUser {
 }
 
 interface CombinedUser {
-  id: string;
+  userId: string; // Changed from id to userId
   name: string;
   email: string;
   status: 'active' | 'suspended' | 'unverified' | 'incomplete';
@@ -90,7 +90,7 @@ const UserAccountManager = () => {
         }
 
         return {
-          id: dbUser.$id,
+          userId: dbUser.$id,
           name: dbUser.name || 'Unknown User',
           email: dbUser.email,
           status,
@@ -166,7 +166,7 @@ const UserAccountManager = () => {
       await databases.updateDocument(
         appwriteConfig.databaseId,
         appwriteConfig.collections.users,
-        selectedUser.id,
+        selectedUser.userId,
         {
           name: editedUser.name,
           email: editedUser.email,
@@ -337,7 +337,7 @@ const UserAccountManager = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">User Account Manager</h2>
@@ -419,7 +419,7 @@ const UserAccountManager = () => {
 
         <div className="space-y-4">
           {filteredUsers.map((user) => (
-            <div key={user.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={user.userId} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -455,14 +455,14 @@ const UserAccountManager = () => {
                   </button>
 
                   <button
-                    onClick={() => handleSuspendUser(user.id)}
+                    onClick={() => handleSuspendUser(user.userId)}
                     className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
                     title="Suspend Account"
                   >
                     <Ban className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.id)}
+                    onClick={() => handleDeleteUser(user.userId)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete User"
                   >

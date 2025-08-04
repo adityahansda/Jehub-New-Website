@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Settings, Palette, Bell, Mail, Link as LinkIcon, Save } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Settings, Palette, Bell, Mail, Link as LinkIcon, Save, Home, ArrowLeft } from 'lucide-react';
 
 const SystemSettings = () => {
+  const router = useRouter();
   const [settings, setSettings] = useState({
     theme: 'light',
     announcementBanner: {
@@ -30,20 +32,38 @@ const SystemSettings = () => {
     // Example: await updateSystemSettings(settings);
   };
 
+  const handleBackToHome = () => {
+    router.push('/');
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header Section with Navigation */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
-          <p className="text-gray-600">Configure global system preferences</p>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={handleBackToHome}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors group bg-white border border-gray-200 shadow-sm"
+            title="Back to Home Page"
+          >
+            <Home className="h-4 w-4" />
+            <span className="text-sm font-medium">Home</span>
+          </button>
+          <div className="border-l border-gray-300 h-8"></div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2>
+            <p className="text-gray-600 dark:text-gray-400">Configure global system preferences</p>
+          </div>
         </div>
-        <button
-          onClick={handleSave}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          Save Changes
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleSave}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Save className="h-4 w-4" />
+            Save Changes
+          </button>
+        </div>
       </div>
 
       {/* Theme Settings */}

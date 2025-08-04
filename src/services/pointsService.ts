@@ -22,7 +22,7 @@ export interface PointsTransaction {
 }
 
 export interface UserPoints {
-  totalPoints: number;
+  points: number;
   availablePoints: number;
   pointsSpent: number;
   totalReferrals: number;
@@ -168,7 +168,7 @@ export class PointsService {
         USERS_COLLECTION_ID,
         userProfile.$id, // Use the actual profile document ID
         {
-          totalPoints: welcomePoints,
+          points: welcomePoints,
           availablePoints: welcomePoints,
           pointsSpent: 0,
           totalReferrals: 0,
@@ -178,7 +178,7 @@ export class PointsService {
         }
       );
       console.log('User profile updated with points:', {
-        totalPoints: updatedProfile.totalPoints,
+        points: updatedProfile.points,
         availablePoints: updatedProfile.availablePoints,
         referralCode: updatedProfile.referralCode
       });
@@ -248,7 +248,7 @@ export class PointsService {
         referrerId: referrer.$id,
         referrerEmail: referrer.email, 
         referrerName: referrer.name,
-        currentPoints: referrer.totalPoints,
+        currentPoints: referrer.points,
         currentAvailablePoints: referrer.availablePoints 
       });
       
@@ -327,12 +327,12 @@ export class PointsService {
       const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
       console.log('Current user data:', {
         email: user.email,
-        currentTotalPoints: user.totalPoints,
+        currentTotalPoints: user.points,
         currentAvailablePoints: user.availablePoints,
         pointsSpent: user.pointsSpent
       });
       
-      const currentTotal = user.totalPoints || 0;
+      const currentTotal = user.points || 0;
       const currentAvailable = user.availablePoints || 0;
       const newTotal = currentTotal + points;
       const newAvailable = currentAvailable + points;
@@ -352,13 +352,13 @@ export class PointsService {
         USERS_COLLECTION_ID,
         userId,
         {
-          totalPoints: newTotal,
+          points: newTotal,
           availablePoints: newAvailable,
           lastPointsEarned: new Date().toISOString()
         }
       );
       console.log('User document updated successfully:', {
-        updatedTotalPoints: updateResult.totalPoints,
+        updatedTotalPoints: updateResult.points,
         updatedAvailablePoints: updateResult.availablePoints
       });
 
@@ -478,20 +478,20 @@ export class PointsService {
       console.log('Fields that might contain points:', allFields);
       
       // Try various field name combinations
-      const totalPoints = (user as any).totalPoints || (user as any).points || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
+      const points = (user as any).points || (user as any).totalPoints || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
       const availablePoints = (user as any).availablePoints || (user as any).points || (user as any).available_points || (user as any).Points || (user as any).AvailablePoints || 0;
       const pointsSpent = (user as any).pointsSpent || (user as any).points_spent || (user as any).PointsSpent || 0;
       const totalReferrals = (user as any).totalReferrals || (user as any).total_referrals || (user as any).TotalReferrals || 0;
       
       console.log('Extracted points:', {
-        totalPoints,
+        points,
         availablePoints,
         pointsSpent, 
         totalReferrals
       });
       
       return {
-        totalPoints,
+        points,
         availablePoints,
         pointsSpent,
         totalReferrals
@@ -499,7 +499,7 @@ export class PointsService {
     } catch (error) {
       console.error('Error getting user points from profile:', error);
       return {
-        totalPoints: 0,
+        points: 0,
         availablePoints: 0,
         pointsSpent: 0,
         totalReferrals: 0
@@ -524,7 +524,7 @@ export class PointsService {
       if (response.documents.length === 0) {
         console.warn('No user profile found for email:', userEmail);
         return {
-          totalPoints: 0,
+          points: 0,
           availablePoints: 0,
           pointsSpent: 0,
           totalReferrals: 0
@@ -550,13 +550,13 @@ export class PointsService {
       console.log('Points-related fields:', pointsRelatedFields);
       
       // Try to get points from different possible field names
-      const totalPoints = (user as any).totalPoints || (user as any).points || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
+      const points = (user as any).points || (user as any).totalPoints || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
       const availablePoints = (user as any).availablePoints || (user as any).points || (user as any).available_points || (user as any).Points || (user as any).AvailablePoints || 0;
       const pointsSpent = (user as any).pointsSpent || (user as any).points_spent || (user as any).PointsSpent || 0;
       const totalReferrals = (user as any).totalReferrals || (user as any).total_referrals || (user as any).TotalReferrals || 0;
       
       const result = {
-        totalPoints,
+        points,
         availablePoints,
         pointsSpent,
         totalReferrals
@@ -568,7 +568,7 @@ export class PointsService {
       console.error('Error getting user points by email:', error);
       console.error('Error details:', error);
       return {
-        totalPoints: 0,
+        points: 0,
         availablePoints: 0,
         pointsSpent: 0,
         totalReferrals: 0
@@ -589,7 +589,7 @@ export class PointsService {
     } catch (error) {
       console.error('Error getting user points by ID, this method is deprecated:', error);
       return {
-        totalPoints: 0,
+        points: 0,
         availablePoints: 0,
         pointsSpent: 0,
         totalReferrals: 0
@@ -630,13 +630,13 @@ export class PointsService {
       const totalReferrals = referrals.length;
       const completedReferrals = referrals.filter(r => r.status === 'completed').length;
       const pendingReferrals = referrals.filter(r => r.status === 'pending').length;
-      const totalPointsEarned = referrals.reduce((sum, r) => sum + (r.pointsAwarded || 0), 0);
+      const pointsEarned = referrals.reduce((sum, r) => sum + (r.pointsAwarded || 0), 0);
 
       return {
         totalReferrals,
         completedReferrals,
         pendingReferrals,
-        totalPointsEarned,
+        pointsEarned,
         conversionRate: totalReferrals > 0 ? (completedReferrals / totalReferrals) * 100 : 0,
         referrals: referrals.slice(0, 10) // Latest 10 referrals
       };
@@ -646,7 +646,7 @@ export class PointsService {
         totalReferrals: 0,
         completedReferrals: 0,
         pendingReferrals: 0,
-        totalPointsEarned: 0,
+        pointsEarned: 0,
         conversionRate: 0,
         referrals: []
       };

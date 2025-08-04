@@ -80,7 +80,7 @@ const NotesDownload = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [userPoints, setUserPoints] = useState({ availablePoints: 0, totalPoints: 0 });
+  const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0 });
   const [pointsLoading, setPointsLoading] = useState(false);
   const [filters, setFilters] = useState({
     branch: '',
@@ -147,7 +147,7 @@ const NotesDownload = () => {
           setPointsLoading(false);
         }
       } else {
-        setUserPoints({ availablePoints: 0, totalPoints: 0 });
+        setUserPoints({ availablePoints: 0, points: 0 });
       }
     };
 
@@ -662,7 +662,7 @@ const NotesDownload = () => {
                           {userPoints.availablePoints}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Total earned: {userPoints.totalPoints}
+                          Total earned: {userPoints.points}
                         </div>
                         {/* Debug info - only in development */}
                         {process.env.NODE_ENV === 'development' && (

@@ -38,7 +38,6 @@ export interface UserProfile {
   joinDate?: string;
   
   // Stats and Rankings
-  totalPoints?: number;
   points?: number;
   notesUploaded?: number;
   notesDownloaded?: number;
@@ -137,7 +136,7 @@ export class UserService {
 
   // Get user stats
   async getUserStats(email: string): Promise<{
-    totalPoints: number;
+    points: number;
     notesUploaded: number;
     notesDownloaded: number;
     requestsFulfilled: number;
@@ -148,7 +147,7 @@ export class UserService {
       
       if (!profile) {
         return {
-          totalPoints: 0,
+          points: 0,
           notesUploaded: 0,
           notesDownloaded: 0,
           requestsFulfilled: 0,
@@ -157,7 +156,7 @@ export class UserService {
       }
 
       return {
-        totalPoints: profile.totalPoints || 0,
+        points: profile.points || 0,
         notesUploaded: profile.notesUploaded || 0,
         notesDownloaded: profile.notesDownloaded || 0,
         requestsFulfilled: profile.requestsFulfilled || 0,
@@ -166,7 +165,7 @@ export class UserService {
     } catch (error) {
       console.error('Error fetching user stats:', error);
       return {
-        totalPoints: 0,
+        points: 0,
         notesUploaded: 0,
         notesDownloaded: 0,
         requestsFulfilled: 0,
@@ -245,21 +244,21 @@ export class UserService {
   // Get user stats with month-over-month comparison
   async getUserStatsWithComparison(email: string): Promise<{
     current: {
-      totalPoints: number;
+      points: number;
       notesUploaded: number;
       notesDownloaded: number;
       requestsFulfilled: number;
       rank: number;
     };
     changes: {
-      totalPointsChange: number;
+      pointsChange: number;
       notesUploadedChange: number;
       notesDownloadedChange: number;
       requestsFulfilledChange: number;
       rankChange: number;
     };
     percentageChanges: {
-      totalPointsPercent: string;
+      pointsPercent: string;
       notesUploadedPercent: string;
       notesDownloadedPercent: string;
       requestsFulfilledPercent: string;
@@ -272,21 +271,21 @@ export class UserService {
       if (!profile) {
         return {
           current: {
-            totalPoints: 0,
+            points: 0,
             notesUploaded: 0,
             notesDownloaded: 0,
             requestsFulfilled: 0,
             rank: 0
           },
           changes: {
-            totalPointsChange: 0,
+            pointsChange: 0,
             notesUploadedChange: 0,
             notesDownloadedChange: 0,
             requestsFulfilledChange: 0,
             rankChange: 0
           },
           percentageChanges: {
-            totalPointsPercent: 'N/A',
+            pointsPercent: 'N/A',
             notesUploadedPercent: 'N/A',
             notesDownloadedPercent: 'N/A',
             requestsFulfilledPercent: 'N/A',
@@ -297,7 +296,7 @@ export class UserService {
 
       // Get current stats
       const current = {
-        totalPoints: profile.totalPoints || 0,
+        points: profile.points || 0,
         notesUploaded: profile.notesUploaded || 0,
         notesDownloaded: profile.notesDownloaded || 0,
         requestsFulfilled: profile.requestsFulfilled || 0,
@@ -308,7 +307,7 @@ export class UserService {
       // For now, we'll use estimated previous values based on current data
       // In a real app, you'd store historical data in a separate collection
       const previousMonth = {
-        totalPoints: Math.max(0, current.totalPoints - Math.floor(current.totalPoints * 0.1)),
+        points: Math.max(0, current.points - Math.floor(current.points * 0.1)),
         notesUploaded: Math.max(0, current.notesUploaded - Math.floor(current.notesUploaded * 0.15)),
         notesDownloaded: Math.max(0, current.notesDownloaded - Math.floor(current.notesDownloaded * 0.2)),
         requestsFulfilled: Math.max(0, current.requestsFulfilled - Math.floor(current.requestsFulfilled * 0.1)),
@@ -317,7 +316,7 @@ export class UserService {
 
       // Calculate changes
       const changes = {
-        totalPointsChange: current.totalPoints - previousMonth.totalPoints,
+        pointsChange: current.points - previousMonth.points,
         notesUploadedChange: current.notesUploaded - previousMonth.notesUploaded,
         notesDownloadedChange: current.notesDownloaded - previousMonth.notesDownloaded,
         requestsFulfilledChange: current.requestsFulfilled - previousMonth.requestsFulfilled,
@@ -334,7 +333,7 @@ export class UserService {
       };
 
       const percentageChanges = {
-        totalPointsPercent: calculatePercentage(current.totalPoints, previousMonth.totalPoints),
+        pointsPercent: calculatePercentage(current.points, previousMonth.points),
         notesUploadedPercent: calculatePercentage(current.notesUploaded, previousMonth.notesUploaded),
         notesDownloadedPercent: calculatePercentage(current.notesDownloaded, previousMonth.notesDownloaded),
         requestsFulfilledPercent: calculatePercentage(current.requestsFulfilled, previousMonth.requestsFulfilled),
@@ -350,21 +349,21 @@ export class UserService {
       console.error('Error fetching user stats with comparison:', error);
       return {
         current: {
-          totalPoints: 0,
+          points: 0,
           notesUploaded: 0,
           notesDownloaded: 0,
           requestsFulfilled: 0,
           rank: 0
         },
         changes: {
-          totalPointsChange: 0,
+          pointsChange: 0,
           notesUploadedChange: 0,
           notesDownloadedChange: 0,
           requestsFulfilledChange: 0,
           rankChange: 0
         },
         percentageChanges: {
-          totalPointsPercent: 'N/A',
+          pointsPercent: 'N/A',
           notesUploadedPercent: 'N/A',
           notesDownloadedPercent: 'N/A',
           requestsFulfilledPercent: 'N/A',
