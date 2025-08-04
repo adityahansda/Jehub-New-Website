@@ -33,7 +33,7 @@ const TermsOfService = () => {
             <h2 className="text-2xl font-bold text-gray-900">1. Eligibility</h2>
           </div>
           <p className="text-gray-700">
-            You must be at least 13 years old to use JEHUB. Users must provide accurate registration information.
+            You must be at least 18 years old to use JEHUB. Users must provide accurate registration information.
           </p>
         </div>
 
