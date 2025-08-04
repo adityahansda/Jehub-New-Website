@@ -91,7 +91,6 @@ function StudentDashboard() {
                     console.error('Error fetching dashboard stats:', error);
                     // Set fallback data even on error
                     setDashboardStats({
-                        totalPoints: 0,
                         notesUploaded: 0,
                         notesDownloaded: 0,
                         requestsFulfilled: 0,
@@ -237,20 +236,12 @@ function StudentDashboard() {
                                         <div className="h-6 bg-white/20 rounded w-8 mb-1"></div>
                                         <p className="text-xs text-white/80">Rank</p>
                                     </div>
-                                    <div className="text-center animate-pulse">
-                                        <div className="h-6 bg-white/20 rounded w-12 mb-1"></div>
-                                        <p className="text-xs text-white/80">Points</p>
-                                    </div>
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center lg:justify-start space-x-4 sm:space-x-6 mb-4">
                                     <div className="text-center">
                                         <p className="text-xl sm:text-2xl font-bold">{dashboardStats?.currentRank ? `#${dashboardStats.currentRank}` : 'Unranked'}</p>
                                         <p className="text-xs text-white/80">Rank</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-xl sm:text-2xl font-bold">{dashboardStats?.totalPoints ?? 0}</p>
-                                        <p className="text-xs text-white/80">Points</p>
                                     </div>
                                 </div>
                             )}
@@ -273,7 +264,7 @@ function StudentDashboard() {
                                         <span className="hidden sm:inline">{dashboardStats?.pointsToNextLevel ? `${dashboardStats.pointsToNextLevel} to next level` : '250 to next level'}</span>
                                     </div>
                                     <div className="w-full bg-white/30 rounded-full h-2 sm:h-2.5">
-                                        <div className="bg-white h-2 sm:h-2.5 rounded-full" style={{ width: `${dashboardStats?.totalPoints && dashboardStats?.pointsToNextLevel ? ((dashboardStats.totalPoints % 250) / 250) * 100 : 0}%` }}></div>
+                                        <div className="bg-white h-2 sm:h-2.5 rounded-full" style={{ width: `${dashboardStats?.pointsToNextLevel ? ((250 - dashboardStats.pointsToNextLevel) / 250) * 100 : 0}%` }}></div>
                                     </div>
                                 </div>
                             )}
@@ -325,15 +316,6 @@ function StudentDashboard() {
                             <div className="min-w-0">
                                 <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Notes Downloaded</p>
                                 <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.notesDownloaded ?? 0}</p>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-                                <Star className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm truncate">Points Earned</p>
-                                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.totalPoints ?? 0}</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex items-center space-x-3 sm:space-x-4">

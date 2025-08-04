@@ -21,12 +21,10 @@ interface AnalyticsData {
     week: string;
     uploads: number;
     downloads: number;
-    points: number;
   }[];
   monthlyStats: {
     notesUploaded: number;
     downloadsReceived: number;
-    pointsEarned: number;
     profileViews: number;
   };
   performanceMetrics: {
@@ -49,34 +47,29 @@ export default function DashboardAnalytics({ user, userProfile, userStats }: Das
     { 
       week: 'Week 1', 
       uploads: Math.floor((userStats?.current?.notesUploaded || 0) * 0.2), 
-      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.15), 
-      points: Math.floor((userStats?.current?.totalPoints || 0) * 0.1)
+      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.15)
     },
     { 
       week: 'Week 2', 
       uploads: Math.floor((userStats?.current?.notesUploaded || 0) * 0.3), 
-      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.25), 
-      points: Math.floor((userStats?.current?.totalPoints || 0) * 0.2)
+      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.25)
     },
     { 
       week: 'Week 3', 
       uploads: Math.floor((userStats?.current?.notesUploaded || 0) * 0.2), 
-      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.3), 
-      points: Math.floor((userStats?.current?.totalPoints || 0) * 0.25)
+      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.3)
     },
     { 
       week: 'Week 4', 
       uploads: Math.floor((userStats?.current?.notesUploaded || 0) * 0.3), 
-      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.3), 
-      points: Math.floor((userStats?.current?.totalPoints || 0) * 0.45)
+      downloads: Math.floor((userStats?.current?.notesDownloaded || 0) * 0.3)
     }
   ];
 
   const monthlyStats = {
     notesUploaded: userStats?.current?.notesUploaded || 0,
     downloadsReceived: userStats?.current?.notesDownloaded || 0,
-    pointsEarned: userStats?.current?.totalPoints || 0,
-    profileViews: Math.floor((userStats?.current?.totalPoints || 0) * 0.8) // Estimated based on points
+    profileViews: Math.floor((userStats?.current?.points || 0) * 0.8) // Estimated based on points
   };
 
   const performanceMetrics = {
@@ -139,21 +132,6 @@ export default function DashboardAnalytics({ user, userProfile, userStats }: Das
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-600 dark:text-purple-400 text-sm font-medium">Points Earned</p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{monthlyStats.pointsEarned}</p>
-                <p className="text-xs text-purple-700 dark:text-purple-300 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +8% from last month
-                </p>
-              </div>
-              <div className="bg-purple-500 p-2 rounded-lg">
-                <Star className="h-5 w-5 text-white" />
-              </div>
-            </div>
-          </div>
 
           <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4">
             <div className="flex items-center justify-between">
@@ -186,10 +164,6 @@ export default function DashboardAnalytics({ user, userProfile, userStats }: Das
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               <span className="text-sm text-gray-600 dark:text-gray-400">Downloads</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Points</span>
-            </div>
           </div>
         </div>
 
@@ -202,7 +176,6 @@ export default function DashboardAnalytics({ user, userProfile, userStats }: Das
                 <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                   <span>{week.uploads} uploads</span>
                   <span>{week.downloads} downloads</span>
-                  <span>{week.points} pts</span>
                 </div>
               </div>
               <div className="flex space-x-2">
@@ -218,13 +191,6 @@ export default function DashboardAnalytics({ user, userProfile, userStats }: Das
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-500" 
                     style={{ width: `${(week.downloads / 40) * 100}%` }}
-                  ></div>
-                </div>
-                {/* Points Bar */}
-                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-purple-500 h-2 rounded-full transition-all duration-500" 
-                    style={{ width: `${(week.points / 250) * 100}%` }}
                   ></div>
                 </div>
               </div>

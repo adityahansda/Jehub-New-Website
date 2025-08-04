@@ -16,6 +16,7 @@ import NotificationsManager from '../src/components/admin/NotificationsManager';
 import BroadcastSection from '../src/components/admin/BroadcastSection';
 import LeaderboardControl from '../src/components/admin/LeaderboardControl';
 import AppwriteMessaging from '../src/components/admin/AppwriteMessaging';
+import PointsManagement from '../src/components/admin/PointsManagement';
 
 import {
     BarChart3,
@@ -91,7 +92,7 @@ function AdminDashboard() {
 
     // Admin Dashboard main content
     const renderDashboardContent = () => (
-        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto">
             {/* Header Section */}
             <div className="mb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
@@ -310,6 +311,7 @@ function AdminDashboard() {
                         { icon: Users, label: "Manage Users", color: "blue", section: "users" },
                         { icon: FileText, label: "Notes Center", color: "green", section: "notes" },
                         { icon: MessageSquare, label: "Messaging", color: "purple", section: "messaging" },
+                        { icon: PieChart, label: "Points Management", color: "red", section: "points-management" },
                         { icon: Settings, label: "System Settings", color: "orange", section: "system" }
                     ].map((action, index) => (
                         <button 
@@ -354,6 +356,8 @@ case 'notes':
                 return <PageManagement />;
             case 'messaging':
                 return <AppwriteMessaging />;
+            case 'points-management':
+                return 				<PointsManagement />;
             default:
                 return renderDashboardContent();
         }
@@ -451,6 +455,7 @@ case 'notes':
                                                 { key: 'team', label: 'Team Management', icon: UserCheck },
                                                 { key: 'pages', label: 'Page Management', icon: Globe },
                                                 { key: 'messaging', label: 'Messaging', icon: MessageSquare },
+                                                { key: 'points-management', label: 'Points Management', icon: PieChart },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
                                                 const active = activeSection === item.key;
@@ -537,7 +542,9 @@ case 'notes':
                     {/* Main Content Area */}
                     <div className="flex-1 min-h-screen lg:ml-0">
                         <div className="overflow-y-auto">
-                            {renderContent()}
+                            <div className="p-4 md:p-6 lg:p-8">
+                                {renderContent()}
+                            </div>
                         </div>
                     </div>
                 </div>

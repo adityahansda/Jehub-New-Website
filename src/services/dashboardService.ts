@@ -3,7 +3,6 @@ import { Query } from 'appwrite';
 
 export interface DashboardStats {
     // User Stats
-    totalPoints: number;
     notesUploaded: number;
     notesDownloaded: number;
     currentRank: number;
@@ -105,7 +104,6 @@ export class DashboardService {
     // Return mock dashboard data for development/fallback
     private getMockDashboardStats(): DashboardStats {
         return {
-            totalPoints: 1250,
             notesUploaded: 24,
             notesDownloaded: 156,
             requestsFulfilled: 12,
@@ -238,13 +236,13 @@ export class DashboardService {
         );
 
         // Calculate points
-        const totalPoints = userProfile.totalPoints || 0;
         const weeklyPoints = weeklyActivities.reduce((sum, activity) => sum + (activity.points || 0), 0);
         const monthlyPoints = monthlyActivities.reduce((sum, activity) => sum + (activity.points || 0), 0);
 
-        // Calculate level and points to next level
-        const level = Math.floor(totalPoints / 250) + 1;
-        const pointsToNextLevel = 250 - (totalPoints % 250);
+        // Calculate level based on points field
+        const userPoints = userProfile.points || 0;
+        const level = Math.floor(userPoints / 250) + 1;
+        const pointsToNextLevel = 250 - (userPoints % 250);
 
         // Calculate downloads
         const weeklyDownloads = weeklyActivities.filter(activity => activity.activityType === 'download').length;
@@ -260,11 +258,10 @@ export class DashboardService {
         const helpedStudents = userNotes.reduce((sum, note) => sum + (note.downloads || 0), 0);
 
         // Calculate achievements (simplified for now)
-        const completedAchievements = Math.floor(totalPoints / 100);
+        const completedAchievements = Math.floor(userPoints / 100);
         const totalAchievements = 12; // Fixed total for now
 
         return {
-            totalPoints,
             notesUploaded: userProfile.notesUploaded || 0,
             notesDownloaded: userProfile.notesDownloaded || 0,
             currentRank: userProfile.rank || 0,
@@ -357,7 +354,7 @@ export class DashboardService {
             const response = await databases.listDocuments(
                 DATABASE_ID,
                 USERS_COLLECTION_ID,
-                [Query.orderDesc('totalPoints')]
+                [Query.orderDesc('points')]
             );
 
             const userIndex = response.documents.findIndex(user => user.email === userEmail);
@@ -375,7 +372,6 @@ export class DashboardService {
             if (!userProfile) throw new Error('User profile not found');
 
             const updateData = {
-                totalPoints: stats.totalPoints,
                 notesUploaded: stats.notesUploaded,
                 notesDownloaded: stats.notesDownloaded,
                 requestsFulfilled: stats.requestsFulfilled,

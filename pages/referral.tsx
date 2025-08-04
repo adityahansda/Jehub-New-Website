@@ -9,7 +9,7 @@ interface ReferralStats {
   totalReferrals: number;
   completedReferrals: number;
   pendingReferrals: number;
-  totalPointsEarned: number;
+  pointsEarned: number;
   conversionRate: number;
   referrals: any[];
 }
@@ -17,7 +17,7 @@ interface ReferralStats {
 const ReferralDashboard: React.FC = () => {
   const router = useRouter();
   const { user, loading, isVerified, userProfile } = useAuth();
-  const [userPoints, setUserPoints] = useState<UserPoints>({ totalPoints: 0, availablePoints: 0, pointsSpent: 0, totalReferrals: 0 });
+  const [userPoints, setUserPoints] = useState<UserPoints>({ points: 0, availablePoints: 0, pointsSpent: 0, totalReferrals: 0 });
   const [referralStats, setReferralStats] = useState<ReferralStats | null>(null);
   const [transactions, setTransactions] = useState<PointsTransaction[]>([]);
   const [referralCode, setReferralCode] = useState<string>('');
@@ -300,7 +300,7 @@ const ReferralDashboard: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Earned</p>
-                  <p className="text-2xl font-bold text-green-600">{userPoints.totalPoints}</p>
+                  <p className="text-2xl font-bold text-green-600">{userPoints.points}</p>
                 </div>
               </div>
             </div>
