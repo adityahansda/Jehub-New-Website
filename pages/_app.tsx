@@ -5,6 +5,7 @@ import Layout from '../src/components/Layout'
 import { NavigationProvider } from '../src/contexts/NavigationContext'
 import { AuthProvider } from '../src/contexts/AuthContext'
 import { ThemeProvider } from '../src/contexts/ThemeContext'
+import { BanProvider } from '../src/contexts/BanContext'
 import { useRouter } from 'next/router'
 import { DefaultSeo } from 'next-seo'
 import SEO from '../next-seo.config'
@@ -61,17 +62,19 @@ export default function App({ Component, pageProps }: AppProps) {
       
       <ThemeProvider>
         <AuthProvider>
-          <NavigationProvider>
-            <DefaultSeo {...SEO} />
-            <ToastContainer />
-            {shouldUseLayout ? (
-              <Layout>
+          <BanProvider>
+            <NavigationProvider>
+              <DefaultSeo {...SEO} />
+              <ToastContainer />
+              {shouldUseLayout ? (
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              ) : (
                 <Component {...pageProps} />
-              </Layout>
-            ) : (
-              <Component {...pageProps} />
-            )}
-          </NavigationProvider>
+              )}
+            </NavigationProvider>
+          </BanProvider>
         </AuthProvider>
       </ThemeProvider>
     </>

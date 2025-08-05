@@ -27,8 +27,6 @@ export interface BannedDevice {
   bannedBy: string;
   bannedAt: string;
   isActive: boolean;
-  userAgent?: string;
-  notes?: string;
   $createdAt?: string;
   $updatedAt?: string;
 }
@@ -251,32 +249,82 @@ class DeviceTrackingService {
   }
 
   // Ban device by IP
-  async banDevice(ipAddress: string, reason: string, bannedBy: string, userAgent?: string, notes?: string): Promise<void> {
+  async banDevice(ipAddress: string, reason: string, bannedBy: string): Promise<void> {
     try {
-      await databases.createDocument(
+      // Validate inputs
+      if (!ipAddress || !reason || !bannedBy) {
+        throw new Error('Missing required fields: ipAddress, reason, or bannedBy');
+      }
+
+      // Check if device is already banned
+      const existingBan = await databases.listDocuments(
+        this.DATABASE_ID,
+        this.BANNED_DEVICES_COLLECTION,
+        [
+          Query.equal('ipAddress', ipAddress),
+          Query.equal('isActive', true),
+          Query.limit(1)
+        ]
+      );
+
+      if (existingBan.documents.length > 0) {
+        throw new Error(`Device with IP ${ipAddress} is already banned`);
+      }
+
+      // Create ban record with required fields only
+      const banData = {
+        ipAddress: String(ipAddress),
+        reason: String(reason),
+        bannedBy: String(bannedBy),
+        bannedAt: new Date().toISOString(),
+        isActive: true
+      };
+
+      console.log('Creating ban document with data:', banData);
+      
+      const result = await databases.createDocument(
         this.DATABASE_ID,
         this.BANNED_DEVICES_COLLECTION,
         ID.unique(),
-        {
-          ipAddress,
-          reason,
-          bannedBy,
-          bannedAt: new Date().toISOString(),
-          isActive: true,
-          userAgent: userAgent || '',
-          notes: notes || ''
-        }
+        banData
       );
-    } catch (error) {
-      console.error('Error banning device:', error);
-      throw new Error('Failed to ban device');
+
+      console.log('Device banned successfully:', result.$id);
+    } catch (error: any) {
+      console.error('Error banning device:', {
+        error: error.message,
+        code: error.code,
+        type: error.type,
+        ipAddress,
+        reason,
+        bannedBy
+      });
+      
+      // Provide more specific error messages
+      if (error.message?.includes('already banned')) {
+        throw new Error(error.message);
+      } else if (error.code === 404) {
+        throw new Error('Database or collection not found. Please check configuration.');
+      } else if (error.code === 401) {
+        throw new Error('Unauthorized access. Please check API keys.');
+      } else if (error.code === 400) {
+        throw new Error(`Invalid data provided: ${error.message}`);
+      } else {
+        throw new Error(`Failed to ban device: ${error.message || 'Unknown error'}`);
+      }
     }
   }
 
   // Unban device
   async unbanDevice(banId: string): Promise<void> {
     try {
-      await databases.updateDocument(
+      if (!banId) {
+        throw new Error('Ban ID is required');
+      }
+
+      console.log('Unbanning device with ID:', banId);
+      
+      const result = await databases.updateDocument(
         this.DATABASE_ID,
         this.BANNED_DEVICES_COLLECTION,
         banId,
@@ -285,9 +333,26 @@ class DeviceTrackingService {
           unbannedAt: new Date().toISOString()
         }
       );
-    } catch (error) {
-      console.error('Error unbanning device:', error);
-      throw new Error('Failed to unban device');
+
+      console.log('Device unbanned successfully:', result.$id);
+    } catch (error: any) {
+      console.error('Error unbanning device:', {
+        error: error.message,
+        code: error.code,
+        type: error.type,
+        banId
+      });
+      
+      // Provide more specific error messages
+      if (error.code === 404) {
+        throw new Error('Ban record not found or database/collection not found.');
+      } else if (error.code === 401) {
+        throw new Error('Unauthorized access. Please check API keys.');
+      } else if (error.code === 400) {
+        throw new Error(`Invalid ban ID or data: ${error.message}`);
+      } else {
+        throw new Error(`Failed to unban device: ${error.message || 'Unknown error'}`);
+      }
     }
   }
 

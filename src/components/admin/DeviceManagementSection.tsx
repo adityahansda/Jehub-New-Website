@@ -56,9 +56,7 @@ const DeviceManagementSection: React.FC = () => {
       await deviceTrackingService.banDevice(
         deviceToBan.ipAddress,
         banReason,
-        'Admin', // You can get the current admin's name from auth context
-        deviceToBan.userAgent,
-        banNotes
+        'Admin' // You can get the current admin's name from auth context
       );
 
       // Refresh data
@@ -225,17 +223,9 @@ const DeviceManagementSection: React.FC = () => {
             <tr key={device.$id || index} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm font-medium text-gray-900">{device.ipAddress}</div>
-                {device.userAgent && (
-                  <div className="text-sm text-gray-500" title={device.userAgent}>
-                    {formatUserAgent(device.userAgent)}
-                  </div>
-                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">{device.reason}</div>
-                {device.notes && (
-                  <div className="text-sm text-gray-500">{device.notes}</div>
-                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 {new Date(device.bannedAt).toLocaleString()}
