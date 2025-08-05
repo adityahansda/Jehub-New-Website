@@ -15,6 +15,7 @@ import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, U
 import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
 import ProfilePicture from './ProfilePicture';
+import AuthLoader from './AuthLoader';
 
 // Utility function to check if user is eligible to upload notes
 const isEligibleForNotesUpload = (userRole: string | undefined): boolean => {
@@ -29,7 +30,7 @@ const Navigation = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter();
-  const { user, userProfile, isVerified, logout } = useAuth();
+  const { user, userProfile, isVerified, loading, logout } = useAuth();
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: BookOpen },
@@ -173,7 +174,9 @@ const Navigation = () => {
 
               {/* Authentication / User Profile Section */}
               <div className="flex items-center">
-                {user && isVerified ? (
+                {loading ? (
+                  <AuthLoader className="px-3 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 transition-all duration-300" />
+                ) : user && isVerified ? (
                   <div className="relative">
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -184,47 +187,32 @@ const Navigation = () => {
                       <ChevronDown className={`h-4 w-4 text-white/70 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {/* Dropdown Menu */}
                     {isProfileOpen && (
                       <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
                         <div className="p-4 border-b border-white/10">
                           <p className="text-white font-medium">{userProfile?.name || user?.name}</p>
                           <p className="text-white/60 text-sm">{user?.email}</p>
-                          {/* Debug: Show user role */}
                           {process.env.NODE_ENV === 'development' && userProfile?.role && (
                             <p className="text-yellow-400 text-xs mt-1">Role: {userProfile.role}</p>
                           )}
                         </div>
                         <div className="py-2">
-                          <button
-                            onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
-                          >
+                          <button onClick={() => handleProfileClick(getDashboardUrl(userProfile))} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
                             <GraduationCap className="h-5 w-5" />
                             <span>Dashboard</span>
                           </button>
-                          {/* Conditionally show Upload Notes button based on user role */}
                           {isEligibleForNotesUpload(userProfile?.role) && (
-                            <button
-                              onClick={() => handleProfileClick('/notes/upload')}
-                              className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
-                            >
+                            <button onClick={() => handleProfileClick('/notes/upload')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
                               <Upload className="h-5 w-5" />
                               <span>Upload Notes</span>
                             </button>
                           )}
-                          <button
-                            onClick={() => handleProfileClick('/referral')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
-                          >
+                          <button onClick={() => handleProfileClick('/referral')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
                             <Gift className="h-5 w-5" />
                             <span>Referral Dashboard</span>
                           </button>
                           <div className="border-t border-white/10 my-2"></div>
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all duration-300"
-                          >
+                          <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all duration-300">
                             <X className="h-5 w-5" />
                             <span>Logout</span>
                           </button>
@@ -233,18 +221,17 @@ const Navigation = () => {
                     )}
                   </div>
                 ) : (
-                  <Link
-                    href="/login"
-                    className="group relative px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/25 hover:scale-105"
-                  >
-                    <span className="relative z-10">Login</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </Link>
+                  <div className="flex items-center space-x-2">
+                    <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors duration-200">
+                      Login
+                    </Link>
+                    <Link href="/auth/register" className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
+                      Sign Up
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
-
           </div>
         </div>
       </header>
@@ -353,7 +340,18 @@ const Navigation = () => {
                 <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
                 <div className="mt-6">
-                  {user && isVerified ? (
+                  {loading ? (
+                    // Loading state for mobile menu
+                    <div className="flex items-center space-x-3 px-4 py-3 bg-white/5 rounded-xl">
+                      <div className="animate-pulse flex items-center space-x-3 w-full">
+                        <div className="rounded-full bg-white/10 h-10 w-10"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-white/10 rounded w-3/4"></div>
+                          <div className="h-2 bg-white/10 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : user && isVerified ? (
                     <div className="space-y-3">
                       {/* User Info */}
                       <div className="flex items-center space-x-3 px-4 py-3 bg-white/5 rounded-xl">
