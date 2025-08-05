@@ -16,6 +16,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
 import ProfilePicture from './ProfilePicture';
 
+// Utility function to check if user is eligible to upload notes
+const isEligibleForNotesUpload = (userRole: string | undefined): boolean => {
+  if (!userRole) return false;
+  const eligibleRoles = ['admin', 'manager', 'intern', 'team'];
+  return eligibleRoles.includes(userRole.toLowerCase());
+};
+
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -196,13 +203,16 @@ const Navigation = () => {
                             <GraduationCap className="h-5 w-5" />
                             <span>Dashboard</span>
                           </button>
-                          <button
-                            onClick={() => handleProfileClick('/notes/upload')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
-                          >
-                            <Upload className="h-5 w-5" />
-                            <span>Upload Notes</span>
-                          </button>
+                          {/* Conditionally show Upload Notes button based on user role */}
+                          {isEligibleForNotesUpload(userProfile?.role) && (
+                            <button
+                              onClick={() => handleProfileClick('/notes/upload')}
+                              className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
+                            >
+                              <Upload className="h-5 w-5" />
+                              <span>Upload Notes</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => handleProfileClick('/referral')}
                             className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300"
@@ -363,13 +373,16 @@ const Navigation = () => {
                           <GraduationCap className="h-5 w-5" />
                           <span>Dashboard</span>
                         </button>
-                        <button
-                          onClick={() => handleProfileClick('/notes/upload')}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
-                        >
-                          <Upload className="h-5 w-5" />
-                          <span>Upload Notes</span>
-                        </button>
+                        {/* Conditionally show Upload Notes button based on user role */}
+                        {isEligibleForNotesUpload(userProfile?.role) && (
+                          <button
+                            onClick={() => handleProfileClick('/notes/upload')}
+                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                          >
+                            <Upload className="h-5 w-5" />
+                            <span>Upload Notes</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleProfileClick('/referral')}
                           className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
