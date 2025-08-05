@@ -485,6 +485,64 @@ const Home = () => {
           </div>
         </section>
 
+        {/* Wishlist Section with Countdown */}
+        <section className="py-20 bg-[#0e0e10] relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 -left-40 w-80 h-80 bg-gradient-to-r from-[#9333ea]/10 to-[#3b82f6]/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-5xl mx-auto text-center">
+              <div
+                data-reveal="wishlist-section"
+                className={`transition-all duration-1000 transform ${revealedElements.has('wishlist-section')
+                  ? 'opacity-100 translate-y-0 scale-100'
+                  : 'opacity-0 translate-y-10 scale-95'
+                  }`}
+              >
+                <div className="w-20 h-20 bg-gradient-to-r from-[#ef4444] to-[#f97316] rounded-full flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 hover:scale-110">
+                  <Gift className="h-10 w-10 text-white" />
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+                  Wishlist & Countdown to Launch
+                </h2>
+
+                {/* Countdown Display */}
+                <div className="flex justify-center space-x-6 mb-8">
+                  <div className="text-center">
+                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.days}</span>
+                    <span className="text-sm sm:text-lg text-[#d1d5db]">Days</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.hours}</span>
+                    <span className="text-sm sm:text-lg text-[#d1d5db]">Hours</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.minutes}</span>
+                    <span className="text-sm sm:text-lg text-[#d1d5db]">Minutes</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.seconds}</span>
+                    <span className="text-sm sm:text-lg text-[#d1d5db]">Seconds</span>
+                  </div>
+                </div>
+
+                <p className="text-xl text-[#d1d5db] mb-8">
+                  Be the first to know when JEHUB launches and secure your spot on our wishlist!
+                </p>
+
+                <button
+                  onClick={handleWishlistNavigation}
+                  className="px-8 py-4 bg-gradient-to-r from-[#ef4444] via-[#f97316] to-[#f59e0b] text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                >
+                  Join the Wishlist Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* About JEHUB with Reveal Animation */}
         <section className="py-20 bg-[#0e0e10] relative overflow-hidden">
           {/* Animated background elements */}
@@ -743,66 +801,6 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Beta Wishlist Section */}
-        <section id="beta" className="py-20 bg-gradient-to-br from-[#1c1c1f] to-[#0e0e10] relative overflow-hidden">
-          {/* Background effects */}
-          <div className="absolute inset-0">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-r from-[#9333ea]/20 to-transparent rounded-full blur-3xl"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-gradient-to-r from-[#3b82f6]/20 to-transparent rounded-full blur-3xl"></div>
-          </div>
-
-          <div className="w-full flex items-center justify-center px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              <div
-                data-reveal="beta-section"
-                className={`transition-all duration-1000 transform ${revealedElements.has('beta-section')
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-10'
-                  }`}
-              >
-                {/* Glass morphism container */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-12 shadow-2xl">
-                  <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                    🚀 Join the Beta Wishlist
-                  </h2>
-                  <p className="text-xl text-[#d1d5db] mb-8 max-w-3xl mx-auto">
-                    Be among the first {displayCount}+ students to experience JEHUB when we launch!
-                  </p>
-
-                  {/* Countdown Timer */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto">
-                    {[
-                      { value: countdown.days, label: 'Days' },
-                      { value: countdown.hours, label: 'Hours' },
-                      { value: countdown.minutes, label: 'Minutes' },
-                      { value: countdown.seconds, label: 'Seconds' }
-                    ].map((item, index) => (
-                      <div key={item.label} className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-                        <div className="text-3xl sm:text-4xl font-bold text-white mb-1">
-                          {String(item.value).padStart(2, '0')}
-                        </div>
-                        <div className="text-sm text-[#d1d5db] uppercase tracking-wide">
-                          {item.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleWishlistNavigation}
-                    className="px-8 py-4 bg-gradient-to-r from-[#9333ea] to-[#3b82f6] text-white rounded-xl font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-                  >
-                    🚀 Join Beta Wishlist
-                  </button>
-
-                  <p className="text-sm text-[#d1d5db]/80 mt-4">
-                    Launch countdown • Early access guaranteed
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Join the Community */}
         <section id="community" className="py-20 bg-[#0e0e10] relative overflow-hidden">

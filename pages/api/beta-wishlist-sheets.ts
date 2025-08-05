@@ -27,6 +27,7 @@ interface WishlistEntry {
   name: string;
   branch: string;
   yearsOfStudy: string;
+  degree: string;
   collegeName: string;
   email: string;
   telegramId: string;
@@ -40,7 +41,7 @@ async function checkEmailExists(sheets: any, email: string): Promise<boolean> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!E:E`, // Column E contains emails
+      range: `${SHEET_NAME}!F:F`, // Column F contains emails (after adding degree)
     });
 
     const rows = response.data.values || [];
@@ -55,21 +56,37 @@ async function checkEmailExists(sheets: any, email: string): Promise<boolean> {
 async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
   // First, ensure the sheet has headers
   try {
-    const headerResponse = await sheets.spreadsheets.values.get({
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A1:J1`,
+      range: `${SHEET_NAME}!A1:L1`,
     });
 
-    if (!headerResponse.data.values || headerResponse.data.values.length === 0) {
+    if (!response.data.values || response.data.values.length === 0) {
       // Add headers if they don't exist
         await sheets.spreadsheets.values.update({
           spreadsheetId: SPREADSHEET_ID,
-          range: `${SHEET_NAME}!A1:J1`,
+          range: `${SHEET_NAME}!A1:L1`,
           valueInputOption: 'RAW',
-          resource: {
-            values: [['Name', 'Branch', 'Years of Study', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User']]
+          requestBody: {
+            values: [['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden']]
           }
         });
+    } else {
+      // Check if headers need to be updated (if degree column is missing)
+      const currentHeaders = response.data.values[0] || [];
+      const expectedHeaders = ['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden'];
+      
+      if (currentHeaders.length < expectedHeaders.length || !currentHeaders.includes('Degree')) {
+        console.log('Updating headers to include Degree column...');
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `${SHEET_NAME}!A1:L1`,
+          valueInputOption: 'RAW',
+          requestBody: {
+            values: [expectedHeaders]
+          }
+        });
+      }
     }
   } catch (error) {
     console.error('Error setting up headers:', error);
@@ -80,20 +97,22 @@ async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
     data.name,
     data.branch,
     data.yearsOfStudy,
+    data.degree,
     data.collegeName,
     data.email,
     data.telegramId,
     data.referCode || '',
     data.createdAt,
     data.status || 'pending',
-    'false' // Default premium status to false
+    'false', // Default premium status to false
+    'false' // Default hidden status to false
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:J`,
+      range: `${SHEET_NAME}!A:L`,
     valueInputOption: 'RAW',
-    resource: {
+    requestBody: {
       values: [rowData]
     }
   });
@@ -104,7 +123,7 @@ async function getAllEntries(sheets: any): Promise<any[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:J`,
+      range: `${SHEET_NAME}!A:L`,
     });
 
     const rows = response.data.values || [];
@@ -117,13 +136,15 @@ async function getAllEntries(sheets: any): Promise<any[]> {
       name: row[0] || '',
       branch: row[1] || '',
       yearsOfStudy: row[2] || '',
-      collegeName: row[3] || '',
-      email: row[4] || '',
-      telegramId: row[5] || '',
-      referCode: row[6] || '',
-      createdAt: row[7] || '',
-      status: row[8] || 'pending',
-      isPremium: (row[9] || 'false').toLowerCase() === 'true'
+      degree: row[3] || '',
+      collegeName: row[4] || '',
+      email: row[5] || '',
+      telegramId: row[6] || '',
+      hidden: (row[11] || 'false').toLowerCase() === 'true',
+      referCode: row[7] || '',
+      createdAt: row[8] || '',
+      status: row[9] || 'pending',
+      isPremium: (row[10] || 'false').toLowerCase() === 'true'
     }));
   } catch (error) {
     console.error('Error getting all entries:', error);
@@ -138,6 +159,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name,
         branch,
         yearsOfStudy,
+        degree,
         collegeName,
         email,
         telegramId,
@@ -145,10 +167,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }: WishlistEntry = req.body;
 
       // Validate required fields
-      if (!name || !branch || !yearsOfStudy || !collegeName || !email || !telegramId) {
+      if (!name || !branch || !yearsOfStudy || !degree || !collegeName || !email || !telegramId) {
         return res.status(400).json({
           error: 'Missing required fields',
-          required: ['name', 'branch', 'yearsOfStudy', 'collegeName', 'email', 'telegramId']
+          required: ['name', 'branch', 'yearsOfStudy', 'degree', 'collegeName', 'email', 'telegramId']
         });
       }
 
@@ -220,6 +242,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: name.trim(),
         branch: branch.trim(),
         yearsOfStudy: yearsOfStudy.trim(),
+        degree: degree.trim(),
         collegeName: collegeName.trim(),
         email: email.toLowerCase().trim(),
         telegramId: telegramId.trim(),
@@ -270,6 +293,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         details: error.message
       });
     }
+  } else if (req.method === 'PUT') {
+    // Toggle user hidden status based on email verification
+    const { email, hide, userId } = req.body;
+    if (!email || typeof hide !== 'boolean' || typeof userId !== 'number') {
+      return res.status(400).json({ error: 'Invalid request payload' });
+    }
+
+    try {
+      const sheets = await getGoogleSheetsClient();
+      const entries = await getAllEntries(sheets);
+
+      const userEntry = entries.find(entry => entry.id === userId && entry.email.toLowerCase() === email.toLowerCase());
+
+      if (!userEntry) {
+        return res.status(404).json({ error: 'User not found or email does not match' });
+      }
+
+      const newValue = hide ? 'true' : 'false';
+      const updateRange = `${SHEET_NAME}!L${userEntry.id}`;
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: updateRange,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[newValue]] }
+      });
+
+      res.status(200).json({ message: `User visibility successfully ${hide ? 'hidden' : 'unhidden'}` });
+    } catch (error: any) {
+      console.error('Error toggling user hidden status:', error);
+      res.status(500).json({ error: 'Failed to update user hidden status', details: error.message });
+    }
   } else if (req.method === 'GET') {
     // Get all wishlist entries (for admin use)
     try {
@@ -314,7 +369,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
   } else {
-    res.setHeader('Allow', ['POST', 'GET']);
+    res.setHeader('Allow', ['POST', 'GET', 'PUT']);
     res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 }

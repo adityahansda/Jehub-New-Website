@@ -2,15 +2,83 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/router';
 import Navigation from '../src/components/Navigation';
 import Footer from '../src/components/Footer';
 
+// Comprehensive list of colleges and institutes
+const COLLEGES_LIST = {
+  'Government Institutes (Diploma)': [
+    'GOVERNMENT POLYTECHNIC NIRSA, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, ADITYAPUR',
+    'GOVERNMENT POLYTECHNIC, BHAGA, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, DUMKA',
+    'GOVERNMENT POLYTECHNIC, JAGANNATHPUR',
+    'GOVERNMENT POLYTECHNIC, KHARSAWAN',
+    'GOVERNMENT POLYTECHNIC, KHUTRI, BOKARO',
+    'GOVERNMENT POLYTECHNIC, KODERMA',
+    'GOVERNMENT POLYTECHNIC, LATEHAR'
+  ],
+  'Government Institutes (Other)': [
+    'B.I.T , SINDRI , DHANBAD',
+    'National Institute of Foundry & Forge Technology, Hatia'
+  ],
+  'Private Institutes (Diploma)': [
+    'AL-KABIR POLYTECHNIC, JAMSHEDPUR',
+    'BITT POLYTECHNIC, RANCHI',
+    'CAMBRIDGE INSTITUTE OF POLYTECHNIC, RANCHI',
+    'CENTRE FOR BIOINFORMATICS, RANCHI',
+    'GIRIJA INSTITUTE OF POLYTECHNIC, RAMGARH',
+    'INSTITUTE OF SCIENCE AND MANAGEMENT, PUNDAG, RANCHI',
+    'K.K. COLLEGE OF ENGINEERING & MANAGEMENT, DHANBAD',
+    'K.K. POLYTECHNIC, DHANBAD',
+    'KHANDOLI INSTITUTE OF TECHNOLOGY, GIRIDIH',
+    'NETAJI SUBHAS INSTITUTE OF HOTEL MANAGEMENT & TOURISM'
+  ],
+  'Private Institutes (B.Tech)': [
+    'B.A COLLEGE OF ENGINEERING & TECHNOLOGY, JAMSHEDPUR',
+    'CAMBRIDGE INSTITUTE OF TECHNOLOGY, TATISILWAI, RANCHI',
+    'D.A.V INSTITUTE OF ENGINEERING & TECHNOLOGY, PALAMAU',
+    'GURUGOVIND SINGH EDUCATIONAL SOCIETY TECHNICAL CAMPUS, BOKARO',
+    'K.K. COLLEGE OF ENGINEERING & MANAGEMENT, DHANBAD',
+    'MARYLAND INSTITUTE OF TECHNOLOGY & MANAGEMENT, JAMSHEDPUR',
+    'NILAI EDUCATION TRUSTS GROUP OF INSTITUTIONS, THAKURGAON, BURMU, RANCHI',
+    'R.T.C INSTITUTE OF TECHNOLOGY, RANCHI',
+    'R.V.S COLLEGE OF ENGINEERING & TECHNOLOGY, JAMSHEDPUR',
+    'RAMGOVIND INSTITUTE OF TECHNOLOGY, KODERMA'
+  ],
+  'Private Institutes (PG)': [
+    'BIT Sindri, Dhanbad',
+    'Cambridge Institute of Technology, Tatisilwai, Ranchi',
+    'Guru Govind Singh Educational Society, Bokaro',
+    'RVS College of Engineering & Technology'
+  ],
+  'PPP Institutes (Diploma)': [
+    'BEHARAGORA POLYTECHNIC, BEHARAGORA',
+    'CHANDIL POLYTECHNIC, CHANDIL',
+    'GARHWA POLYTECHNIC, GARHWA',
+    'GOLA POLYTECHNIC, GOLA',
+    'MADHUPUR POLYTECHNIC, MADHUPUR',
+    'PAKUR POLYTECHNIC',
+    'SILLI POLYTECHNIC'
+  ],
+  'PPP Institutes (B.Tech)': [
+    'CHAIBASA ENGINEERING COLLEGE',
+    'DUMKA ENGINEERING COLLEGE',
+    'RAMGARH ENGINEERING COLLEGE'
+  ]
+};
+
 const WishlistRegistration: React.FC = () => {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: '',
     branch: '',
     yearsOfStudy: '',
+    degree: '',
     collegeName: '',
+    otherCollege: '',
     email: '',
     telegramId: '',
     referCode: ''
@@ -24,6 +92,7 @@ const WishlistRegistration: React.FC = () => {
     name: 'Full Name',
     branch: 'Branch/Department',
     yearsOfStudy: 'Year of Study',
+    degree: 'Degree',
     collegeName: 'College Name',
     email: 'Email Address',
     telegramId: 'Telegram ID',
@@ -47,7 +116,13 @@ const WishlistRegistration: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post('/api/beta-wishlist-sheets', form);
+      // Prepare the data with the correct college name
+      const submitData = {
+        ...form,
+        collegeName: form.collegeName === 'other' ? form.otherCollege : form.collegeName
+      };
+      
+      const response = await axios.post('/api/beta-wishlist-sheets', submitData);
       
       let message = response.data.message;
       // Add referral code success message if applicable
@@ -56,11 +131,14 @@ const WishlistRegistration: React.FC = () => {
       }
       
       setMessage(message);
+      router.push('/wishlist-users');
       setForm({
         name: '',
         branch: '',
         yearsOfStudy: '',
+        degree: '',
         collegeName: '',
+        otherCollege: '',
         email: '',
         telegramId: '',
         referCode: ''
@@ -181,22 +259,29 @@ const WishlistRegistration: React.FC = () => {
                   </select>
                 </div>
 
-                {/* College Name */}
+                {/* Degree */}
                 <div>
-                  <label htmlFor="collegeName" className="block text-sm font-medium text-gray-300 mb-2">
-                    {fieldLabels.collegeName} *
+                  <label htmlFor="degree" className="block text-sm font-medium text-gray-300 mb-2">
+                    {fieldLabels.degree} *
                   </label>
-                  <input
-                    type="text"
-                    id="collegeName"
-                    name="collegeName"
-                    value={form.collegeName}
+                  <select
+                    id="degree"
+                    name="degree"
+                    value={form.degree}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                    placeholder="Enter your college name"
-                  />
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="" className="bg-gray-700 text-white">Select Degree</option>
+                    <option value="B.Tech" className="bg-gray-700 text-white">B.Tech</option>
+                    <option value="Diploma" className="bg-gray-700 text-white">Diploma</option>
+                    <option value="M.Tech" className="bg-gray-700 text-white">M.Tech</option>
+                    <option value="MBA" className="bg-gray-700 text-white">MBA</option>
+                    <option value="MCA" className="bg-gray-700 text-white">MCA</option>
+                    <option value="Other" className="bg-gray-700 text-white">Other</option>
+                  </select>
                 </div>
+
 
                 {/* Email */}
                 <div>
@@ -231,6 +316,49 @@ const WishlistRegistration: React.FC = () => {
                     placeholder="@yourusername"
                   />
                 </div>
+              </div>
+
+              {/* College/University - Full Width */}
+              <div>
+                <label htmlFor="collegeName" className="block text-sm font-medium text-gray-300 mb-2">
+                  {fieldLabels.collegeName} *
+                </label>
+                <select
+                  id="collegeName"
+                  name="collegeName"
+                  value={form.collegeName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">Select your College/Institute</option>
+                  {Object.entries(COLLEGES_LIST).map(([category, colleges]) => (
+                    <optgroup key={category} label={category}>
+                      {colleges.map((college) => (
+                        <option key={college} value={college}>
+                          {college}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                  <option value="other">Other (Not Listed)</option>
+                </select>
+                {form.collegeName === 'other' && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Please specify your college/institute name
+                    </label>
+                    <input
+                      type="text"
+                      name="otherCollege"
+                      value={form.otherCollege || ''}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                      placeholder="Enter your college/institute name"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Refer Code */}
