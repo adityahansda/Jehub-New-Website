@@ -41,6 +41,7 @@ const Navigation = () => {
     { path: '/groups', label: 'Join Groups', icon: Users },
     { path: '/leaderboard', label: 'Leaderboard', icon: Star },
     { path: '/about', label: 'About Us', icon: Info },
+    { path: '/wishlist-users', label: 'Wishlist Users', icon: Users }
   ], []);
 
 
@@ -133,6 +134,7 @@ const Navigation = () => {
                   { href: '/notes-download', label: 'Notes Download', icon: Download },
                   { href: '/notifications', label: 'Notifications', icon: Bell },
                   { href: '/groups', label: 'Join Groups', icon: Users },
+                  { href: '/wishlist-users', label: 'Wishlist Users', icon: Users },
                   { href: '/about', label: 'About Us', icon: Info }
                 ].map((item, index) => {
                   const IconComponent = item.icon;
