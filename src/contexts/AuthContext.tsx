@@ -30,15 +30,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is logged in on app start
   useEffect(() => {
-    const timer = setTimeout(() => {
-      checkAuthStatus();
-    }, 100); // Small delay to prevent conflicts with OAuth flow
+    // Check if we're in OAuth callback flow
+    const isOAuthCallback = typeof window !== 'undefined' && 
+      (window.location.pathname.includes('/oauth') || 
+       window.location.search.includes('code=') ||
+       window.location.hash.includes('access_token'));
     
-    return () => clearTimeout(timer);
+    if (isOAuthCallback) {
+      // Add delay only for OAuth flows to prevent conflicts
+      const timer = setTimeout(() => {
+        checkAuthStatus();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // Check immediately for regular page loads
+      checkAuthStatus();
+    }
   }, []);
 
   const checkAuthStatus = async () => {
     try {
+      // First check if we have cached user data from cookies
+      let cachedUserData = null;
+      if (typeof window !== 'undefined') {
+        try {
+          const userCookie = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('user='));
+          if (userCookie) {
+            cachedUserData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+            // Set cached data immediately for faster UI response
+            if (cachedUserData) {
+              setUser({
+                $id: cachedUserData.$id,
+                name: cachedUserData.name,
+                email: cachedUserData.email,
+                emailVerification: true, // Assume verified from cache
+                prefs: {} // Default empty prefs
+              });
+              setIsVerified(true);
+              setUserProfile({ 
+                name: cachedUserData.name, 
+                email: cachedUserData.email, 
+                role: cachedUserData.role 
+              } as UserProfile);
+            }
+          }
+        } catch (error) {
+          console.log('Error parsing cached user data:', error);
+        }
+      }
+
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
       if (currentUser) {
