@@ -1,4 +1,5 @@
 import { databases } from '../lib/appwrite';
+import { Query } from 'appwrite';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!;
@@ -54,7 +55,7 @@ export class DatabaseChecker {
     if (DATABASE_ID && USERS_COLLECTION_ID) {
       try {
         // Check users collection by trying to list documents (limited to 1)
-        await databases.listDocuments(DATABASE_ID, USERS_COLLECTION_ID, [], 1);
+        await databases.listDocuments(DATABASE_ID, USERS_COLLECTION_ID, [Query.limit(1)]);
         collectionStatus.users = true;
         console.log('✅ Users collection exists and is accessible');
       } catch (error) {
@@ -66,7 +67,7 @@ export class DatabaseChecker {
       if (POINTS_TRANSACTIONS_COLLECTION_ID) {
         try {
           // Check points transactions collection
-          await databases.listDocuments(DATABASE_ID, POINTS_TRANSACTIONS_COLLECTION_ID, [], 1);
+          await databases.listDocuments(DATABASE_ID, POINTS_TRANSACTIONS_COLLECTION_ID, [Query.limit(1)]);
           collectionStatus.pointsTransactions = true;
           console.log('✅ Points transactions collection exists and is accessible');
         } catch (error) {
@@ -79,7 +80,7 @@ export class DatabaseChecker {
       if (DOWNLOAD_REQUIREMENTS_COLLECTION_ID) {
         try {
           // Check download requirements collection
-          await databases.listDocuments(DATABASE_ID, DOWNLOAD_REQUIREMENTS_COLLECTION_ID, [], 1);
+          await databases.listDocuments(DATABASE_ID, DOWNLOAD_REQUIREMENTS_COLLECTION_ID, [Query.limit(1)]);
           collectionStatus.downloadRequirements = true;
           console.log('✅ Download requirements collection exists and is accessible');
         } catch (error) {
@@ -92,7 +93,7 @@ export class DatabaseChecker {
       if (REFERRALS_COLLECTION_ID) {
         try {
           // Check referrals collection
-          await databases.listDocuments(DATABASE_ID, REFERRALS_COLLECTION_ID, [], 1);
+          await databases.listDocuments(DATABASE_ID, REFERRALS_COLLECTION_ID, [Query.limit(1)]);
           collectionStatus.referrals = true;
           console.log('✅ Referrals collection exists and is accessible');
         } catch (error) {
@@ -131,7 +132,7 @@ export class DatabaseChecker {
       const userResponse = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,
-        [{ type: 'equal', attribute: 'email', values: [userEmail] }]
+[Query.equal('email', userEmail)]
       );
 
       if (userResponse.documents.length === 0) {

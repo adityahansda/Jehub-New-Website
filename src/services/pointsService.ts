@@ -490,11 +490,16 @@ export class PointsService {
         }
       }
       
-      console.log('User document updated successfully:', {
-        updatedAvailablePoints: updateResult.availablePoints,
-        updatedPointsSpent: updateResult.pointsSpent,
-        updatedNotesDownloaded: updateResult.notesDownloaded
-      });
+      if (updateResult) {
+        console.log('User document updated successfully:', {
+          updatedAvailablePoints: updateResult.availablePoints,
+          updatedPointsSpent: updateResult.pointsSpent,
+          updatedNotesDownloaded: updateResult.notesDownloaded
+        });
+      } else {
+        console.error('Update result is undefined - this should not happen');
+        throw new Error('Failed to update user document after retries');
+      }
 
       // Create transaction record
       console.log('Creating transaction record for spending...');
@@ -527,7 +532,7 @@ export class PointsService {
           description: `Failed download attempt: ${noteTitle}`,
           noteId,
           status: 'failed',
-          metadata: JSON.stringify({ error: error.message })
+          metadata: JSON.stringify({ error: error instanceof Error ? error.message : String(error) })
         });
       } catch (txError) {
         console.error('Could not create failed transaction record:', txError);
@@ -880,12 +885,17 @@ export class PointsService {
         }
       }
       
-      console.log('Transaction created successfully:', {
-        id: createdTransaction.$id,
-        type: createdTransaction.type,
-        points: createdTransaction.points,
-        status: createdTransaction.status
-      });
+      if (createdTransaction) {
+        console.log('Transaction created successfully:', {
+          id: createdTransaction.$id,
+          type: createdTransaction.type,
+          points: createdTransaction.points,
+          status: createdTransaction.status
+        });
+      } else {
+        console.error('Created transaction is undefined - this should not happen');
+        throw new Error('Failed to create transaction after retries');
+      }
       
       return createdTransaction;
     } catch (error) {

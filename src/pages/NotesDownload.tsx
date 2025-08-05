@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Search, Filter, Download, Eye, Calendar, User, Tag, CheckCircle, X, Heart, Share2, Grid, List, FileText, Coins, AlertTriangle } from 'lucide-react';
 import { generateNoteSlug } from '../utils/seo';
 import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '../utils/toast';
+import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { checkUrlStatus } from '../lib/pdfValidation';
@@ -80,7 +81,7 @@ const NotesDownload = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0 });
+  const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0, pointsSpent: 0 });
   const [pointsLoading, setPointsLoading] = useState(false);
   const [filters, setFilters] = useState({
     branch: '',
@@ -148,7 +149,7 @@ const NotesDownload = () => {
           setPointsLoading(false);
         }
       } else {
-        setUserPoints({ availablePoints: 0, points: 0 });
+        setUserPoints({ availablePoints: 0, points: 0, pointsSpent: 0 });
       }
     };
 
@@ -226,22 +227,32 @@ const NotesDownload = () => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
-    // Check download requirements
-    const requirement = noteRequirements[noteId];
-    const requiredPoints = requirement?.points || note.points || 0;
-    const isPointsRequired = requiredPoints > 0;
-
-    // If points are required and user is not authenticated
-if (isPointsRequired && !user) {
-showWarning('Please sign in to download this premium note. Premium notes require points to download. Redirecting to login page in 3 seconds...');
+    // Check if user is authenticated
+    if (!user) {
+      toast.error('Please sign in to download notes.', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        onClick: () => {
+          window.location.href = '/login';
+        }
+      });
       setTimeout(() => {
         window.location.href = '/login';
       }, 3000);
       return;
     }
 
+    // Check download requirements
+    const requirement = noteRequirements[noteId];
+    const requiredPoints = requirement?.points || note.points || 0;
+    const isPointsRequired = requiredPoints > 0;
+
     // If points are required, check if user has enough points
-    if (isPointsRequired && user && userPoints.availablePoints < requiredPoints) {
+    if (isPointsRequired && userPoints.availablePoints < requiredPoints) {
       const pointsNeeded = requiredPoints - userPoints.availablePoints;
       const earningSuggestions = [
         `Refer a friend: +50 pts`,
