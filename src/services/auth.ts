@@ -5,6 +5,7 @@ import { profilePictureService } from './profilePictureService';
 import { databases } from '../lib/appwrite';
 import { Query } from 'appwrite';
 import { generateUniqueUserId } from '../utils/userIdGenerator';
+import { deviceTrackingService } from './deviceTrackingService';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!;
@@ -22,6 +23,10 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const user = await account.get();
+
+      // Track device login
+      await deviceTrackingService.trackDeviceLogin(user.$id, user.email || '');
+
       return user as User;
     } catch (error) {
       console.log('No active session');

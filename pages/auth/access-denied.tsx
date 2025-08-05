@@ -7,6 +7,7 @@ import { getDashboardUrl } from '../../src/utils/dashboardRouter';
 const AccessDeniedPage: React.FC = () => {
   const router = useRouter();
   const { user, userProfile } = useAuth();
+  const { reason } = router.query;
 
   const handleGoHome = () => {
     router.push('/');
@@ -40,7 +41,19 @@ const AccessDeniedPage: React.FC = () => {
               </h3>
               
               <div className="mb-4">
-                {user ? (
+                {reason === 'ip_banned' ? (
+                  <div>
+                    <p className="text-red-700 mb-2">
+                      Your device has been banned from accessing this platform.
+                    </p>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                      <div className="text-sm text-red-700">
+                        <p className="font-medium mb-1">Reason: Device/IP Address Banned</p>
+                        <p>If you believe this is an error, please contact the administrators.</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : user ? (
                   <div>
                     <p className="text-red-700 mb-2">
                       You don&apos;t have permission to access this page.
@@ -73,7 +86,7 @@ const AccessDeniedPage: React.FC = () => {
               </div>
               
               <div className="flex flex-col space-y-2">
-                {user && (
+                {user && reason !== 'ip_banned' && (
                   <button
                     onClick={handleGoToDashboard}
                     className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

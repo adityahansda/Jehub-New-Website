@@ -1,8 +1,39 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { deviceTrackingService } from './src/services/deviceTrackingService';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Check if IP is banned (for all requests except static files and some API routes)
+  if (
+    !pathname.startsWith('/_next/') &&
+    !pathname.includes('.') &&
+    !pathname.startsWith('/api/ip') && // Don't block IP checking endpoint
+    !pathname.startsWith('/api/admin') // Don't block admin endpoints
+  ) {
+    try {
+      // Get client IP
+      const forwarded = request.headers.get('x-forwarded-for');
+      const realIP = request.headers.get('x-real-ip');
+      const cfConnectingIP = request.headers.get('cf-connecting-ip');
+      
+      const clientIP = cfConnectingIP || realIP || (forwarded ? forwarded.split(',')[0].trim() : request.ip || 'unknown');
+      
+      if (clientIP && clientIP !== 'unknown') {
+        const isBanned = await deviceTrackingService.isIPBanned(clientIP);
+        if (isBanned) {
+          // Redirect banned IPs to access denied page
+          const accessDeniedUrl = new URL('/auth/access-denied', request.url);
+          accessDeniedUrl.searchParams.set('reason', 'ip_banned');
+          return NextResponse.redirect(accessDeniedUrl);
+        }
+      }
+    } catch (error) {
+      // Log error but don't block request if IP checking fails
+      console.error('Error checking IP ban status:', error);
+    }
+  }
 
   // Define public pages that are accessible to everyone (without authentication)
   const publicPages = [

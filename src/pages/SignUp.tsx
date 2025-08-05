@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/auth';
 import { userService } from '../services/userService';
 import { pointsService } from '../services/pointsService';
+import { deviceTrackingService } from '../services/deviceTrackingService';
 import { NextSeo } from 'next-seo';
 import { AlertCircle, Check, User, Mail, Phone, GraduationCap, MessageCircle } from 'lucide-react';
 import SuccessToast from '../components/SuccessToast';
@@ -259,6 +260,9 @@ const SignUp: React.FC = () => {
     } catch (error: any) {
       console.error('Error completing signup:', error);
       setError(error.message || 'Failed to complete signup. Please try again.');
+      // Track device login
+      await deviceTrackingService.trackDeviceLogin(user.$id, user.email);
+
     } finally {
       setLoading(false);
     }
