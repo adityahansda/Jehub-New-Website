@@ -57,19 +57,19 @@ async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
   try {
     const headerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A1:I1`,
+      range: `${SHEET_NAME}!A1:J1`,
     });
 
     if (!headerResponse.data.values || headerResponse.data.values.length === 0) {
       // Add headers if they don't exist
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!A1:I1`,
-        valueInputOption: 'RAW',
-        resource: {
-          values: [['Name', 'Branch', 'Years of Study', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status']]
-        }
-      });
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `${SHEET_NAME}!A1:J1`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [['Name', 'Branch', 'Years of Study', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User']]
+          }
+        });
     }
   } catch (error) {
     console.error('Error setting up headers:', error);
@@ -85,12 +85,13 @@ async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
     data.telegramId,
     data.referCode || '',
     data.createdAt,
-    data.status || 'pending'
+    data.status || 'pending',
+    'false' // Default premium status to false
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:I`,
+    range: `${SHEET_NAME}!A:J`,
     valueInputOption: 'RAW',
     resource: {
       values: [rowData]
@@ -103,7 +104,7 @@ async function getAllEntries(sheets: any): Promise<any[]> {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:I`,
+      range: `${SHEET_NAME}!A:J`,
     });
 
     const rows = response.data.values || [];
@@ -121,7 +122,8 @@ async function getAllEntries(sheets: any): Promise<any[]> {
       telegramId: row[5] || '',
       referCode: row[6] || '',
       createdAt: row[7] || '',
-      status: row[8] || 'pending'
+      status: row[8] || 'pending',
+      isPremium: (row[9] || 'false').toLowerCase() === 'true'
     }));
   } catch (error) {
     console.error('Error getting all entries:', error);
@@ -284,9 +286,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return acc;
       }, {});
 
+      // Create college summary for the frontend
+      const collegeSummary = Object.keys(entriesByCollege).sort().map(collegeName => ({
+        collegeName,
+        count: entriesByCollege[collegeName].length,
+        users: entriesByCollege[collegeName]
+      }));
+
       res.status(200).json({
         total: entries.length,
+        entries: entries, // Add entries array for list view
         entriesByCollege,
+        collegeSummary, // Add collegeSummary for college view
+        totalCount: entries.length, // Add totalCount for stats
         summary: {
           totalEntries: entries.length,
           collegeCount: Object.keys(entriesByCollege).length,

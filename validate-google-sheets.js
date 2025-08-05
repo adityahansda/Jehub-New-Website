@@ -77,7 +77,7 @@ async function validateGoogleSheetsCredentials() {
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: spreadsheetId,
-        range: 'Sheet1!A1:I1',
+        range: 'Sheet1!A1:J1',
       });
 
       if (response.data.values && response.data.values.length > 0) {
@@ -95,17 +95,17 @@ async function validateGoogleSheetsCredentials() {
     try {
       const testResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: spreadsheetId,
-        range: 'Sheet1!A1:I1',
+        range: 'Sheet1!A1:J1',
       });
 
       if (!testResponse.data.values || testResponse.data.values.length === 0) {
         console.log('📝 Adding headers to the sheet...');
         await sheets.spreadsheets.values.update({
           spreadsheetId: spreadsheetId,
-          range: 'Sheet1!A1:I1',
+          range: 'Sheet1!A1:J1',
           valueInputOption: 'RAW',
           resource: {
-            values: [['Name', 'Branch', 'Years of Study', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status']]
+            values: [['Name', 'Branch', 'Years of Study', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User']]
           }
         });
         console.log('✅ Successfully added headers to the sheet');
