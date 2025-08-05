@@ -8,11 +8,76 @@ import { NextSeo } from 'next-seo';
 import { AlertCircle, Check, User, Mail, Phone, GraduationCap, MessageCircle } from 'lucide-react';
 import SuccessToast from '../components/SuccessToast';
 
+// Comprehensive list of colleges and institutes affiliated with the university
+const COLLEGES_LIST = {
+  'Government Institutes (Diploma)': [
+    'GOVERNMENT POLYTECHNIC NIRSA, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, ADITYAPUR',
+    'GOVERNMENT POLYTECHNIC, BHAGA, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, DHANBAD',
+    'GOVERNMENT POLYTECHNIC, DUMKA',
+    'GOVERNMENT POLYTECHNIC, JAGANNATHPUR',
+    'GOVERNMENT POLYTECHNIC, KHARSAWAN',
+    'GOVERNMENT POLYTECHNIC, KHUTRI, BOKARO',
+    'GOVERNMENT POLYTECHNIC, KODERMA',
+    'GOVERNMENT POLYTECHNIC, LATEHAR'
+  ],
+  'Government Institutes (Other)': [
+    'B.I.T , SINDRI , DHANBAD',
+    'National Institute of Foundry & Forge Technology, Hatia'
+  ],
+  'Private Institutes (Diploma)': [
+    'AL-KABIR POLYTECHNIC, JAMSHEDPUR',
+    'BITT POLYTECHNIC, RANCHI',
+    'CAMBRIDGE INSTITUTE OF POLYTECHNIC, RANCHI',
+    'CENTRE FOR BIOINFORMATICS, RANCHI',
+    'GIRIJA INSTITUTE OF POLYTECHNIC, RAMGARH',
+    'INSTITUTE OF SCIENCE AND MANAGEMENT, PUNDAG, RANCHI',
+    'K.K. COLLEGE OF ENGINEERING & MANAGEMENT, DHANBAD',
+    'K.K. POLYTECHNIC, DHANBAD',
+    'KHANDOLI INSTITUTE OF TECHNOLOGY, GIRIDIH',
+    'NETAJI SUBHAS INSTITUTE OF HOTEL MANAGEMENT & TOURISM'
+  ],
+  'Private Institutes (B.Tech)': [
+    'B.A COLLEGE OF ENGINEERING & TECHNOLOGY, JAMSHEDPUR',
+    'CAMBRIDGE INSTITUTE OF TECHNOLOGY, TATISILWAI, RANCHI',
+    'D.A.V INSTITUTE OF ENGINEERING & TECHNOLOGY, PALAMAU',
+    'GURUGOVIND SINGH EDUCATIONAL SOCIETY TECHNICAL CAMPUS, BOKARO',
+    'K.K. COLLEGE OF ENGINEERING & MANAGEMENT, DHANBAD',
+    'MARYLAND INSTITUTE OF TECHNOLOGY & MANAGEMENT, JAMSHEDPUR',
+    'NILAI EDUCATION TRUST\'S GROUP OF INSTITUTIONS, THAKURGAON, BURMU, RANCHI',
+    'R.T.C INSTITUTE OF TECHNOLOGY, RANCHI',
+    'R.V.S COLLEGE OF ENGINEERING & TECHNOLOGY, JAMSHEDPUR',
+    'RAMGOVIND INSTITUTE OF TECHNOLOGY, KODERMA'
+  ],
+  'Private Institutes (PG)': [
+    'BIT Sindri, Dhanbad',
+    'Cambridge Institute of Technology, Tatisilwai, Ranchi',
+    'Guru Govind Singh Educational Society, Bokaro',
+    'RVS College of Engineering & Technogoy'
+  ],
+  'PPP Institutes (Diploma)': [
+    'BEHARAGORA POLYTECHNIC, BEHARAGORA',
+    'CHANDIL POLYTECHNIC, CHANDIL',
+    'GARHWA POLYTECHNIC, GARHWA',
+    'GOLA POLYTECHNIC, GOLA',
+    'MADHUPUR POLYTECHNIC, MADHUPUR',
+    'PAKUR POLYTECHNIC',
+    'SILLI POLYTECHNIC'
+  ],
+  'PPP Institutes (B.Tech)': [
+    'CHAIBASA ENGINEERING COLLEGE',
+    'DUMKA ENGINEERING COLLEGE',
+    'RAMGARH ENGINEERING COLLEGE'
+  ]
+};
+
 interface SignupData {
   name: string;
   email: string;
   phone: string;
   college: string;
+  otherCollege: string;
   branch: string;
   semester: string;
   bio: string;
@@ -27,6 +92,7 @@ const SignUp: React.FC = () => {
     email: '',
     phone: '',
     college: '',
+    otherCollege: '',
     branch: '',
     semester: '',
     bio: '',
@@ -104,7 +170,7 @@ const SignUp: React.FC = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone || undefined,
-        college: formData.college || undefined,
+        college: formData.college === 'other' ? formData.otherCollege : formData.college || undefined,
         branch: formData.branch || undefined,
         semester: formData.semester || undefined,
         bio: formData.bio || undefined,
@@ -207,7 +273,7 @@ const SignUp: React.FC = () => {
   };
 
   const isStep1Valid = formData.name && formData.email && formData.phone;
-  const isStep2Valid = formData.college && formData.branch;
+  const isStep2Valid = ((formData.college && formData.college !== 'other') || (formData.college === 'other' && formData.otherCollege)) && formData.branch;
 
   if (!user) {
     return (
@@ -353,15 +419,41 @@ const SignUp: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         College/University *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         name="college"
                         value={formData.college}
                         onChange={handleInputChange}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Indian Institute of Technology Delhi"
-                      />
+                      >
+                        <option value="">Select your College/Institute</option>
+                        {Object.entries(COLLEGES_LIST).map(([category, colleges]) => (
+                          <optgroup key={category} label={category}>
+                            {colleges.map((college) => (
+                              <option key={college} value={college}>
+                                {college}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        <option value="other">Other (Not Listed)</option>
+                      </select>
+                      {formData.college === 'other' && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Please specify your college/institute name
+                          </label>
+                          <input
+                            type="text"
+                            name="otherCollege"
+                            value={formData.otherCollege || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter your college/institute name"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div>

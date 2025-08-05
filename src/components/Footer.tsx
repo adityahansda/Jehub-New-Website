@@ -1,11 +1,44 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { ArrowUp, Mail, MapPin, Phone, Facebook, Twitter, Linkedin, Instagram, Youtube, MessageCircle, Send } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 const Footer = () => {
+  const { user, isVerified } = useAuth();
+  const router = useRouter();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleWhatsAppGroupClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!user || !isVerified) {
+      toast.error('Please sign in to join the WhatsApp group.', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        onClick: () => {
+          router.push('/login');
+        }
+      });
+    } else {
+      window.open('https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU', '_blank');
+      toast.success('Opening WhatsApp group...', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    }
   };
 
   return (
@@ -44,9 +77,9 @@ const Footer = () => {
               <a href="https://t.me/JharkhandEnginnersHub" target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-500 transition-all duration-300 group">
                 <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-white" />
               </a>
-              <a href="https://chat.whatsapp.com/CzByx8sK4DYGW0cqqn85rU" target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-500 transition-all duration-300 group">
+              <button onClick={handleWhatsAppGroupClick} className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-500 transition-all duration-300 group">
                 <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-white" />
-              </a>
+              </button>
               <a href="https://www.instagram.com/jharkhandengineershub/" target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-pink-600 transition-all duration-300 group">
                 <Instagram className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 group-hover:text-white" />
               </a>
