@@ -143,6 +143,7 @@ const NotesDownload = () => {
           setUserPoints(points);
         } catch (error) {
           console.error('Error loading user points:', error);
+          showError('Failed to load user points. Some features may not work correctly.');
         } finally {
           setPointsLoading(false);
         }
@@ -231,8 +232,11 @@ const NotesDownload = () => {
     const isPointsRequired = requiredPoints > 0;
 
     // If points are required and user is not authenticated
-    if (isPointsRequired && !user) {
-      showWarning('Please sign in to download this premium note. Premium notes require points to download.');
+if (isPointsRequired && !user) {
+showWarning('Please sign in to download this premium note. Premium notes require points to download. Redirecting to login page in 3 seconds...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 3000);
       return;
     }
 
@@ -280,6 +284,18 @@ const NotesDownload = () => {
       // Spend points if required (for authenticated users only)
       if (isPointsRequired && user && requiredPoints > 0) {
         try {
+          console.log('Attempting to spend points:', {
+            userId: user.$id,
+            userEmail: user.email,
+            requiredPoints,
+            availablePoints: userPoints.availablePoints
+          });
+          
+          // Double-check user has enough points before attempting
+          if (userPoints.availablePoints < requiredPoints) {
+            throw new Error(`Insufficient points: need ${requiredPoints}, have ${userPoints.availablePoints}`);
+          }
+          
           const success = await pointsService.spendPoints(
             user.$id,
             user.email,
@@ -289,23 +305,67 @@ const NotesDownload = () => {
           );
           
           if (!success) {
-            throw new Error('Failed to spend points for download');
+            throw new Error('Points service returned false - insufficient points or database error');
           }
+          
+          console.log('Points spent successfully, updating local state');
           
           // Update local user points
           setUserPoints(prev => ({
             ...prev,
-            availablePoints: prev.availablePoints - requiredPoints
+            availablePoints: prev.availablePoints - requiredPoints,
+            pointsSpent: (prev.pointsSpent || 0) + requiredPoints
           }));
+          
+          showSuccess(`Successfully spent ${requiredPoints} points for download!`);
           
         } catch (pointsError) {
           console.error('Error spending points:', pointsError);
-          setDownloadPopup(prev => ({ ...prev, status: 'error' }));
-          setTimeout(() => {
-            setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
-          }, 3000);
-          showError('Failed to spend points for download. Please try again.');
-          return;
+          
+          // Check if this is a network error (connection issues)
+          const isNetworkError = pointsError instanceof Error && 
+            (pointsError.message.includes('Failed to fetch') || 
+             pointsError.message.includes('CONNECTION_RESET') ||
+             pointsError.message.includes('network'));
+          
+          if (isNetworkError) {
+            // For network errors, show warning but allow download with local tracking
+            showWarning(`Network issue prevented points spending. Download will proceed, but points will be deducted when connection is restored.`);
+            
+            // Store pending transaction locally for later processing
+            const pendingTransaction = {
+              userId: user.$id,
+              userEmail: user.email,
+              points: requiredPoints,
+              noteId,
+              noteTitle: note.title,
+              timestamp: new Date().toISOString()
+            };
+            
+            const existingPending = localStorage.getItem('pendingPointsTransactions');
+            const pendingTransactions = existingPending ? JSON.parse(existingPending) : [];
+            pendingTransactions.push(pendingTransaction);
+            localStorage.setItem('pendingPointsTransactions', JSON.stringify(pendingTransactions));
+            
+            // Update local points optimistically
+            setUserPoints(prev => ({
+              ...prev,
+              availablePoints: prev.availablePoints - requiredPoints,
+              pointsSpent: (prev.pointsSpent || 0) + requiredPoints
+            }));
+            
+            showInfo('Points will be processed when connection is restored.');
+          } else {
+            // For other errors, prevent download
+            setDownloadPopup(prev => ({ ...prev, status: 'error' }));
+            setTimeout(() => {
+              setDownloadPopup({ show: false, noteTitle: '', status: 'downloading' });
+            }, 3000);
+            
+            const errorMessage = pointsError instanceof Error ? pointsError.message : 'Unknown error occurred';
+            showError(`Failed to spend points: ${errorMessage}. Please try again.`);
+            return;
+          }
         }
       }
       

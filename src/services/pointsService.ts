@@ -389,8 +389,57 @@ export class PointsService {
   async spendPoints(userId: string, userEmail: string, points: number, noteId: string, 
                     noteTitle: string): Promise<boolean> {
     try {
-      // Get current user points
-      const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
+      console.log(`=== SPEND POINTS DEBUG ===`);
+      console.log(`Spending ${points} points for user:`, { userId, userEmail, noteId, noteTitle });
+      
+      // Validate inputs
+      if (!userId || !userEmail || !noteId || points <= 0) {
+        console.error('Invalid input parameters for spendPoints:', { userId, userEmail, noteId, points });
+        throw new Error('Invalid input parameters for spending points');
+      }
+      
+      // Validate environment variables
+      if (!DATABASE_ID || !USERS_COLLECTION_ID || !POINTS_TRANSACTIONS_COLLECTION_ID) {
+        console.error('Missing required environment variables:', {
+          DATABASE_ID,
+          USERS_COLLECTION_ID,
+          POINTS_TRANSACTIONS_COLLECTION_ID
+        });
+        throw new Error('Database configuration is missing. Please check environment variables.');
+      }
+      
+      // Get current user points - first try by userId, then by email if that fails
+      console.log(`Fetching user document with ID: ${userId}`);
+      let user;
+      try {
+        user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
+      } catch (error) {
+        console.warn(`User document not found with ID ${userId}, trying by email...`);
+        // If user ID doesn't work, try to find user by email
+        const userResponse = await databases.listDocuments(
+          DATABASE_ID,
+          USERS_COLLECTION_ID,
+          [Query.equal('email', userEmail)]
+        );
+        
+        if (userResponse.documents.length === 0) {
+          throw new Error(`User not found with email: ${userEmail}`);
+        }
+        
+        user = userResponse.documents[0];
+        console.log(`Found user by email with correct ID: ${user.$id}`);
+        
+        // Update the userId parameter for subsequent operations
+        userId = user.$id;
+      }
+      
+      console.log('Current user data for spending:', {
+        email: user.email,
+        currentTotalPoints: user.points,
+        currentAvailablePoints: user.availablePoints,
+        pointsSpent: user.pointsSpent
+      });
+      
       const currentAvailable = user.availablePoints || 0;
       const currentSpent = user.pointsSpent || 0;
 
@@ -400,20 +449,56 @@ export class PointsService {
         return false;
       }
 
-      // Update user points
-      await databases.updateDocument(
-        DATABASE_ID,
-        USERS_COLLECTION_ID,
-        userId,
-        {
-          availablePoints: currentAvailable - points,
-          pointsSpent: currentSpent + points,
-          notesDownloaded: (user.notesDownloaded || 0) + 1
+      console.log(`Points spending calculation:`, {
+        currentAvailable,
+        currentSpent,
+        pointsToSpend: points,
+        newAvailable: currentAvailable - points,
+        newSpent: currentSpent + points
+      });
+
+      // Update user points with retry logic
+      console.log('Updating user document with spent points...');
+      let updateResult;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          updateResult = await databases.updateDocument(
+            DATABASE_ID,
+            USERS_COLLECTION_ID,
+            userId,
+            {
+              availablePoints: currentAvailable - points,
+              pointsSpent: currentSpent + points,
+              notesDownloaded: (user.notesDownloaded || 0) + 1,
+              lastPointsEarned: new Date().toISOString()
+            }
+          );
+          break; // Success, exit retry loop
+        } catch (retryError) {
+          retryCount++;
+          console.warn(`Database update attempt ${retryCount} failed:`, retryError);
+          
+          if (retryCount >= maxRetries) {
+            throw retryError; // Final attempt failed, throw error
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-      );
+      }
+      
+      console.log('User document updated successfully:', {
+        updatedAvailablePoints: updateResult.availablePoints,
+        updatedPointsSpent: updateResult.pointsSpent,
+        updatedNotesDownloaded: updateResult.notesDownloaded
+      });
 
       // Create transaction record
-      await this.createTransaction({
+      console.log('Creating transaction record for spending...');
+      const transaction = await this.createTransaction({
         userId,
         userEmail,
         type: 'note_download',
@@ -422,11 +507,32 @@ export class PointsService {
         noteId,
         status: 'completed'
       });
+      console.log('Transaction created successfully:', transaction.$id);
 
+      console.log(`=== SPEND POINTS SUCCESS ===`);
       console.log(`User ${userEmail} spent ${points} points to download ${noteTitle}`);
       return true;
     } catch (error) {
+      console.error('=== SPEND POINTS ERROR ===');
       console.error('Error spending points:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      
+      // Create failed transaction record for audit trail
+      try {
+        await this.createTransaction({
+          userId,
+          userEmail,
+          type: 'note_download',
+          points: -points,
+          description: `Failed download attempt: ${noteTitle}`,
+          noteId,
+          status: 'failed',
+          metadata: JSON.stringify({ error: error.message })
+        });
+      } catch (txError) {
+        console.error('Could not create failed transaction record:', txError);
+      }
+      
       throw error;
     }
   }
@@ -729,15 +835,64 @@ export class PointsService {
   // Create transaction record
   private async createTransaction(transaction: Omit<PointsTransaction, '$id' | '$createdAt'>): Promise<any> {
     try {
-      const createdTransaction = await databases.createDocument(
-        DATABASE_ID,
-        POINTS_TRANSACTIONS_COLLECTION_ID,
-        ID.unique(),
-        transaction
-      );
+      console.log('=== CREATE TRANSACTION DEBUG ===');
+      console.log('Creating transaction:', transaction);
+      
+      // Validate required fields
+      if (!transaction.userId || !transaction.userEmail || !transaction.type || transaction.points === undefined) {
+        console.error('Missing required transaction fields:', transaction);
+        throw new Error('Missing required transaction fields');
+      }
+      
+      // Validate environment variables
+      if (!DATABASE_ID || !POINTS_TRANSACTIONS_COLLECTION_ID) {
+        console.error('Missing database configuration for transactions:', {
+          DATABASE_ID,
+          POINTS_TRANSACTIONS_COLLECTION_ID
+        });
+        throw new Error('Database configuration missing for transactions');
+      }
+      
+      // Create transaction with retry logic
+      let createdTransaction;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          createdTransaction = await databases.createDocument(
+            DATABASE_ID,
+            POINTS_TRANSACTIONS_COLLECTION_ID,
+            ID.unique(),
+            transaction
+          );
+          break; // Success, exit retry loop
+        } catch (retryError) {
+          retryCount++;
+          console.warn(`Transaction creation attempt ${retryCount} failed:`, retryError);
+          
+          if (retryCount >= maxRetries) {
+            throw retryError; // Final attempt failed, throw error
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
+      }
+      
+      console.log('Transaction created successfully:', {
+        id: createdTransaction.$id,
+        type: createdTransaction.type,
+        points: createdTransaction.points,
+        status: createdTransaction.status
+      });
+      
       return createdTransaction;
     } catch (error) {
+      console.error('=== CREATE TRANSACTION ERROR ===');
       console.error('Error creating transaction:', error);
+      console.error('Transaction data:', transaction);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       throw error;
     }
   }

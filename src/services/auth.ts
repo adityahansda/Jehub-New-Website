@@ -4,6 +4,7 @@ import { pointsService } from './pointsService';
 import { profilePictureService } from './profilePictureService';
 import { databases } from '../lib/appwrite';
 import { Query } from 'appwrite';
+import { generateUniqueUserId } from '../utils/userIdGenerator';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 const USERS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!;
@@ -112,6 +113,10 @@ class AuthService {
   // Create user profile in database
   private async createUserProfile(user: User, referralCode?: string): Promise<void> {
     try {
+      // Generate unique 8-digit numeric user ID
+      const customUserId = await generateUniqueUserId();
+      console.log(`Generated 8-digit user ID: ${customUserId} for ${user.email}`);
+      
       // Try to get Google profile picture if available
       let profileImageUrl: string | null = null;
       
@@ -130,13 +135,14 @@ class AuthService {
         console.log('Could not fetch Google profile picture during user creation:', profileError);
       }
       
-      // Create user profile document
+      // Create user profile document with custom 8-digit ID as document ID
       await databases.createDocument(
         DATABASE_ID,
         USERS_COLLECTION_ID,
-        user.$id,
+        customUserId,  // Use custom 8-digit ID as document ID
         {
-          userId: user.$id,
+          userId: customUserId,  // Also store as userId field for consistency
+          authId: user.$id,      // Store original OAuth ID for reference
           name: user.name,
           email: user.email,
           joinDate: new Date().toISOString(),
@@ -146,10 +152,10 @@ class AuthService {
         }
       );
 
-      // Initialize with points system
-      await pointsService.initializeNewUser(user.$id, user.email, user.name, referralCode || undefined);
+      // Initialize with points system using the custom user ID
+      await pointsService.initializeNewUser(customUserId, user.email, user.name, referralCode || undefined);
       
-      console.log(`Created new user profile for ${user.email}`);
+      console.log(`Created new user profile for ${user.email} with ID: ${customUserId}`);
     } catch (error: any) {
       console.error('Error creating user profile:', error);
       throw error;
