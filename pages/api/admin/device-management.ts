@@ -28,14 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } else if (req.method === 'POST') {
     try {
-      const { action, ipAddress, reason, bannedBy, userAgent, notes } = req.body;
+      const { action, ipAddress, reason, bannedBy } = req.body;
       
       if (action === 'ban') {
         if (!ipAddress || !reason || !bannedBy) {
           return res.status(400).json({ error: 'Missing required fields for banning device' });
         }
         
-        await deviceTrackingService.banDevice(ipAddress, reason, bannedBy, userAgent, notes);
+        await deviceTrackingService.banDevice(ipAddress, reason, bannedBy);
         res.status(200).json({ success: true, message: 'Device banned successfully' });
       } else {
         return res.status(400).json({ error: 'Invalid action' });

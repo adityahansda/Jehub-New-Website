@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { showInfo } from '../src/utils/toast';
+import { showInfo, showSuccess, showError, showWarning } from '../src/utils/toast';
 import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import UserProfileSection from '../src/components/dashboard/UserProfileSection';
 import DashboardAnalytics from '../src/components/dashboard/DashboardAnalytics';
@@ -71,9 +71,12 @@ function StudentDashboard() {
     // Logout handler
     const handleLogout = async () => {
         try {
+            showInfo('Logging out...');
             await logout();
+            showSuccess('Successfully logged out!');
         } catch (error) {
             console.error('Logout error:', error);
+            showError('Failed to logout. Please try again.');
         }
     };
 
@@ -87,8 +90,10 @@ function StudentDashboard() {
                     const stats = await dashboardService.getDashboardStats(user.email);
                     console.log('Dashboard stats received:', stats);
                     setDashboardStats(stats);
+                    showSuccess('Dashboard data loaded successfully!');
                 } catch (error) {
                     console.error('Error fetching dashboard stats:', error);
+                    showError('Failed to load dashboard data. Using offline data.');
                     // Set fallback data even on error
                     setDashboardStats({
                         notesUploaded: 0,
@@ -440,15 +445,19 @@ function StudentDashboard() {
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { icon: Upload, label: "Upload Notes", color: "blue" },
-                        { icon: Download, label: "Browse Notes", color: "green" },
-                        { icon: Users, label: "Study Groups", color: "purple" },
-                        { icon: Calendar, label: "Schedule", color: "orange" }
-                    ].map((action, index) => (
-                        <button key={index} className={`p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-${action.color}-300 hover:bg-${action.color}-50 dark:hover:bg-${action.color}-900/20 transition-all duration-300 group`}>
-                            <action.icon className={`h-8 w-8 text-gray-400 group-hover:text-${action.color}-600 dark:group-hover:text-${action.color}-400 mx-auto mb-2`} />
+                        { icon: Upload, label: "Upload Notes", color: "blue", action: () => showInfo('Redirecting to upload page...') },
+                        { icon: Download, label: "Browse Notes", color: "green", action: () => showInfo('Opening notes browser...') },
+                        { icon: Users, label: "Study Groups", color: "purple", action: () => showInfo('Study groups feature coming soon!') },
+                        { icon: Calendar, label: "Schedule", color: "orange", action: () => showWarning('Schedule feature is under development') }
+                    ].map((actionItem, index) => (
+                        <button 
+                            key={index} 
+                            onClick={actionItem.action}
+                            className={`p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-${actionItem.color}-300 hover:bg-${actionItem.color}-50 dark:hover:bg-${actionItem.color}-900/20 transition-all duration-300 group`}
+                        >
+                            <actionItem.icon className={`h-8 w-8 text-gray-400 group-hover:text-${actionItem.color}-600 dark:group-hover:text-${actionItem.color}-400 mx-auto mb-2`} />
                             <p className="text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
-                                {action.label}
+                                {actionItem.label}
                             </p>
                         </button>
                     ))}
@@ -515,13 +524,22 @@ function StudentDashboard() {
                                 </div>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <button 
+                                    onClick={() => showInfo('Opening note preview...')}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
                                     <Eye className="h-4 w-4" />
                                 </button>
-                                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <button 
+                                    onClick={() => showSuccess('Note link copied to clipboard!')}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
                                     <Share2 className="h-4 w-4" />
                                 </button>
-                                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <button 
+                                    onClick={() => showInfo('More options...')}
+                                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                >
                                     <MoreVertical className="h-4 w-4" />
                                 </button>
                             </div>

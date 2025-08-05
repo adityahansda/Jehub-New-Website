@@ -15,6 +15,7 @@ export const appwriteConfig = {
     betaWishlist: process.env.NEXT_PUBLIC_APPWRITE_BETA_WISHLIST_COLLECTION_ID || 'beta_wishlist_collection',
     deviceTracking: process.env.NEXT_PUBLIC_APPWRITE_DEVICE_TRACKING_COLLECTION_ID || 'device_tracking_collection',
     bannedDevices: process.env.NEXT_PUBLIC_APPWRITE_BANNED_DEVICES_COLLECTION_ID || 'banned_devices_collection',
+    unbanRequests: process.env.NEXT_PUBLIC_APPWRITE_UNBAN_REQUESTS_COLLECTION_ID || 'unban_requests_collection',
   },
   // GitHub configuration
   github: {
