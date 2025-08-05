@@ -434,8 +434,11 @@ const NotesPreview = () => {
     const isPointsRequired = requiredPoints > 0;
 
     // If points are required and user is not authenticated
-    if (isPointsRequired && !user) {
-      showWarning('Please sign in to download this premium note. Premium notes require points to download.');
+if (isPointsRequired && !user) {
+showWarning('Please sign in to download this premium note. Premium notes require points to download. Redirecting to login page in 3 seconds...');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 3000);
       return;
     }
 

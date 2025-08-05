@@ -1,5 +1,6 @@
 import { databases } from '../lib/appwrite';
 import { databaseId, collections } from '../lib/appwriteConfig';
+import { generateUniqueUserId } from '../utils/userIdGenerator';
 
 // Use the correct configuration
 const DATABASE_ID = databaseId;
@@ -76,12 +77,20 @@ export class UserService {
       // Remove Appwrite-specific fields from profileData
       const { $id, $createdAt, $updatedAt, $permissions, $collectionId, $databaseId, ...cleanProfileData } = profileData as any;
       
+      // Generate unique 8-digit user ID if not provided
+      let customUserId = cleanProfileData.userId;
+      if (!customUserId) {
+        customUserId = await generateUniqueUserId();
+        console.log(`Generated 8-digit user ID: ${customUserId}`);
+      }
+      
       const newProfile = await databases.createDocument(
         DATABASE_ID,
         USERS_COLLECTION_ID,
-        ID.unique(),
+        customUserId,  // Use 8-digit ID as document ID
         {
           ...cleanProfileData,
+          userId: customUserId,  // Ensure userId field is set
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
