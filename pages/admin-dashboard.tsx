@@ -17,6 +17,8 @@ import BroadcastSection from '../src/components/admin/BroadcastSection';
 import LeaderboardControl from '../src/components/admin/LeaderboardControl';
 import AppwriteMessaging from '../src/components/admin/AppwriteMessaging';
 import PointsManagement from '../src/components/admin/PointsManagement';
+import BannedDevicesManager from '../src/components/admin/BannedDevicesManager';
+import DeviceManagementSection from '../src/components/admin/DeviceManagementSection';
 
 import {
     BarChart3,
@@ -49,7 +51,9 @@ import {
     Edit,
     MoreVertical,
     PieChart,
-    LineChart
+    LineChart,
+    Smartphone,
+    Ban
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -358,6 +362,10 @@ case 'notes':
                 return <AppwriteMessaging />;
             case 'points-management':
                 return 				<PointsManagement />;
+            case 'device-management':
+                return <DeviceManagementSection />;
+            case 'banned-devices':
+                return <BannedDevicesManager />;
             default:
                 return renderDashboardContent();
         }
@@ -456,6 +464,7 @@ case 'notes':
                                                 { key: 'pages', label: 'Page Management', icon: Globe },
                                                 { key: 'messaging', label: 'Messaging', icon: MessageSquare },
                                                 { key: 'points-management', label: 'Points Management', icon: PieChart },
+                                                { key: 'device-management', label: 'Device Management', icon: Smartphone },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
                                                 const active = activeSection === item.key;
@@ -494,6 +503,7 @@ case 'notes':
                                                 { key: 'notifications', label: 'Notifications', icon: Bell },
                                                 { key: 'broadcast', label: 'Broadcast', icon: MessageSquare },
                                                 { key: 'leaderboard', label: 'Leaderboard', icon: TrendingUp },
+                                                { key: 'banned-devices', label: 'Banned Devices', icon: Ban },
                                                 { key: 'logout', label: 'Logout', icon: LogOut, isLogout: true },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
