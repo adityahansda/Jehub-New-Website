@@ -10,7 +10,7 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
@@ -41,7 +41,8 @@ const Navigation = () => {
     { path: '/groups', label: 'Join Groups', icon: Users },
     { path: '/leaderboard', label: 'Leaderboard', icon: Star },
     { path: '/about', label: 'About Us', icon: Info },
-    { path: '/wishlist-users', label: 'Wishlist Users', icon: Users }
+    { path: '/wishlist-users', label: 'Wishlist Users', icon: Users },
+    { path: '/telegram-members', label: 'Telegram Members', icon: MessageCircle }
   ], []);
 
 
@@ -135,6 +136,7 @@ const Navigation = () => {
                   { href: '/notifications', label: 'Notifications', icon: Bell },
                   { href: '/groups', label: 'Join Groups', icon: Users },
                   { href: '/wishlist-users', label: 'Wishlist Users', icon: Users },
+                  { href: '/telegram-members', label: 'Telegram Members', icon: MessageCircle },
                   { href: '/about', label: 'About Us', icon: Info }
                 ].map((item, index) => {
                   const IconComponent = item.icon;
@@ -212,6 +214,10 @@ const Navigation = () => {
                           <button onClick={() => handleProfileClick('/referral')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
                             <Gift className="h-5 w-5" />
                             <span>Referral Dashboard</span>
+                          </button>
+                          <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
+                            <Shield className="h-5 w-5" />
+                            <span>Verify Membership</span>
                           </button>
                           <div className="border-t border-white/10 my-2"></div>
                           <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all duration-300">
@@ -389,6 +395,13 @@ const Navigation = () => {
                         >
                           <Gift className="h-5 w-5" />
                           <span>Referral Dashboard</span>
+                        </button>
+                        <button
+                          onClick={() => handleProfileClick('/user/verify')}
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                        >
+                          <Shield className="h-5 w-5" />
+                          <span>Verify Membership</span>
                         </button>
                         <button
                           onClick={handleLogout}

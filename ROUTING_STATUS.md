@@ -47,6 +47,7 @@
 - `/settings` - User settings
 - `/wishlist` - User wishlist
 - `/user/profile` - Alternative profile route
+- `/user/verify` - Verify Telegram group membership
 
 ### Team & About
 - `/misc/about` - About JEHUB page

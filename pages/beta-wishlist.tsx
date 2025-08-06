@@ -87,6 +87,7 @@ const WishlistRegistration: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'checking' | 'verified' | 'unverified' | 'not_member' | null>(null);
 
   const fieldLabels = {
     name: 'Full Name',
@@ -107,6 +108,31 @@ const WishlistRegistration: React.FC = () => {
     // Clear messages on input change
     if (message) setMessage('');
     if (error) setError('');
+
+    // Check verification status when Telegram ID is entered
+    if (e.target.name === 'telegramId' && e.target.value.trim()) {
+      checkVerificationStatus(e.target.value.trim());
+    }
+  };
+
+  const checkVerificationStatus = async (telegramId: string) => {
+    if (!telegramId) return;
+
+    setVerificationStatus('checking');
+    try {
+      const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+      const response = await axios.get(`/api/verify-telegram?username=${encodeURIComponent(cleanTelegramId)}`);
+
+      if (response.data.is_member && response.data.is_verified) {
+        setVerificationStatus('verified');
+      } else if (response.data.is_member && !response.data.is_verified) {
+        setVerificationStatus('unverified');
+      } else {
+        setVerificationStatus('not_member');
+      }
+    } catch (error) {
+      setVerificationStatus('not_member');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,15 +147,15 @@ const WishlistRegistration: React.FC = () => {
         ...form,
         collegeName: form.collegeName === 'other' ? form.otherCollege : form.collegeName
       };
-      
+
       const response = await axios.post('/api/beta-wishlist-sheets', submitData);
-      
+
       let message = response.data.message;
       // Add referral code success message if applicable
       if (form.referCode && form.referCode.trim()) {
         message += ' Your referral code was valid and the referrer has been awarded 10 points!';
       }
-      
+
       setMessage(message);
       router.push('/wishlist-users');
       setForm({
@@ -144,7 +170,14 @@ const WishlistRegistration: React.FC = () => {
         referCode: ''
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'An error occurred. Please try again.');
+      const errorMessage = err.response?.data?.error || 'An error occurred. Please try again.';
+
+      // Check if it's a verification error
+      if (err.response?.data?.verificationRequired) {
+        setError(`${errorMessage}\n\n📱 To verify your membership:\n1. Join our Telegram group: https://t.me/JharkhandEnginnersHub\n2. Send /verify message in the group\n3. Try submitting again`);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +193,7 @@ const WishlistRegistration: React.FC = () => {
       </Head>
 
       <Navigation />
-      
+
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-800 to-pink-600 pt-24 pb-12">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -177,6 +210,36 @@ const WishlistRegistration: React.FC = () => {
               <p className="text-gray-300 text-center mt-2">
                 Get early access to exclusive features and be part of our growing community
               </p>
+            </div>
+
+            {/* Verification Info */}
+            <div className="px-8 py-4 bg-blue-900/30 border-b border-blue-500/30">
+              <div className="flex items-start space-x-3">
+                <div className="text-blue-400 text-xl">📱</div>
+                <div>
+                  <h3 className="text-white font-semibold mb-2">Telegram Verification Required</h3>
+                  <p className="text-gray-300 text-sm mb-3">
+                    To join the beta program, you must be a verified member of our Telegram group.
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-400">1.</span>
+                      <span className="text-gray-300">Join our group:</span>
+                      <a href="https://t.me/JharkhandEnginnersHub" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                        https://t.me/JharkhandEnginnersHub
+                      </a>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-400">2.</span>
+                      <span className="text-gray-300">Send message:</span>
+                      <a href="https://t.me/JharkhandEnginnersHub/15538" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                        /verify
+                      </a>
+                      <span className="text-gray-300">in the group</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Form */}
@@ -315,6 +378,33 @@ const WishlistRegistration: React.FC = () => {
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                     placeholder="@yourusername"
                   />
+
+                  {/* Verification Status Indicator */}
+                  {verificationStatus && (
+                    <div className="mt-2">
+                      {verificationStatus === 'checking' && (
+                        <div className="flex items-center text-yellow-400 text-sm">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400 mr-2"></div>
+                          Checking verification status...
+                        </div>
+                      )}
+                      {verificationStatus === 'verified' && (
+                        <div className="flex items-center text-green-400 text-sm">
+                          ✅ Verified! You can submit your wishlist.
+                        </div>
+                      )}
+                      {verificationStatus === 'unverified' && (
+                        <div className="flex items-center text-yellow-400 text-sm">
+                          ⚠️ Member but not verified. Send /verify in the Telegram group.
+                        </div>
+                      )}
+                      {verificationStatus === 'not_member' && (
+                        <div className="flex items-center text-red-400 text-sm">
+                          ❌ Not a member. Please join our Telegram group first: https://t.me/JharkhandEnginnersHub
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -380,10 +470,13 @@ const WishlistRegistration: React.FC = () => {
               {/* Submit Button */}
               <motion.button
                 type="submit"
-                disabled={isSubmitting}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 text-white font-semibold py-3 px-6 rounded-lg hover:via-yellow-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                disabled={isSubmitting || verificationStatus === 'not_member' || verificationStatus === 'unverified'}
+                whileHover={{ scale: verificationStatus === 'verified' ? 1.02 : 1 }}
+                whileTap={{ scale: verificationStatus === 'verified' ? 0.98 : 1 }}
+                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${verificationStatus === 'verified'
+                  ? 'bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 hover:via-yellow-500 text-white'
+                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isSubmitting ? (
                   <>
@@ -392,6 +485,18 @@ const WishlistRegistration: React.FC = () => {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     <span>Submitting...</span>
+                  </>
+                ) : verificationStatus === 'verified' ? (
+                  <>
+                    <span>🚀 Join Beta Program</span>
+                  </>
+                ) : verificationStatus === 'unverified' ? (
+                  <>
+                    <span>⚠️ Please verify in Telegram group</span>
+                  </>
+                ) : verificationStatus === 'not_member' ? (
+                  <>
+                    <span>❌ Join Telegram group first</span>
                   </>
                 ) : (
                   <>

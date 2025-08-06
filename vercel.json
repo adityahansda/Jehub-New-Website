@@ -1,0 +1,22 @@
+{
+    "builds": [
+        {
+            "src": "telegram-bot/main.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "package.json",
+            "use": "@vercel/next"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/telegram",
+            "destination": "/telegram-bot/main.py"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/"
+        }
+    ]
+}

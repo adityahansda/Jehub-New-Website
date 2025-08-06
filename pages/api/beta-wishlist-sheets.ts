@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { google } from 'googleapis';
 import { pointsService } from '../../src/services/pointsService';
+import { Databases, Query } from 'node-appwrite';
+import { serverDatabases as databases } from '../../src/lib/appwrite-server';
+import { appwriteConfig } from '../../src/lib/appwriteConfig';
 
 // Google Sheets configuration
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_WISHLIST_ID || 'your-spreadsheet-id-here';
@@ -63,19 +66,19 @@ async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
 
     if (!response.data.values || response.data.values.length === 0) {
       // Add headers if they don't exist
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range: `${SHEET_NAME}!A1:L1`,
-          valueInputOption: 'RAW',
-          requestBody: {
-            values: [['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden']]
-          }
-        });
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${SHEET_NAME}!A1:L1`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden']]
+        }
+      });
     } else {
       // Check if headers need to be updated (if degree column is missing)
       const currentHeaders = response.data.values[0] || [];
       const expectedHeaders = ['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden'];
-      
+
       if (currentHeaders.length < expectedHeaders.length || !currentHeaders.includes('Degree')) {
         console.log('Updating headers to include Degree column...');
         await sheets.spreadsheets.values.update({
@@ -110,7 +113,7 @@ async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:L`,
+    range: `${SHEET_NAME}!A:L`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [rowData]
@@ -152,6 +155,61 @@ async function getAllEntries(sheets: any): Promise<any[]> {
   }
 }
 
+// Add verification function
+async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boolean; message: string }> {
+  try {
+    // Clean the telegram ID (remove @ if present)
+    const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+
+    const { databaseId, collections } = appwriteConfig;
+
+    // Direct database query instead of HTTP request
+    const response = await databases.listDocuments(
+      databaseId,
+      collections.telegramMembers,
+      [Query.equal('username', cleanTelegramId)]
+    );
+
+    if (response.total === 0) {
+      return {
+        isVerified: false,
+        message: 'You must join our Telegram group first. Please join the group and try again.'
+      };
+    }
+
+    const member = response.documents[0];
+
+    if (!member) {
+      return {
+        isVerified: false,
+        message: 'Member data not found. Please try again.'
+      };
+    }
+
+    // Check if the user is verified
+    const isVerified = member.is_wishlist_verified || false;
+
+    if (!isVerified) {
+      return {
+        isVerified: false,
+        message: 'You must verify your membership in the Telegram group. Please use the /verify command in the group and try again.'
+      };
+    }
+
+    return {
+      isVerified: true,
+      message: 'Telegram verification successful!'
+    };
+
+  } catch (error) {
+    console.error('Error verifying Telegram user:', error);
+    return {
+      isVerified: false,
+      message: 'Error verifying Telegram membership. Please try again.'
+    };
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
@@ -180,6 +238,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
+      // Verify Telegram membership before proceeding
+      console.log('=== TELEGRAM VERIFICATION ===');
+      console.log('Verifying Telegram user:', telegramId);
+      const verification = await verifyTelegramUser(telegramId);
+      console.log('Verification result:', verification);
+
+      if (!verification.isVerified) {
+        console.log('Telegram verification failed:', verification.message);
+        return res.status(403).json({
+          error: verification.message,
+          verificationRequired: true
+        });
+      }
+
+      console.log('Telegram verification successful for:', telegramId);
+
       // Initialize Google Sheets client
       const sheets = await getGoogleSheetsClient();
 
@@ -197,14 +271,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           console.log('=== WISHLIST REFERRAL VALIDATION ===');
           console.log('Validating referral code for wishlist:', referCode.trim());
           const validation = await pointsService.validateReferralCode(referCode.trim());
-          
+
           if (!validation.isValid) {
             console.log('Invalid referral code:', validation.message);
-            return res.status(400).json({ 
-              error: `Invalid referral code: ${validation.message}` 
+            return res.status(400).json({
+              error: `Invalid referral code: ${validation.message}`
             });
           }
-          
+
           referrerInfo = validation.referrer;
           console.log('Valid referral code found for user:', {
             referrerEmail: referrerInfo.email,
@@ -216,10 +290,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           try {
             console.log('Awarding 10 points to referrer for wishlist referral...');
             await pointsService.addPoints(
-              referrerInfo.$id, 
-              referrerInfo.email, 
-              10, 
-              'referral_bonus', 
+              referrerInfo.$id,
+              referrerInfo.email,
+              10,
+              'referral_bonus',
               `Wishlist referral bonus - referred ${email} to beta program`
             );
             console.log('Successfully awarded 10 points to referrer:', referrerInfo.$id);
@@ -231,8 +305,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         } catch (error) {
           console.error('Error validating referral code:', error);
-          return res.status(400).json({ 
-            error: 'Failed to validate referral code. Please check the code and try again.' 
+          return res.status(400).json({
+            error: 'Failed to validate referral code. Please check the code and try again.'
           });
         }
       }
