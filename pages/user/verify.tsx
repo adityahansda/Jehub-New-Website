@@ -5,11 +5,16 @@ import DashboardLayout from '../../src/components/dashboard/DashboardLayout';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { Loader2, AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
 
+interface VerificationStatus {
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
+
 export default function VerifyPage() {
   const { user } = useAuth();
   const [telegramUsername, setTelegramUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null);
 
   const handleVerify = async () => {
     if (!telegramUsername) {

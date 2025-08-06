@@ -48,7 +48,7 @@ const removeMemberFromDatabase = async (userId: number) => {
 const getAllMembers = async (): Promise<TelegramMemberData[]> => {
   try {
     const response = await databases.listDocuments(DATABASE_ID, TELEGRAM_MEMBERS_COLLECTION_ID);
-    return response.documents as TelegramMemberData[];
+    return response.documents as unknown as TelegramMemberData[];
   } catch (error) {
     console.error('Failed to fetch members from Appwrite database:', error);
     return [];

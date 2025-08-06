@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Databases, Query } from 'node-appwrite';
-import { serverDatabases as databases, serverClient } from '../../src/lib/appwrite-server';
+import serverClient, { serverDatabases as databases } from '../../src/lib/appwrite-server';
 import { appwriteConfig } from '../../src/lib/appwriteConfig';
 
 const { databaseId, collections } = appwriteConfig;
@@ -41,11 +41,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const member = response.documents[0];
 
     if (!member) {
-        return res.status(404).json({
-            is_member: false,
-            is_verified: false,
-            message: 'Member data not found in documents.',
-        });
+      return res.status(404).json({
+        is_member: false,
+        is_verified: false,
+        message: 'Member data not found in documents.',
+      });
     }
 
     // Check if the user is verified
