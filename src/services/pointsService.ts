@@ -37,21 +37,21 @@ export class PointsService {
   }> {
     try {
       console.log(`=== VALIDATING REFERRAL CODE: ${referralCode} ===`);
-      
+
       if (!referralCode || referralCode.trim() === '') {
         return {
           isValid: false,
           message: 'Referral code is empty or invalid'
         };
       }
-      
+
       // Search for user with this referral code
       const referrerResponse = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,
         [Query.equal('referralCode', referralCode.trim())]
       );
-      
+
       if (referrerResponse.documents.length === 0) {
         console.log(`No user found with referral code: ${referralCode}`);
         return {
@@ -59,9 +59,9 @@ export class PointsService {
           message: `Referral code '${referralCode}' is not valid. Please check the code and try again.`
         };
       }
-      
+
       const referrer = referrerResponse.documents[0];
-      
+
       // Check if referral is active
       if (referrer.isReferralActive === false) {
         console.log(`Referral code ${referralCode} is inactive`);
@@ -71,14 +71,14 @@ export class PointsService {
           message: `Referral code '${referralCode}' is no longer active.`
         };
       }
-      
+
       console.log(`Valid referral code found for: ${referrer.email}`);
       return {
         isValid: true,
         referrer,
         message: `Valid referral code! You'll get bonus points when you sign up, and ${referrer.name || referrer.email} will earn referral points.`
       };
-      
+
     } catch (error) {
       console.error('Error validating referral code:', error);
       return {
@@ -92,16 +92,16 @@ export class PointsService {
   async generateUniqueReferralCode(name: string, email: string): Promise<string> {
     const maxAttempts = 10;
     let attempts = 0;
-    
+
     while (attempts < maxAttempts) {
       // Generate base code with more entropy
       const nameCode = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
       const emailCode = email.substring(0, 2).toUpperCase().replace(/[^A-Z]/g, 'X');
       const timestamp = Date.now().toString().slice(-4); // Last 4 digits of timestamp
       const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-      
+
       const referralCode = `${nameCode}${emailCode}${timestamp}${randomNum}`;
-      
+
       // Check if this code already exists
       try {
         const existingUser = await databases.listDocuments(
@@ -109,11 +109,11 @@ export class PointsService {
           USERS_COLLECTION_ID,
           [Query.equal('referralCode', referralCode)]
         );
-        
+
         if (existingUser.documents.length === 0) {
           return referralCode; // Code is unique
         }
-        
+
         attempts++;
         console.log(`Referral code ${referralCode} already exists, trying again (attempt ${attempts})`);
       } catch (error) {
@@ -122,7 +122,7 @@ export class PointsService {
         return referralCode;
       }
     }
-    
+
     // Fallback: Use UUID-like approach if all attempts failed
     const fallbackCode = `${name.substring(0, 2).toUpperCase()}${Date.now().toString().slice(-6)}`;
     console.warn(`Generated fallback referral code: ${fallbackCode}`);
@@ -134,33 +134,33 @@ export class PointsService {
     try {
       console.log('=== INITIALIZE NEW USER DEBUG ===');
       console.log('Initializing user:', { userId, userEmail, userName, referredByCode });
-      
+
       // Find the user profile by email instead of using Auth user ID
       const userResponse = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,
         [Query.equal('email', userEmail)]
       );
-      
+
       if (userResponse.documents.length === 0) {
         console.warn(`No user profile found for email: ${userEmail}`);
         throw new Error('User profile not found. Please complete signup first.');
       }
-      
+
       const userProfile = userResponse.documents[0];
-      console.log('User profile found:', { 
-        profileId: userProfile.$id, 
+      console.log('User profile found:', {
+        profileId: userProfile.$id,
         email: userProfile.email,
-        name: userProfile.name 
+        name: userProfile.name
       });
-      
+
       // Generate unique referral code
       const referralCode = await this.generateUniqueReferralCode(userName, userEmail);
       console.log('Generated referral code:', referralCode);
-      
+
       // Initialize user with welcome bonus
       const welcomePoints = 20;
-      
+
       // Update user profile with initial points and referral code
       console.log('Updating user profile with points and referral code...');
       const updatedProfile = await databases.updateDocument(
@@ -217,7 +217,7 @@ export class PointsService {
     try {
       console.log('=== REFERRAL COMPLETION DEBUG ===');
       console.log('Processing referral completion:', { referralCode, referredUserId, referredUserEmail });
-      
+
       // Find the referrer by referral code
       console.log(`Searching for referrer with code: ${referralCode}`);
       const referrerResponse = await databases.listDocuments(
@@ -229,29 +229,29 @@ export class PointsService {
       console.log(`Referrer search result: Found ${referrerResponse.documents.length} documents`);
       if (referrerResponse.documents.length === 0) {
         console.warn(`No referrer found with code: ${referralCode}`);
-        
+
         // Let's also search for all users with any referral code to debug
         const allUsersWithCodes = await databases.listDocuments(
           DATABASE_ID,
           USERS_COLLECTION_ID,
           [Query.isNotNull('referralCode')]
         );
-        console.log('All users with referral codes:', allUsersWithCodes.documents.map(u => ({ 
-          email: u.email, 
-          referralCode: u.referralCode 
+        console.log('All users with referral codes:', allUsersWithCodes.documents.map(u => ({
+          email: u.email,
+          referralCode: u.referralCode
         })));
         return;
       }
 
       const referrer = referrerResponse.documents[0];
-      console.log('Referrer found:', { 
+      console.log('Referrer found:', {
         referrerId: referrer.$id,
-        referrerEmail: referrer.email, 
+        referrerEmail: referrer.email,
         referrerName: referrer.name,
         currentPoints: referrer.points,
-        currentAvailablePoints: referrer.availablePoints 
+        currentAvailablePoints: referrer.availablePoints
       });
-      
+
       const referralPoints = 50;
 
       // Create referral record
@@ -277,7 +277,7 @@ export class PointsService {
 
       // Award points to referrer
       console.log(`Awarding ${referralPoints} points to referrer: ${referrer.email}`);
-      await this.addPoints(referrer.$id, referrer.email, referralPoints, 'referral_bonus', 
+      await this.addPoints(referrer.$id, referrer.email, referralPoints, 'referral_bonus',
         `Referral bonus for inviting ${referredUserEmail}`);
       console.log('Points awarded successfully!');
 
@@ -316,12 +316,12 @@ export class PointsService {
   }
 
   // Add points to user account
-  async addPoints(userId: string, userEmail: string, points: number, type: PointsTransaction['type'], 
-                  description: string, metadata?: any): Promise<void> {
+  async addPoints(userId: string, userEmail: string, points: number, type: PointsTransaction['type'],
+    description: string, metadata?: any): Promise<void> {
     try {
       console.log(`=== ADD POINTS DEBUG ===`);
       console.log(`Adding ${points} points to user:`, { userId, userEmail, type, description });
-      
+
       // Get current user points
       console.log(`Fetching user document with ID: ${userId}`);
       const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
@@ -331,7 +331,7 @@ export class PointsService {
         currentAvailablePoints: user.availablePoints,
         pointsSpent: user.pointsSpent
       });
-      
+
       const currentTotal = user.points || 0;
       const currentAvailable = user.availablePoints || 0;
       const newTotal = currentTotal + points;
@@ -386,18 +386,18 @@ export class PointsService {
   }
 
   // Spend points (for note downloads)
-  async spendPoints(userId: string, userEmail: string, points: number, noteId: string, 
-                    noteTitle: string): Promise<boolean> {
+  async spendPoints(userId: string, userEmail: string, points: number, noteId: string,
+    noteTitle: string): Promise<boolean> {
     try {
       console.log(`=== SPEND POINTS DEBUG ===`);
       console.log(`Spending ${points} points for user:`, { userId, userEmail, noteId, noteTitle });
-      
+
       // Validate inputs
       if (!userId || !userEmail || !noteId || points <= 0) {
         console.error('Invalid input parameters for spendPoints:', { userId, userEmail, noteId, points });
         throw new Error('Invalid input parameters for spending points');
       }
-      
+
       // Validate environment variables
       if (!DATABASE_ID || !USERS_COLLECTION_ID || !POINTS_TRANSACTIONS_COLLECTION_ID) {
         console.error('Missing required environment variables:', {
@@ -407,7 +407,7 @@ export class PointsService {
         });
         throw new Error('Database configuration is missing. Please check environment variables.');
       }
-      
+
       // Get current user points - first try by userId, then by email if that fails
       console.log(`Fetching user document with ID: ${userId}`);
       let user;
@@ -421,25 +421,25 @@ export class PointsService {
           USERS_COLLECTION_ID,
           [Query.equal('email', userEmail)]
         );
-        
+
         if (userResponse.documents.length === 0) {
           throw new Error(`User not found with email: ${userEmail}`);
         }
-        
+
         user = userResponse.documents[0];
         console.log(`Found user by email with correct ID: ${user.$id}`);
-        
+
         // Update the userId parameter for subsequent operations
         userId = user.$id;
       }
-      
+
       console.log('Current user data for spending:', {
         email: user.email,
         currentTotalPoints: user.points,
         currentAvailablePoints: user.availablePoints,
         pointsSpent: user.pointsSpent
       });
-      
+
       const currentAvailable = user.availablePoints || 0;
       const currentSpent = user.pointsSpent || 0;
 
@@ -462,7 +462,7 @@ export class PointsService {
       let updateResult;
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           updateResult = await databases.updateDocument(
@@ -480,16 +480,16 @@ export class PointsService {
         } catch (retryError) {
           retryCount++;
           console.warn(`Database update attempt ${retryCount} failed:`, retryError);
-          
+
           if (retryCount >= maxRetries) {
             throw retryError; // Final attempt failed, throw error
           }
-          
+
           // Wait before retrying (exponential backoff)
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
       }
-      
+
       if (updateResult) {
         console.log('User document updated successfully:', {
           updatedAvailablePoints: updateResult.availablePoints,
@@ -521,7 +521,7 @@ export class PointsService {
       console.error('=== SPEND POINTS ERROR ===');
       console.error('Error spending points:', error);
       console.error('Error details:', JSON.stringify(error, null, 2));
-      
+
       // Create failed transaction record for audit trail
       try {
         await this.createTransaction({
@@ -537,7 +537,7 @@ export class PointsService {
       } catch (txError) {
         console.error('Could not create failed transaction record:', txError);
       }
-      
+
       throw error;
     }
   }
@@ -546,8 +546,8 @@ export class PointsService {
   async awardUploadBonus(userId: string, userEmail: string, noteId: string, noteTitle: string): Promise<void> {
     try {
       const uploadPoints = 30;
-      
-      await this.addPoints(userId, userEmail, uploadPoints, 'upload_bonus', 
+
+      await this.addPoints(userId, userEmail, uploadPoints, 'upload_bonus',
         `Upload bonus for: ${noteTitle}`, { noteId });
 
       // Update notes uploaded count
@@ -573,34 +573,34 @@ export class PointsService {
     try {
       // Get user document directly
       const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
-      
+
       console.log('Full user document keys:', Object.keys(user));
       console.log('Full user document:', JSON.stringify(user, null, 2));
-      
+
       // Check all possible field names for points
-      const allFields = Object.keys(user).filter(key => 
-        key.toLowerCase().includes('point') || 
+      const allFields = Object.keys(user).filter(key =>
+        key.toLowerCase().includes('point') ||
         key.toLowerCase().includes('referral') ||
         key.toLowerCase().includes('total') ||
         key.toLowerCase().includes('available') ||
         key.toLowerCase().includes('spent')
       );
-      
+
       console.log('Fields that might contain points:', allFields);
-      
+
       // Try various field name combinations
       const points = (user as any).points || (user as any).totalPoints || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
       const availablePoints = (user as any).availablePoints || (user as any).points || (user as any).available_points || (user as any).Points || (user as any).AvailablePoints || 0;
       const pointsSpent = (user as any).pointsSpent || (user as any).points_spent || (user as any).PointsSpent || 0;
       const totalReferrals = (user as any).totalReferrals || (user as any).total_referrals || (user as any).TotalReferrals || 0;
-      
+
       console.log('Extracted points:', {
         points,
         availablePoints,
-        pointsSpent, 
+        pointsSpent,
         totalReferrals
       });
-      
+
       return {
         points,
         availablePoints,
@@ -624,14 +624,14 @@ export class PointsService {
       console.log('Fetching points for user email:', userEmail);
       console.log('Using DATABASE_ID:', DATABASE_ID);
       console.log('Using USERS_COLLECTION_ID:', USERS_COLLECTION_ID);
-      
+
       // Query user by email instead of using Auth user ID
       const response = await databases.listDocuments(
         DATABASE_ID,
         USERS_COLLECTION_ID,
         [Query.equal('email', userEmail)]
       );
-      
+
       if (response.documents.length === 0) {
         console.warn('No user profile found for email:', userEmail);
         return {
@@ -641,38 +641,38 @@ export class PointsService {
           totalReferrals: 0
         };
       }
-      
+
       const user = response.documents[0];
       console.log('User document keys:', Object.keys(user));
       console.log('All user data:', JSON.stringify(user, null, 2));
-      
+
       // Check all possible point-related fields
       const pointsRelatedFields: Record<string, any> = {};
       Object.keys(user).forEach(key => {
-        if (key.toLowerCase().includes('point') || 
-            key.toLowerCase().includes('referral') ||
-            key.toLowerCase().includes('total') ||
-            key.toLowerCase().includes('available') ||
-            key.toLowerCase().includes('spent')) {
+        if (key.toLowerCase().includes('point') ||
+          key.toLowerCase().includes('referral') ||
+          key.toLowerCase().includes('total') ||
+          key.toLowerCase().includes('available') ||
+          key.toLowerCase().includes('spent')) {
           pointsRelatedFields[key] = (user as any)[key];
         }
       });
-      
+
       console.log('Points-related fields:', pointsRelatedFields);
-      
+
       // Try to get points from different possible field names
       const points = (user as any).points || (user as any).totalPoints || (user as any).total_points || (user as any).Points || (user as any).TotalPoints || 0;
       const availablePoints = (user as any).availablePoints || (user as any).points || (user as any).available_points || (user as any).Points || (user as any).AvailablePoints || 0;
       const pointsSpent = (user as any).pointsSpent || (user as any).points_spent || (user as any).PointsSpent || 0;
       const totalReferrals = (user as any).totalReferrals || (user as any).total_referrals || (user as any).TotalReferrals || 0;
-      
+
       const result = {
         points,
         availablePoints,
         pointsSpent,
         totalReferrals
       };
-      
+
       console.log('Final calculated points:', result);
       return result;
     } catch (error) {
@@ -694,7 +694,7 @@ export class PointsService {
       // Try to get the document by ID first (fallback)
       const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
       console.log('User document found by ID:', user.email);
-      
+
       // Use the email-based method for consistency
       return await this.getUserPointsByEmail(user.email);
     } catch (error) {
@@ -791,8 +791,8 @@ export class PointsService {
   }
 
   // Set download requirements for a note (admin function)
-  async setNoteDownloadRequirements(noteId: string, noteTitle: string, pointsRequired: number, 
-                                   category: string = 'standard', uploaderUserId?: string): Promise<void> {
+  async setNoteDownloadRequirements(noteId: string, noteTitle: string, pointsRequired: number,
+    category: string = 'standard', uploaderUserId?: string): Promise<void> {
     try {
       // Check if requirement already exists
       const existingResponse = await databases.listDocuments(
@@ -842,13 +842,13 @@ export class PointsService {
     try {
       console.log('=== CREATE TRANSACTION DEBUG ===');
       console.log('Creating transaction:', transaction);
-      
+
       // Validate required fields
       if (!transaction.userId || !transaction.userEmail || !transaction.type || transaction.points === undefined) {
         console.error('Missing required transaction fields:', transaction);
         throw new Error('Missing required transaction fields');
       }
-      
+
       // Validate environment variables
       if (!DATABASE_ID || !POINTS_TRANSACTIONS_COLLECTION_ID) {
         console.error('Missing database configuration for transactions:', {
@@ -857,12 +857,12 @@ export class PointsService {
         });
         throw new Error('Database configuration missing for transactions');
       }
-      
+
       // Create transaction with retry logic
       let createdTransaction;
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           createdTransaction = await databases.createDocument(
@@ -870,21 +870,34 @@ export class PointsService {
             POINTS_TRANSACTIONS_COLLECTION_ID,
             ID.unique(),
             transaction
-          );
-          break; // Success, exit retry loop
-        } catch (retryError) {
-          retryCount++;
-          console.warn(`Transaction creation attempt ${retryCount} failed:`, retryError);
-          
-          if (retryCount >= maxRetries) {
-            throw retryError; // Final attempt failed, throw error
+          ) as unknown as PointsTransaction;
+
+          if (createdTransaction) {
+            console.log('Transaction created successfully:', {
+              id: createdTransaction.$id,
+              type: createdTransaction.type,
+              points: createdTransaction.points,
+              status: createdTransaction.status
+            });
+          } else {
+            console.error('Created transaction is undefined - this should not happen');
+            throw new Error('Failed to create transaction after retries');
           }
-          
+
+          return createdTransaction;
+        } catch (error) {
+          retryCount++;
+          console.warn(`Transaction creation attempt ${retryCount} failed:`, error);
+
+          if (retryCount >= maxRetries) {
+            throw error; // Final attempt failed, throw error
+          }
+
           // Wait before retrying (exponential backoff)
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
       }
-      
+
       if (createdTransaction) {
         console.log('Transaction created successfully:', {
           id: createdTransaction.$id,
@@ -896,7 +909,7 @@ export class PointsService {
         console.error('Created transaction is undefined - this should not happen');
         throw new Error('Failed to create transaction after retries');
       }
-      
+
       return createdTransaction;
     } catch (error) {
       console.error('=== CREATE TRANSACTION ERROR ===');
