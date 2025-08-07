@@ -23,46 +23,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? (username as string).substring(1)
       : username;
 
-    const response = await databases.listDocuments(
-      databaseId,
-      collections.telegramMembers,
-      [Query.equal('username', cleanUsername)]
-    );
+    try {
+      const response = await databases.listDocuments(
+        databaseId,
+        collections.telegramMembers,
+        [Query.equal('username', cleanUsername)]
+      );
 
-    if (response.total === 0) {
-      // User not found in the database
-      return res.status(200).json({
-        is_member: false,
-        is_verified: false,
-        message: 'User not found. Please join the Telegram group and verify.',
-      });
-    }
+      if (response.total === 0) {
+        // User not found in the database
+        return res.status(200).json({
+          is_member: false,
+          is_verified: false,
+          message: '❌ Not a member. Please join our Telegram group first: https://t.me/JharkhandEnginnersHub',
+        });
+      }
 
-    const member = response.documents[0];
+      const member = response.documents[0];
 
-    if (!member) {
-      return res.status(404).json({
-        is_member: false,
-        is_verified: false,
-        message: 'Member data not found in documents.',
-      });
-    }
+      if (!member) {
+        return res.status(404).json({
+          is_member: false,
+          is_verified: false,
+          message: 'Member data not found in documents.',
+        });
+      }
 
-    // Check if the user is verified
-    const isVerified = member.is_wishlist_verified || false;
+      // Check if the user is verified
+      const isVerified = member.is_wishlist_verified || false;
 
-    if (isVerified) {
-      return res.status(200).json({
-        is_member: true,
-        is_verified: true,
-        message: 'User is verified.',
-      });
-    } else {
-      return res.status(200).json({
-        is_member: true,
-        is_verified: false,
-        message: 'User is a member but not verified. Please use /verify in the group.',
-      });
+      if (isVerified) {
+        return res.status(200).json({
+          is_member: true,
+          is_verified: true,
+          message: 'User is verified.',
+        });
+      } else {
+        return res.status(200).json({
+          is_member: true,
+          is_verified: false,
+          message: 'User is a member but not verified. Please use /verify in the group.',
+        });
+      }
+
+    } catch (collectionError: any) {
+      // Handle collection not found error
+      if (collectionError.code === 404) {
+        console.error('Telegram members collection not found. Please create the collection first.');
+        return res.status(200).json({
+          is_member: false,
+          is_verified: false,
+          message: 'Telegram verification system is being set up. Please try again later.',
+        });
+      }
+      throw collectionError;
     }
   } catch (error: any) {
     console.error('Error verifying Telegram member:', error);

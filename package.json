@@ -18,6 +18,9 @@
     "migrate:points:dry-run": "node -r dotenv/config scripts/migrate-points-field.js dry-run",
     "migrate:points": "node -r dotenv/config scripts/migrate-points-field.js migrate",
     "migrate:points:cleanup": "node -r dotenv/config scripts/migrate-points-field.js cleanup",
+    "setup:collections": "node scripts/setup-missing-collections.js",
+    "create:telegram-collection": "node scripts/create-telegram-collection.js",
+    "check:api-key": "node scripts/check-api-key.js",
     "postbuild": "next-sitemap",
     "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },
@@ -50,8 +53,8 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^14.2.18",
-    "@types/node": "^20.19.9",
-    "@types/react": "^18.3.3",
+    "@types/node": "20.19.9",
+    "@types/react": "18.3.23",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.0",

@@ -13,10 +13,6 @@
         {
             "source": "/api/telegram",
             "destination": "/telegram-bot/main.py"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/"
         }
     ]
 }

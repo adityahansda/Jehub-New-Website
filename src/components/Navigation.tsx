@@ -127,17 +127,15 @@ const Navigation = () => {
             </div>
 
             {/* Enhanced Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center space-x-4">
               {/* Main Navigation Items */}
-              <nav className="flex items-center space-x-1">
+              <nav className="flex items-center space-x-6">
                 {[
                   { href: '/', label: 'Home', icon: BookOpen },
-                  { href: '/notes-download', label: 'Notes Download', icon: Download },
-                  { href: '/notifications', label: 'Notifications', icon: Bell },
-                  { href: '/groups', label: 'Join Groups', icon: Users },
-                  { href: '/wishlist-users', label: 'Wishlist Users', icon: Users },
-                  { href: '/telegram-members', label: 'Telegram Members', icon: MessageCircle },
-                  { href: '/about', label: 'About Us', icon: Info }
+                  { href: '/notes-download', label: 'Notes', icon: Download },
+                  { href: '/notifications', label: 'Updates', icon: Bell },
+                  { href: '/groups', label: 'Groups', icon: Users },
+                  { href: '/about', label: 'About', icon: Info }
                 ].map((item, index) => {
                   const IconComponent = item.icon;
                   // Handle groups redirect: /groups redirects to /features/groups
@@ -150,23 +148,14 @@ const Navigation = () => {
                       href={item.href}
                       onMouseEnter={() => setHoveredIndex(index)}
                       onMouseLeave={() => setHoveredIndex(null)}
-                      className={`group relative px-3 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${isActive
-                        ? 'text-white bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                      className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                        ? 'text-amber-400'
+                        : 'text-white/80 hover:text-white'
                         }`}
                     >
-                      <div className="flex items-center space-x-1.5">
-                        <IconComponent className={`h-4 w-4 transition-all duration-300 ${isActive ? 'text-amber-400' : 'text-white/60 group-hover:text-white'
-                          } ${hoveredIndex === index ? 'scale-110' : ''}`} />
-                        <span>{item.label}</span>
-                      </div>
-
-                      {/* Hover Effect Background */}
-                      <div className={`absolute inset-0 rounded-xl bg-gradient-to-r from-amber-400/10 to-orange-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}></div>
-
-                      {/* Active Indicator */}
+                      <span>{item.label}</span>
                       {isActive && (
-                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full animate-pulse"></div>
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-amber-400 rounded-full"></div>
                       )}
                     </Link>
                   );
@@ -174,7 +163,7 @@ const Navigation = () => {
               </nav>
 
               {/* Separator */}
-              <div className="w-px h-6 bg-white/20 mx-2"></div>
+              <div className="w-px h-6 bg-white/20 mx-6"></div>
 
               {/* Authentication / User Profile Section */}
               <div className="flex items-center">
@@ -229,12 +218,9 @@ const Navigation = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-2">
-                    <Link href="/auth/login" className="px-4 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors duration-200">
+                  <div className="flex items-center">
+                    <Link href="/login" className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
                       Login
-                    </Link>
-                    <Link href="/auth/register" className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
-                      Sign Up
                     </Link>
                   </div>
                 )}
