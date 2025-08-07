@@ -46,7 +46,7 @@ export default function VerifyPage() {
         } else {
           setVerificationStatus({
             type: 'error',
-            message: 'You are not a member of the Telegram group. Please join the group and try again.',
+            message: 'You are not a member of the Telegram group. Please join our group first: https://t.me/JharkhandEnginnersHub',
           });
         }
       } else {

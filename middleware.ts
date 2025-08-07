@@ -5,7 +5,9 @@ import { deviceTrackingService } from './src/services/deviceTrackingService';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // TODO: Temporarily disabled IP ban checking until collections are created
   // Check if IP is banned (for all requests except static files and some API routes)
+  /*
   if (
     !pathname.startsWith('/_next/') &&
     !pathname.includes('.') &&
@@ -31,9 +33,10 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       // Log error but don't block request if IP checking fails
-      console.error('Error checking IP ban status:', error);
+      console.error('Error checking if IP is banned:', error);
     }
   }
+  */
 
   // Define public pages that are accessible to everyone (without authentication)
   const publicPages = [

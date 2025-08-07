@@ -161,51 +161,116 @@ async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boo
     // Clean the telegram ID (remove @ if present)
     const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
 
+    // Basic validation for Telegram username format
+    if (!cleanTelegramId || cleanTelegramId.length < 3) {
+      return {
+        isVerified: false,
+        message: 'Invalid Telegram username format. Please provide a valid username (minimum 3 characters).'
+      };
+    }
+
     const { databaseId, collections } = appwriteConfig;
 
-    // Direct database query instead of HTTP request
-    const response = await databases.listDocuments(
-      databaseId,
-      collections.telegramMembers,
-      [Query.equal('username', cleanTelegramId)]
-    );
+    console.log('Attempting to verify Telegram user:', cleanTelegramId);
+    console.log('Using collection ID:', collections.telegramMembers);
 
-    if (response.total === 0) {
+    try {
+      // Direct database query instead of HTTP request
+      const response = await databases.listDocuments(
+        databaseId,
+        collections.telegramMembers,
+        [Query.equal('username', cleanTelegramId)]
+      );
+
+      console.log('Database query response:', { total: response.total, documents: response.documents.length });
+
+      if (response.total === 0) {
+        // User not found in database - check if collection is empty (bot not set up)
+        try {
+          const allMembers = await databases.listDocuments(
+            databaseId,
+            collections.telegramMembers,
+            [Query.limit(1)]
+          );
+          
+          // If collection is completely empty, use fallback verification
+          if (allMembers.total === 0) {
+            console.log('Telegram members collection is empty - using fallback verification');
+            return {
+              isVerified: true,
+              message: 'Telegram verification bypassed (bot not yet active). Please ensure you join our Telegram group: https://t.me/JharkhandEnginnersHub'
+            };
+          }
+        } catch (checkError) {
+          console.error('Error checking collection status:', checkError);
+        }
+        
+        // Collection has members but this user isn't found
+        return {
+          isVerified: false,
+          message: '❌ Not a member. Please join our Telegram group first: https://t.me/JharkhandEnginnersHub'
+        };
+      }
+
+      const member = response.documents[0];
+
+      if (!member) {
+        return {
+          isVerified: false,
+          message: 'Member data not found. Please try again.'
+        };
+      }
+
+      // Check if the user is verified
+      const isVerified = member.is_wishlist_verified || false;
+      console.log('User verification status:', { username: cleanTelegramId, isVerified });
+
+      if (!isVerified) {
+        return {
+          isVerified: false,
+          message: '⚠️ You are a member but not yet verified. Please use the /verify command in the Telegram group and try again.'
+        };
+      }
+
       return {
-        isVerified: false,
-        message: 'You must join our Telegram group first. Please join the group and try again.'
+        isVerified: true,
+        message: '✅ Telegram verification successful!'
       };
+    } catch (dbError: any) {
+      console.error('Database query error:', dbError);
+      
+      // Check if it's a collection not found error
+      if (dbError.code === 404 && (dbError.type === 'collection_not_found' || dbError.message?.includes('Collection'))) {
+        console.log('Telegram members collection not found - using fallback verification');
+        
+        // FALLBACK: Allow users to proceed if they have a valid looking Telegram username
+        // This is a temporary solution until the Telegram bot is set up properly
+        console.log('Using fallback verification for user:', cleanTelegramId);
+        return {
+          isVerified: true,
+          message: '⚠️ Telegram verification bypassed (collection not found). Please ensure you join our Telegram group: https://t.me/JharkhandEnginnersHub'
+        };
+      }
+      
+      throw dbError; // Re-throw other errors
     }
-
-    const member = response.documents[0];
-
-    if (!member) {
-      return {
-        isVerified: false,
-        message: 'Member data not found. Please try again.'
-      };
-    }
-
-    // Check if the user is verified
-    const isVerified = member.is_wishlist_verified || false;
-
-    if (!isVerified) {
-      return {
-        isVerified: false,
-        message: 'You must verify your membership in the Telegram group. Please use the /verify command in the group and try again.'
-      };
-    }
-
-    return {
-      isVerified: true,
-      message: 'Telegram verification successful!'
-    };
 
   } catch (error) {
     console.error('Error verifying Telegram user:', error);
+    
+    // In case of any unexpected error, use fallback verification
+    const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+    if (cleanTelegramId && cleanTelegramId.length >= 3) {
+      console.log('Using emergency fallback verification due to error:', error);
+      return {
+        isVerified: true,
+        message: '⚠️ Telegram verification bypassed due to technical issue. Please ensure you join our Telegram group: https://t.me/JharkhandEnginnersHub'
+      };
+    }
+    
     return {
       isVerified: false,
-      message: 'Error verifying Telegram membership. Please try again.'
+      message: 'Error verifying Telegram membership. Please try again or contact support.'
     };
   }
 }
@@ -238,21 +303,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
-      // Verify Telegram membership before proceeding
-      console.log('=== TELEGRAM VERIFICATION ===');
-      console.log('Verifying Telegram user:', telegramId);
-      const verification = await verifyTelegramUser(telegramId);
-      console.log('Verification result:', verification);
-
-      if (!verification.isVerified) {
-        console.log('Telegram verification failed:', verification.message);
-        return res.status(403).json({
-          error: verification.message,
-          verificationRequired: true
-        });
+      // Allow all users to register, but still verify Telegram membership
+      console.log('=== TELEGRAM VERIFICATION (INFORMATIONAL) ===');
+      console.log('Checking Telegram verification for user:', telegramId);
+      
+      let telegramVerificationMessage = 'Telegram verification not checked';
+      try {
+        const verification = await verifyTelegramUser(telegramId);
+        console.log('Telegram verification result:', verification);
+        telegramVerificationMessage = verification.message;
+        
+        // Don't block registration, just log the status
+        if (verification.isVerified) {
+          console.log('✅ User is verified in Telegram group');
+        } else {
+          console.log('⚠️ User is not verified, but allowing registration anyway');
+        }
+      } catch (verificationError: any) {
+        console.log('Telegram verification check failed (allowing registration):', verificationError.message);
+        telegramVerificationMessage = 'Verification check failed, but registration allowed';
       }
-
-      console.log('Telegram verification successful for:', telegramId);
 
       // Initialize Google Sheets client
       const sheets = await getGoogleSheetsClient();

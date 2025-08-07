@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import Navigation from '../src/components/Navigation';
 import Footer from '../src/components/Footer';
+import { useAuth } from '../src/contexts/AuthContext';
+import Link from 'next/link';
 
 // Comprehensive list of colleges and institutes
 const COLLEGES_LIST = {
@@ -72,6 +74,7 @@ const COLLEGES_LIST = {
 
 const WishlistRegistration: React.FC = () => {
   const router = useRouter();
+  const { user, isVerified, userProfile } = useAuth();
   const [form, setForm] = useState({
     name: '',
     branch: '',
@@ -88,6 +91,18 @@ const WishlistRegistration: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'checking' | 'verified' | 'unverified' | 'not_member' | null>(null);
+  const [verificationTimeoutId, setVerificationTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  
+  // Pre-fill form with user data if available
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
 
   const fieldLabels = {
     name: 'Full Name',
@@ -110,29 +125,70 @@ const WishlistRegistration: React.FC = () => {
     if (error) setError('');
 
     // Check verification status when Telegram ID is entered
-    if (e.target.name === 'telegramId' && e.target.value.trim()) {
-      checkVerificationStatus(e.target.value.trim());
+    if (e.target.name === 'telegramId') {
+      if (e.target.value.trim()) {
+        checkVerificationStatus(e.target.value.trim());
+      } else {
+        // Clear verification status when field is empty
+        setVerificationStatus(null);
+        if (verificationTimeoutId) {
+          clearTimeout(verificationTimeoutId);
+          setVerificationTimeoutId(null);
+        }
+      }
     }
   };
 
   const checkVerificationStatus = async (telegramId: string) => {
-    if (!telegramId) return;
+    if (!telegramId || telegramId.length < 3) {
+      setVerificationStatus(null);
+      return;
+    }
+
+    // Clear any existing timeout
+    if (verificationTimeoutId) {
+      clearTimeout(verificationTimeoutId);
+    }
 
     setVerificationStatus('checking');
-    try {
-      const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
-      const response = await axios.get(`/api/verify-telegram?username=${encodeURIComponent(cleanTelegramId)}`);
+    
+    // Add a small debounce to avoid too many API calls
+    const timeoutId = setTimeout(async () => {
+      try {
+        const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+        
+        // Only log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 Checking verification for:', cleanTelegramId);
+        }
+        
+        const response = await axios.get(`/api/verify-telegram?username=${encodeURIComponent(cleanTelegramId)}`);
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📝 Verification response:', response.data);
+        }
 
-      if (response.data.is_member && response.data.is_verified) {
-        setVerificationStatus('verified');
-      } else if (response.data.is_member && !response.data.is_verified) {
-        setVerificationStatus('unverified');
-      } else {
-        setVerificationStatus('not_member');
+        if (response.data.is_member && response.data.is_verified) {
+          setVerificationStatus('verified');
+        } else if (response.data.is_member && !response.data.is_verified) {
+          setVerificationStatus('unverified');
+        } else {
+          setVerificationStatus('not_member');
+        }
+      } catch (error: any) {
+        console.error('Verification check failed:', error);
+        if (error.response?.status === 404 || error.response?.status === 500) {
+          // If there's a server error, assume not a member
+          setVerificationStatus('not_member');
+        } else {
+          // For network errors, reset to null to not block the user
+          setVerificationStatus(null);
+        }
       }
-    } catch (error) {
-      setVerificationStatus('not_member');
-    }
+    }, 800); // 800ms debounce
+
+    // Store the timeout ID
+    setVerificationTimeoutId(timeoutId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,7 +230,7 @@ const WishlistRegistration: React.FC = () => {
 
       // Check if it's a verification error
       if (err.response?.data?.verificationRequired) {
-        setError(`${errorMessage}\n\n📱 To verify your membership:\n1. Join our Telegram group: https://t.me/JharkhandEnginnersHub\n2. Send /verify message in the group\n3. Try submitting again`);
+        setError(`${errorMessage}\n\n📱 To fix this issue:\n1. Join our Telegram group: https://t.me/JharkhandEnginnersHub\n2. Send /verify message in the group\n3. Try submitting again\n\nNeed help? Contact us in the group!`);
       } else {
         setError(errorMessage);
       }
@@ -212,30 +268,66 @@ const WishlistRegistration: React.FC = () => {
               </p>
             </div>
 
-            {/* Verification Info */}
-            <div className="px-8 py-4 bg-blue-900/30 border-b border-blue-500/30">
+            {/* Login Requirement Message */}
+            {!user && (
+              <div className="px-8 py-6 bg-orange-900/30 border-b border-orange-500/30">
+                <div className="flex items-start space-x-3">
+                  <div className="text-orange-400 text-xl">🔐</div>
+                  <div>
+                    <h3 className="text-white font-semibold mb-3">Login Required</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      You need to login first before you can register for the wishlist. Please sign in with your Google account to continue.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2 text-sm">
+                        <span className="text-orange-400">✓</span>
+                        <span className="text-gray-300">Secure Google authentication</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <span className="text-orange-400">✓</span>
+                        <span className="text-gray-300">Your information will be pre-filled</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <span className="text-orange-400">✓</span>
+                        <span className="text-gray-300">Track your wishlist status</span>
+                      </div>
+                      <div className="mt-4">
+                        <Link href="/login">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg"
+                          >
+                            🚀 Login to Continue
+                          </motion.button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Telegram Group Info */}
+            <div className="px-8 py-4 bg-green-900/30 border-b border-green-500/30">
               <div className="flex items-start space-x-3">
-                <div className="text-blue-400 text-xl">📱</div>
+                <div className="text-green-400 text-xl">🚀</div>
                 <div>
-                  <h3 className="text-white font-semibold mb-2">Telegram Verification Required</h3>
+                  <h3 className="text-white font-semibold mb-2">Join Our Telegram Community</h3>
                   <p className="text-gray-300 text-sm mb-3">
-                    To join the beta program, you must be a verified member of our Telegram group.
+                    {user ? 'Great! You\'re logged in. ' : ''}All users can register for the beta program! We encourage you to join our Telegram group for updates and support.
                   </p>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-2">
-                      <span className="text-green-400">1.</span>
-                      <span className="text-gray-300">Join our group:</span>
+                      <span className="text-green-400">💬</span>
+                      <span className="text-gray-300">Join our community:</span>
                       <a href="https://t.me/JharkhandEnginnersHub" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
                         https://t.me/JharkhandEnginnersHub
                       </a>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-green-400">2.</span>
-                      <span className="text-gray-300">Send message:</span>
-                      <a href="https://t.me/JharkhandEnginnersHub/15538" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-                        /verify
-                      </a>
-                      <span className="text-gray-300">in the group</span>
+                      <span className="text-green-400">🔔</span>
+                      <span className="text-gray-300">Get notifications about beta updates and new features</span>
                     </div>
                   </div>
                 </div>
@@ -277,8 +369,13 @@ const WishlistRegistration: React.FC = () => {
                     value={form.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-700 border-2 border-purple-500/50 text-white rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all duration-200 placeholder-gray-400 hover:border-purple-400/70"
-                    placeholder="Enter your full name"
+                    disabled={!user}
+                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${
+                      !user 
+                        ? 'bg-gray-800 border border-gray-700 text-gray-500 cursor-not-allowed' 
+                        : 'bg-gray-700 border-2 border-purple-500/50 text-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 hover:border-purple-400/70'
+                    }`}
+                    placeholder={!user ? "Please login to continue" : "Enter your full name"}
                   />
                 </div>
 
@@ -294,8 +391,13 @@ const WishlistRegistration: React.FC = () => {
                     value={form.branch}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                    placeholder="e.g., Computer Science, Mechanical"
+                    disabled={!user}
+                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${
+                      !user 
+                        ? 'bg-gray-800 border border-gray-700 text-gray-500 cursor-not-allowed' 
+                        : 'bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    }`}
+                    placeholder={!user ? "Please login to continue" : "e.g., Computer Science, Mechanical"}
                   />
                 </div>
 
@@ -470,15 +572,22 @@ const WishlistRegistration: React.FC = () => {
               {/* Submit Button */}
               <motion.button
                 type="submit"
-                disabled={isSubmitting || verificationStatus === 'not_member' || verificationStatus === 'unverified'}
-                whileHover={{ scale: verificationStatus === 'verified' ? 1.02 : 1 }}
-                whileTap={{ scale: verificationStatus === 'verified' ? 0.98 : 1 }}
-                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${verificationStatus === 'verified'
-                  ? 'bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 hover:via-yellow-500 text-white'
-                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                disabled={!user || isSubmitting || verificationStatus === 'not_member' || verificationStatus === 'unverified'}
+                whileHover={{ scale: (user && verificationStatus === 'verified') ? 1.02 : 1 }}
+                whileTap={{ scale: (user && verificationStatus === 'verified') ? 0.98 : 1 }}
+                className={`w-full font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+                  !user 
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    : verificationStatus === 'verified'
+                    ? 'bg-gradient-to-r from-green-400 via-yellow-400 to-red-400 hover:via-yellow-500 text-white'
+                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isSubmitting ? (
+                {!user ? (
+                  <>
+                    <span>🔐 Please Login First</span>
+                  </>
+                ) : isSubmitting ? (
                   <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
