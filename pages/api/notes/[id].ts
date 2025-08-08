@@ -47,8 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break;
 
       case 'PATCH':
-        // Update note (views, reports, etc.)
-        const { action } = req.body;
+        // Update note (views, reports, likes, etc.)
+        const { action, increment } = req.body;
         
         if (action === 'increment_view') {
           const currentNote = await serverDatabases.getDocument(
@@ -67,6 +67,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           );
 
           res.status(200).json({ success: true, views: (currentNote.views || 0) + 1 });
+        } else if (action === 'like') {
+          const currentNote = await serverDatabases.getDocument(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+            process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+            id
+          );
+
+          // increment can be 1 (like) or -1 (unlike)
+          const newLikes = Math.max(0, (currentNote.likes || 0) + (increment || 1));
+
+          await serverDatabases.updateDocument(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+            process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+            id,
+            {
+              likes: newLikes
+            }
+          );
+
+          res.status(200).json({ success: true, likes: newLikes });
+        } else if (action === 'increment_download') {
+          const currentNote = await serverDatabases.getDocument(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+            process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+            id
+          );
+
+          await serverDatabases.updateDocument(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+            process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
+            id,
+            {
+              downloads: (currentNote.downloads || 0) + 1
+            }
+          );
+
+          res.status(200).json({ success: true, downloads: (currentNote.downloads || 0) + 1 });
         } else if (action === 'report') {
           const currentNote = await serverDatabases.getDocument(
             process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,

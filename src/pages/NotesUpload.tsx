@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff, Coins } from 'lucide-react';
+import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff, Coins, ExternalLink } from 'lucide-react';
 import { uploadWithFallback, checkUploadStatus } from '../lib/uploadService';
 import { validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import { pointsService } from '../services/pointsService';
+import { generateNoteSlug } from '../utils/seo';
 // Database operations now handled through API route
 
 
@@ -32,6 +33,8 @@ const NotesUpload = () => {
   const [uploadStatus, setUploadStatus] = useState({ github: false, local: true, message: '' });
   const [uploadMethod, setUploadMethod] = useState<string>('');
   const [pointsAwarded, setPointsAwarded] = useState(0);
+  const [uploadedNoteId, setUploadedNoteId] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   // Check upload status on component mount
   useEffect(() => {
@@ -110,7 +113,16 @@ const NotesUpload = () => {
       }
       
       const newGithubUrl = uploadResult.url!;
-      setUploadMethod(uploadResult.method || 'unknown');
+      const uploadMethod = uploadResult.method || 'unknown';
+      setUploadMethod(uploadMethod);
+
+      // Log the upload result for debugging
+      console.log('Upload completed:', {
+        method: uploadMethod,
+        url: newGithubUrl,
+        isGitHubUrl: newGithubUrl.includes('githubusercontent.com') || newGithubUrl.includes('github.com'),
+        isMockUrl: newGithubUrl.includes('mockcdn.jehub.com')
+      });
 
       if (progressIntervalId) clearInterval(progressIntervalId);
       setUploadProgress(100);
@@ -136,6 +148,11 @@ const NotesUpload = () => {
         userIp: ip,
         degree: formData.degree
       };
+      
+      console.log('Saving to database with GitHub URL:', {
+        githubUrl: newGithubUrl,
+        method: uploadMethod
+      });
 
       const dbResponse = await fetch('/api/notes-upload', {
         method: 'POST',
@@ -154,13 +171,24 @@ const NotesUpload = () => {
       const dbResult = await dbResponse.json();
       console.log('Database save successful:', dbResult);
       
+      // Store the uploaded note information
+      const uploadedId = dbResult.noteId || dbResult.id || 'unknown';
+      setUploadedNoteId(uploadedId);
+      
+      // Generate preview URL using the note ID and title
+      if (uploadedId !== 'unknown') {
+        const slug = generateNoteSlug(uploadedId, formData.title);
+        const previewLink = `/notes/preview/${slug}`;
+        setPreviewUrl(previewLink);
+      }
+      
       // Award upload bonus points to authenticated users
       if (user) {
         try {
           await pointsService.awardUploadBonus(
             user.$id,
             user.email,
-            dbResult.noteId || 'unknown',
+            uploadedId,
             formData.title
           );
           setPointsAwarded(30); // Set points awarded for display
@@ -274,12 +302,23 @@ const NotesUpload = () => {
         {/* Success Popup */}
         {isSubmitted && githubUrl && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 shadow-2xl max-w-sm w-full text-center">
+            <div className="bg-white rounded-lg p-8 shadow-2xl max-w-md w-full mx-4 text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Successful!</h2>
               <p className="text-gray-600 mb-4">
                 Your notes have been uploaded successfully{uploadMethod === 'github' ? ' to GitHub' : ' using our secure service'}.
               </p>
+              
+              {/* Points awarded notification */}
+              {pointsAwarded > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-center">
+                    <Coins className="h-4 w-4 text-yellow-600 mr-2" />
+                    <span className="text-sm text-yellow-800 font-medium">+{pointsAwarded} points awarded!</span>
+                  </div>
+                </div>
+              )}
+              
               {uploadMethod === 'local' && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                   <div className="flex items-center">
@@ -288,20 +327,56 @@ const NotesUpload = () => {
                   </div>
                 </div>
               )}
-              <div className="bg-gray-100 rounded-lg p-3 mb-4">
-                <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
-                  {githubUrl}
-                </a>
+              
+              {/* Preview page link (priority) */}
+              {previewUrl ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-green-800 font-medium mb-2">📖 View your uploaded notes:</p>
+                  <a 
+                    href={previewUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open Notes Preview
+                  </a>
+                </div>
+              ) : (
+                /* Fallback to show file URL */
+                <div className="bg-gray-100 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-gray-600 mb-1">File URL:</p>
+                  <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all text-sm">
+                    {githubUrl}
+                  </a>
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                {previewUrl && (
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors inline-flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Notes
+                  </a>
+                )}
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setGithubUrl('');
+                    setPreviewUrl('');
+                    setUploadedNoteId('');
+                    setPointsAwarded(0);
+                  }}
+                  className="flex-1 bg-gray-600 text-white py-2 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setGithubUrl('');
-                }}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Close
-              </button>
             </div>
           </div>
         )}

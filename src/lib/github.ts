@@ -108,14 +108,27 @@ export const uploadToGitHub = async (file: File, path: string): Promise<string> 
       }
     });
 
-    // Return the raw URL for PDF viewing (not download URL)
-    // Convert the HTML URL to raw URL for better compatibility
+    // Return the proper GitHub raw URL for PDF viewing
+    const branch = 'main'; // Default branch (could be made configurable)
+    
+    // Construct the raw URL directly for better reliability
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+    
+    // Also try to get the HTML URL and convert it if available
     const htmlUrl = response.data.content?.html_url || '';
     if (htmlUrl.includes('/blob/')) {
-      return htmlUrl.replace('/blob/', '/raw/');
+      const convertedUrl = htmlUrl.replace('/blob/', '/raw/');
+      console.log('GitHub upload successful. URLs:', {
+        rawUrl,
+        convertedUrl,
+        downloadUrl: response.data.content?.download_url || '',
+        method: 'github'
+      });
+      return convertedUrl;
     }
-    // Fallback to download URL if raw URL can't be constructed
-    return response.data.content?.download_url || '';
+    
+    console.log('GitHub upload successful. Using constructed raw URL:', rawUrl);
+    return rawUrl;
   } catch (error: any) {
     console.error('GitHub upload error:', error);
     throw new Error(
