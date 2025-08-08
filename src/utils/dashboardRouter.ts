@@ -1,6 +1,6 @@
 import { UserProfile } from '../services/userService';
 
-export type UserRole = 'student' | 'admin' | 'manager' | 'intern' | 'user';
+export type UserRole = 'student' | 'admin' | 'manager' | 'intern' | 'team' | 'betatest' | 'user';
 
 /**
  * Determines the appropriate dashboard URL based on user role
@@ -23,6 +23,10 @@ export function getDashboardUrl(userProfile: UserProfile | null): string {
       return '/admin-dashboard'; // Managers also use admin dashboard but with limited access
     case 'intern':
       return '/admin-dashboard'; // Interns also use admin dashboard but with limited access
+    case 'team':
+      return '/admin-dashboard'; // Team members also use admin dashboard but with limited access
+    case 'betatest':
+      return '/dashboard'; // Beta testers use regular dashboard but have access to all pages
     case 'student':
     case 'user':
     default:
@@ -36,9 +40,11 @@ export function getDashboardUrl(userProfile: UserProfile | null): string {
  */
 export function getRolePriority(role: UserRole): number {
   const priorities = {
-    'admin': 5,
-    'manager': 4,
+    'admin': 6,
+    'manager': 5,
+    'team': 4,
     'intern': 3,
+    'betatest': 3, // Same level as intern for beta access
     'student': 2,
     'user': 1
   };
