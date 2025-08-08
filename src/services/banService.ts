@@ -68,7 +68,13 @@ class BanService {
       }
 
       return { isBanned: false };
-    } catch (error) {
+    } catch (error: any) {
+      // Check if the error is due to collection not existing
+      if (error.code === 404 || error.message?.includes('Collection with the requested ID could not be found')) {
+        console.warn('Ban service: Collection not found, skipping ban check. This is normal in development.');
+        return { isBanned: false };
+      }
+      
       console.error('Error checking ban status:', error);
       return { isBanned: false };
     }
