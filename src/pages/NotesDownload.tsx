@@ -458,6 +458,7 @@ const NotesDownload = () => {
     if (!note) return;
 
     const isLiked = likedNotes.has(noteId);
+    const increment = isLiked ? -1 : 1;
     const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
     
     // Optimistic update - update UI immediately
@@ -478,15 +479,33 @@ const NotesDownload = () => {
     });
 
     try {
-      // Update database (gracefully handle if not authenticated)
-      await databases.updateDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-        noteId,
-        { likes: newLikes }
+      // Use API endpoint to update database (no authentication required)
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'like',
+          increment: increment
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update like');
+      }
+
+      const result = await response.json();
+      
+      // Update with actual count from server to ensure consistency
+      setNotes(prevNotes =>
+        prevNotes.map(n =>
+          n.id === noteId ? { ...n, likes: result.likes } : n
+        )
       );
+      
     } catch (error) {
-      console.warn('Could not update like in database (may require authentication):', error);
+      console.warn('Could not update like in database:', error);
       
       // Revert optimistic update on error
       setNotes(prevNotes =>
@@ -505,10 +524,8 @@ const NotesDownload = () => {
         return newSet;
       });
       
-      // Show a subtle notification that likes require authentication
-      setTimeout(() => {
-        showInfo('Note: Likes are saved locally. Sign in to sync your preferences across devices.');
-      }, 100);
+      // Show error message
+      showError('Unable to update like count. Please try again later.');
     }
   };
 
