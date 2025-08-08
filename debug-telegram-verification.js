@@ -12,7 +12,7 @@ async function debugTelegramVerification() {
 
     const databases = new Databases(client);
     const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || '686d370a000cfabbd998';
-    const telegramMembersCollectionId = process.env.NEXT_PUBLIC_APPWRITE_TELEGRAM_MEMBERS_COLLECTION_ID || 'telegram_members_collection';
+    const telegramMembersCollectionId = process.env.NEXT_PUBLIC_APPWRITE_TELEGRAM_MEMBERS_COLLECTION_ID || 'telegram_members';
 
     console.log('📊 Configuration:');
     console.log(`Database ID: ${databaseId}`);

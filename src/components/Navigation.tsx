@@ -135,6 +135,7 @@ const Navigation = () => {
                   { href: '/notes-download', label: 'Notes', icon: Download },
                   { href: '/notifications', label: 'Updates', icon: Bell },
                   { href: '/groups', label: 'Groups', icon: Users },
+                  { href: '/wishlist-users', label: 'Beta Users', icon: Users },
                   { href: '/about', label: 'About', icon: Info }
                 ].map((item, index) => {
                   const IconComponent = item.icon;
@@ -204,10 +205,12 @@ const Navigation = () => {
                             <Gift className="h-5 w-5" />
                             <span>Referral Dashboard</span>
                           </button>
-                          <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
-                            <Shield className="h-5 w-5" />
-                            <span>Verify Membership</span>
-                          </button>
+                          {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
+                            <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
+                              <Shield className="h-5 w-5" />
+                              <span>Verify Membership</span>
+                            </button>
+                          )}
                           <div className="border-t border-white/10 my-2"></div>
                           <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all duration-300">
                             <X className="h-5 w-5" />
@@ -382,13 +385,15 @@ const Navigation = () => {
                           <Gift className="h-5 w-5" />
                           <span>Referral Dashboard</span>
                         </button>
-                        <button
-                          onClick={() => handleProfileClick('/user/verify')}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
-                        >
-                          <Shield className="h-5 w-5" />
-                          <span>Verify Membership</span>
-                        </button>
+                        {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
+                          <button
+                            onClick={() => handleProfileClick('/user/verify')}
+                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                          >
+                            <Shield className="h-5 w-5" />
+                            <span>Verify Membership</span>
+                          </button>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-xl transition-all duration-300"

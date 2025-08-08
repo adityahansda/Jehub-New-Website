@@ -33,7 +33,7 @@ export default function VerifyPage() {
       const data = await response.json();
 
       if (response.ok) {
-        if (data.is_verified) {
+        if (data.isVerified) {
           setVerificationStatus({
             type: 'success',
             message: 'You are already a verified member!',
@@ -46,7 +46,7 @@ export default function VerifyPage() {
         } else {
           setVerificationStatus({
             type: 'error',
-            message: 'You are not a member of the Telegram group. Please join our group first: https://t.me/JharkhandEnginnersHub',
+            message: 'You are not a member of the Telegram group. Please join the group and try again.',
           });
         }
       } else {
