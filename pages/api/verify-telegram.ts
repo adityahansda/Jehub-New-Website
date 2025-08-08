@@ -1,11 +1,25 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Databases, Query } from 'node-appwrite';
-import serverClient, { serverDatabases as databases } from '../../src/lib/appwrite-server';
+import { Query } from 'node-appwrite';
+import { serverDatabases } from '../../src/lib/appwrite-server';
 import { appwriteConfig } from '../../src/lib/appwriteConfig';
 
-const { databaseId, collections } = appwriteConfig;
+interface TelegramVerificationResponse {
+  is_member: boolean;
+  isVerified: boolean;
+  user_data?: {
+    user_id: number;
+    username?: string;
+    first_name: string;
+    last_name?: string;
+    display_name: string;
+    status: string;
+    is_active: boolean;
+    is_wishlist_verified: boolean;
+    joined_at: string;
+  };
+}
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<TelegramVerificationResponse | { error: string }>) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -13,76 +27,78 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { username } = req.query;
 
   if (!username) {
-    return res.status(400).json({ error: 'Telegram username is required' });
+    return res.status(400).json({ error: 'Username is required' });
   }
 
   try {
+    // Clean the username (remove @ if present)
+    const cleanUsername = typeof username === 'string' ? 
+      (username.startsWith('@') ? username.substring(1) : username) : '';
 
-    // Remove leading '@' if present
-    const cleanUsername = (username as string).startsWith('@')
-      ? (username as string).substring(1)
-      : username;
+    console.log(`Verifying Telegram username: ${cleanUsername}`);
 
-    try {
-      const response = await databases.listDocuments(
-        databaseId,
-        collections.telegramMembers,
-        [Query.equal('username', cleanUsername)]
-      );
+    // Query Appwrite database for the user by username
+    const DATABASE_ID = appwriteConfig.databaseId;
+    const COLLECTION_ID = appwriteConfig.collections.telegramMembers;
 
-      if (response.total === 0) {
-        // User not found in the database
-        return res.status(200).json({
-          is_member: false,
-          is_verified: false,
-          message: '❌ Not a member. Please join our Telegram group first: https://t.me/JharkhandEnginnersHub',
-        });
-      }
+    const response = await serverDatabases.listDocuments(
+      DATABASE_ID,
+      COLLECTION_ID,
+      [
+        Query.equal('username', cleanUsername)
+      ]
+    );
 
-      const member = response.documents[0];
+    if (response.documents.length > 0) {
+      const userDoc = response.documents[0];
+      
+      // Check if user is active and has proper status
+      // If is_active is not set, assume they are active (for backward compatibility)
+      const isActive = userDoc.is_active !== false; // true if undefined or true
+      const hasValidStatus = ['member', 'administrator', 'creator'].includes(userDoc.status?.toLowerCase());
+      
+      // User is verified for wishlist if they have is_wishlist_verified = true
+      // They must also be active and have valid status in the group
+      const isWishlistVerified = userDoc.is_wishlist_verified === true;
+      const isVerified = isActive && hasValidStatus && isWishlistVerified;
 
-      if (!member) {
-        return res.status(404).json({
-          is_member: false,
-          is_verified: false,
-          message: 'Member data not found in documents.',
-        });
-      }
+      console.log(`User found: ${userDoc.display_name || userDoc.first_name}, Active: ${isActive}, Status: ${userDoc.status}, Wishlist Verified: ${isWishlistVerified}, Overall Verified: ${isVerified}`);
+      
+      // Log verification details for debugging
+      console.log(`Verification details for ${cleanUsername}:`, {
+        is_active: userDoc.is_active,
+        status: userDoc.status,
+        is_wishlist_verified: userDoc.is_wishlist_verified,
+        hasValidStatus,
+        finalVerified: isVerified
+      });
 
-      // Check if the user is verified
-      const isVerified = member.is_wishlist_verified || false;
-
-      if (isVerified) {
-        return res.status(200).json({
-          is_member: true,
-          is_verified: true,
-          message: 'User is verified.',
-        });
-      } else {
-        return res.status(200).json({
-          is_member: true,
-          is_verified: false,
-          message: 'User is a member but not verified. Please use /verify in the group.',
-        });
-      }
-
-    } catch (collectionError: any) {
-      // Handle collection not found error
-      if (collectionError.code === 404) {
-        console.error('Telegram members collection not found. Please create the collection first.');
-        return res.status(200).json({
-          is_member: false,
-          is_verified: false,
-          message: 'Telegram verification system is being set up. Please try again later.',
-        });
-      }
-      throw collectionError;
+      return res.status(200).json({
+        is_member: true,
+        isVerified,
+        user_data: {
+          user_id: userDoc.user_id,
+          username: userDoc.username,
+          first_name: userDoc.first_name,
+          last_name: userDoc.last_name,
+          display_name: userDoc.display_name,
+          status: userDoc.status,
+          is_active: userDoc.is_active,
+          is_wishlist_verified: userDoc.is_wishlist_verified,
+          joined_at: userDoc.joined_at
+        }
+      });
+    } else {
+      console.log(`User not found: ${cleanUsername}`);
+      return res.status(200).json({ 
+        is_member: false, 
+        isVerified: false 
+      });
     }
   } catch (error: any) {
     console.error('Error verifying Telegram member:', error);
-    res.status(500).json({
-      error: 'An unexpected error occurred.',
-      details: error.message,
+    return res.status(500).json({ 
+      error: 'Internal server error',
     });
   }
 }

@@ -55,6 +55,51 @@ async function checkEmailExists(sheets: any, email: string): Promise<boolean> {
   }
 }
 
+// Check if Telegram ID already exists in the sheet
+async function checkTelegramIdExists(sheets: any, telegramId: string): Promise<{ exists: boolean; existingUserData?: any }> {
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}!A:L`, // Get all data to find the existing user
+    });
+
+    const rows = response.data.values || [];
+    if (rows.length <= 1) return { exists: false }; // No data rows (only headers)
+    
+    // Clean the input telegram ID for comparison
+    const cleanInputId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+    
+    // Check all rows (skip header)
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const existingTelegramId = row[6] || ''; // Column G contains Telegram IDs
+      
+      // Clean the existing ID for comparison
+      const cleanExistingId = existingTelegramId.startsWith('@') 
+        ? existingTelegramId.substring(1) 
+        : existingTelegramId;
+      
+      if (cleanExistingId.toLowerCase() === cleanInputId.toLowerCase()) {
+        return {
+          exists: true,
+          existingUserData: {
+            name: row[0] || '',
+            email: row[5] || '',
+            telegramId: existingTelegramId,
+            collegeName: row[4] || '',
+            createdAt: row[8] || ''
+          }
+        };
+      }
+    }
+    
+    return { exists: false };
+  } catch (error) {
+    console.error('Error checking Telegram ID existence:', error);
+    return { exists: false };
+  }
+}
+
 // Add data to Google Sheets
 async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
   // First, ensure the sheet has headers
@@ -330,7 +375,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Check if email already exists
       const emailExists = await checkEmailExists(sheets, email);
       if (emailExists) {
-        return res.status(409).json({ error: 'You have already registered for the wishlist with this email address. Please use a different email or contact support if you need assistance.' });
+        return res.status(409).json({ 
+          error: 'You have already registered for the wishlist with this email address. Please use a different email or contact support if you need assistance.',
+          type: 'email_exists'
+        });
+      }
+
+      // Check if Telegram ID already exists
+      const telegramCheck = await checkTelegramIdExists(sheets, telegramId);
+      if (telegramCheck.exists) {
+        const existingUser = telegramCheck.existingUserData;
+        return res.status(409).json({ 
+          error: `This Telegram username (@${telegramId}) is already registered by ${existingUser.name} (${existingUser.email}). Each Telegram account can only be used once for beta registration.`,
+          type: 'telegram_exists',
+          existingUser: {
+            name: existingUser.name,
+            email: existingUser.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Partially hide email for privacy
+            collegeName: existingUser.collegeName,
+            registrationDate: existingUser.createdAt ? new Date(existingUser.createdAt).toLocaleDateString() : 'Unknown'
+          }
+        });
       }
 
       // Validate referral code if provided
