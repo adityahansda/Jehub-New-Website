@@ -46,7 +46,7 @@ export interface UserProfile {
   rank?: number;
   
   // User Role
-  role?: 'student' | 'admin' | 'manager' | 'intern' | 'user';
+  role?: 'student' | 'admin' | 'manager' | 'intern' | 'user' | 'Betauser';
   
   [key: string]: any;
 }
