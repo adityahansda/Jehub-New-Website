@@ -227,7 +227,7 @@ const NotesPreview = () => {
 
         // Track view - increment view count
         try {
-          await fetch(`/api/notes/${id}`, {
+          await fetch(`/api/notes/${noteId}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -485,15 +485,23 @@ showWarning('Please sign in to download this premium note. Premium notes require
         }
       }
 
-      // Update download count in database
-      await databases.updateDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-        note.id,
-        {
-          downloads: note.downloads + 1
+      // Update download count in database via API
+      try {
+        const response = await fetch(`/api/notes/${note.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'increment_download' })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update download count');
         }
-      );
+      } catch (downloadError) {
+        console.warn('Failed to update download count:', downloadError);
+        // Continue with download even if count update fails
+      }
 
       // Update local state
       setNote({ ...note, downloads: note.downloads + 1 });
@@ -546,19 +554,30 @@ showWarning('Please sign in to download this premium note. Premium notes require
     if (!note) return;
 
     try {
-      const newLikes = isLiked ? note.likes - 1 : note.likes + 1;
+      const increment = isLiked ? -1 : 1;
+      const newIsLiked = !isLiked;
 
-      // Update database
-      await databases.updateDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
-        process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
-        note.id,
-        { likes: newLikes }
-      );
+      // Update database via API
+      const response = await fetch(`/api/notes/${note.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'like',
+          increment: increment
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update like');
+      }
+
+      const result = await response.json();
+      const newLikes = result.likes;
 
       // Update local state
       setNote({ ...note, likes: newLikes });
-      const newIsLiked = !isLiked;
       setIsLiked(newIsLiked);
 
       // Update localStorage
