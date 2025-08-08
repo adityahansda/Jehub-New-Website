@@ -231,6 +231,13 @@ class DeviceTrackingService {
   // Check if IP is banned
   async isIPBanned(ipAddress: string): Promise<boolean> {
     try {
+      // Check if banned devices collection exists and is configured
+      if (this.BANNED_DEVICES_COLLECTION === 'banned_devices_collection') {
+        // Collection might not exist yet, return false to avoid blocking users
+        console.warn('Banned devices collection not properly configured, allowing access');
+        return false;
+      }
+
       const bannedDevices = await databases.listDocuments(
         this.DATABASE_ID,
         this.BANNED_DEVICES_COLLECTION,
@@ -242,8 +249,13 @@ class DeviceTrackingService {
       );
 
       return bannedDevices.documents.length > 0;
-    } catch (error) {
-      console.error('Error checking if IP is banned:', error);
+    } catch (error: any) {
+      // If collection doesn't exist or there's an error, don't block users
+      if (error.code === 404) {
+        console.warn('Banned devices collection not found, allowing access');
+      } else {
+        console.error('Error checking if IP is banned:', error);
+      }
       return false;
     }
   }

@@ -24,7 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'drive.google.com',
       'dropbox.com',
       '1drv.ms',
-      'onedrive.live.com'
+      'onedrive.live.com',
+      'mockcdn.jehub.com' // Allow mock URLs for development
     ];
 
     const urlObj = new URL(url);
@@ -34,6 +35,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!isAllowedDomain) {
       return res.status(403).json({ error: 'Domain not allowed' });
+    }
+
+    // Handle mock URLs for development
+    if (urlObj.hostname === 'mockcdn.jehub.com') {
+      console.log('Mock PDF URL requested:', url);
+      return res.status(404).json({ 
+        error: 'Mock PDF not available',
+        message: 'This is a development mock URL. The actual PDF file is not available.',
+        isMock: true
+      });
     }
 
     // Fetch the PDF with appropriate headers
