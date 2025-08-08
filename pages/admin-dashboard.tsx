@@ -19,6 +19,7 @@ import AppwriteMessaging from '../src/components/admin/AppwriteMessaging';
 import PointsManagement from '../src/components/admin/PointsManagement';
 import BannedDevicesManager from '../src/components/admin/BannedDevicesManager';
 import DeviceManagementSection from '../src/components/admin/DeviceManagementSection';
+import BetaAccessControlPanel from '../src/components/admin/BetaAccessControlPanel';
 
 import {
     BarChart3,
@@ -356,6 +357,8 @@ case 'notes':
                 return <BroadcastSection userRole={userRole} />;
             case 'leaderboard':
                 return <LeaderboardControl userRole={userRole} />;
+            case 'beta-access':
+                return <BetaAccessControlPanel />;
             case 'pages':
                 return <PageManagement />;
             case 'messaging':
@@ -503,6 +506,7 @@ case 'notes':
                                                 { key: 'notifications', label: 'Notifications', icon: Bell },
                                                 { key: 'broadcast', label: 'Broadcast', icon: MessageSquare },
                                                 { key: 'leaderboard', label: 'Leaderboard', icon: TrendingUp },
+                                                { key: 'beta-access', label: 'Beta Access Control', icon: Lock },
                                                 { key: 'banned-devices', label: 'Banned Devices', icon: Ban },
                                                 { key: 'logout', label: 'Logout', icon: LogOut, isLogout: true },
                                             ].map((item) => {
