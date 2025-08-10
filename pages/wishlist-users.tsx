@@ -4,6 +4,8 @@ import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from '../src/components/Navigation';
 import Footer from '../src/components/Footer';
+import { useAuth } from '../src/contexts/AuthContext';
+import { userService } from '../src/services/userService';
 import { 
   Search, 
   Users, 
@@ -19,7 +21,8 @@ import {
   ChevronRight,
   ChevronUp,
   List,
-  Grid3X3
+  Grid3X3,
+  Link as LinkIcon
 } from 'lucide-react';
 
 interface WishlistUser {
@@ -47,10 +50,58 @@ const WishlistUsers: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [viewMode, setViewMode] = useState<'users' | 'colleges'>('users');
   const [expandedCollege, setExpandedCollege] = useState<string | null>(null);
+  const [userReferralCode, setUserReferralCode] = useState<string>('');
+  const [showReferralSection, setShowReferralSection] = useState(false);
+  const [referralMessage, setReferralMessage] = useState('');
+
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchWishlistData();
   }, []);
+
+  // Fetch user's referral code if logged in
+  useEffect(() => {
+    const fetchUserReferralCode = async () => {
+      if (user?.email) {
+        try {
+          const referralCode = await userService.getUserReferralCodeByEmail(user.email);
+          if (referralCode) {
+            setUserReferralCode(referralCode);
+            setShowReferralSection(true);
+          }
+        } catch (error) {
+          console.error('Error fetching user referral code:', error);
+        }
+      }
+    };
+
+    fetchUserReferralCode();
+  }, [user]);
+
+  // Generate referral link for beta-wishlist
+  const getReferralLink = () => {
+    if (!user?.email || !userReferralCode) return '';
+    
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/beta-wishlist?ref=${userReferralCode}`;
+  };
+
+  // Copy referral link to clipboard
+  const copyReferralLink = async () => {
+    const link = getReferralLink();
+    if (link) {
+      try {
+        await navigator.clipboard.writeText(link);
+        setReferralMessage('Referral link copied to clipboard!');
+        setTimeout(() => setReferralMessage(''), 3000);
+      } catch (err) {
+        console.error('Failed to copy referral link:', err);
+        setReferralMessage('Failed to copy referral link');
+        setTimeout(() => setReferralMessage(''), 3000);
+      }
+    }
+  };
 
   const fetchWishlistData = async () => {
     try {
@@ -231,6 +282,60 @@ const WishlistUsers: React.FC = () => {
                 </motion.div>
               </div>
             </div>
+
+            {/* Referral Link Section - Only show for logged-in users */}
+            {showReferralSection && user && (
+              <motion.div 
+                className="px-4 sm:px-8 py-4"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white flex items-center">
+                      <LinkIcon className="h-5 w-5 mr-2 text-purple-400" />
+                      Your Referral Link
+                    </h3>
+                    <span className="text-xs text-purple-300 bg-purple-900/50 px-2 py-1 rounded-full">
+                      Earn 10 points per referral
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        readOnly
+                        value={getReferralLink()}
+                        className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 text-gray-200 rounded-lg text-sm font-mono"
+                        placeholder="Your referral link will appear here..."
+                      />
+                    </div>
+                    <button
+                      onClick={copyReferralLink}
+                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center min-w-[120px]"
+                    >
+                      📋 Copy Link
+                    </button>
+                  </div>
+                  
+                  {referralMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-sm text-green-400 text-center"
+                    >
+                      {referralMessage}
+                    </motion.div>
+                  )}
+                  
+                  <p className="text-xs text-gray-400 text-center">
+                    Share this link with friends to earn points when they join the beta program!
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Enhanced Controls */}
             <div className="px-4 sm:px-8 py-6 border-b border-white/10">
