@@ -28,12 +28,13 @@ const SEO: DefaultSeoProps = {
   additionalLinkTags: [
     {
       rel: 'icon',
-      href: '/favicon.ico'
+      href: '/images/favicon.svg',
+      type: 'image/svg+xml'
     },
     {
       rel: 'apple-touch-icon',
-      href: '/apple-touch-icon.png',
-      sizes: '180x180'
+      href: '/icons/icon-152x152.png',
+      sizes: '152x152'
     },
     {
       rel: 'manifest',
