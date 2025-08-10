@@ -198,6 +198,24 @@ export class UserService {
     }
   }
 
+  // Get user referral code by email
+  async getUserReferralCodeByEmail(email: string): Promise<string | null> {
+    try {
+      const userProfile = await this.getUserProfile(email);
+      
+      if (userProfile && userProfile.referralCode) {
+        console.log('Found existing referral code:', userProfile.referralCode);
+        return userProfile.referralCode;
+      } else {
+        console.warn('No referral code found for user:', email);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching referral code by email:', error);
+      return null;
+    }
+  }
+
   // Ensure user has a referral code (creates one if missing)
   async ensureUserHasReferralCode(userId: string, userName: string, userEmail: string): Promise<string> {
     try {
