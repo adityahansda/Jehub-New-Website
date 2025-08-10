@@ -68,6 +68,7 @@ export async function middleware(request: NextRequest) {
     '/notes/upload',
     '/notes-request',
     '/notes/request',
+    '/telegram-members',
   ];
 
   // Define pages that require any authentication

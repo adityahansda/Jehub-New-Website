@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from '../src/components/Navigation';
-import Footer from '../src/components/Footer';
 import { 
   Loader2, 
   AlertCircle, 
@@ -307,7 +306,7 @@ export default function VerifyMembership() {
                     <label className="block text-sm font-medium text-gray-400 mb-2">Joined</label>
                     <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-gray-400" />
-                      <p className="text-white">{formatDate(user_data.joined_at)}</p>
+                      <p className="text-white">{user_data.joined_at && user_data.joined_at !== 'Unknown' ? formatDate(user_data.joined_at) : 'Unknown'}</p>
                     </div>
                   </div>
                 </div>
@@ -463,8 +462,6 @@ export default function VerifyMembership() {
           </motion.div>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }

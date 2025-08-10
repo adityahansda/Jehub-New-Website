@@ -1,6 +1,31 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import appwriteService from '../../src/services/telegramMembersService';
 
+// Simple role check function
+const checkUserRole = (req: NextApiRequest): { hasAccess: boolean; userRole?: string } => {
+  try {
+    // Get user cookie
+    const userCookie = req.cookies.user;
+    if (!userCookie) {
+      return { hasAccess: false };
+    }
+
+    const userData = JSON.parse(decodeURIComponent(userCookie));
+    const userRole = userData.role || 'user';
+
+    // Allow access for admin, manager, intern, and team roles
+    const allowedRoles = ['admin', 'manager', 'intern', 'team'];
+    const hasAccess = allowedRoles.some(
+      (allowedRole) => allowedRole.toLowerCase() === userRole.toLowerCase()
+    );
+
+    return { hasAccess, userRole };
+  } catch (error) {
+    console.error('Error checking user role:', error);
+    return { hasAccess: false };
+  }
+};
+
 interface TelegramMemberData {
   user_id: number;
   username?: string;
@@ -12,9 +37,21 @@ interface TelegramMemberData {
   joined_at: string;
   left_at?: string;
   is_active: boolean;
+  is_wishlist_verified?: boolean;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Check user role for all methods
+  const { hasAccess, userRole } = checkUserRole(req);
+  
+  if (!hasAccess) {
+    console.log(`Access denied for user role: ${userRole}`);
+    return res.status(403).json({ 
+      error: 'Access denied', 
+      message: 'You do not have permission to access this resource. Required roles: admin, manager, intern, or team.' 
+    });
+  }
+
   if (req.method === 'POST') {
     try {
       const { action, memberData } = req.body;
@@ -53,14 +90,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (req.method === 'GET') {
     try {
       const members = await appwriteService.getAllMembers();
+      
+      console.log('Fetched members from database:', members.length);
+      console.log('Sample member data:', members.slice(0, 2));
 
-      // Filter active members by default
-      const activeMembers = members.filter(member => member.is_active);
+      // Show all members by default (not just active ones)
       const totalMembers = members.length;
-      const activeMemberCount = activeMembers.length;
+      const activeMemberCount = members.filter(member => member.is_active).length;
 
       res.status(200).json({
-        members: activeMembers,
+        members: members, // Return all members instead of just active ones
         allMembers: members,
         stats: {
           total: totalMembers,
