@@ -3,6 +3,7 @@ import axios from 'axios';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from '../src/components/Navigation';
+import Footer from '../src/components/Footer';
 import { 
   Search, 
   Users, 
@@ -115,6 +116,7 @@ const WishlistUsers: React.FC = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </>
     );
   }
@@ -152,6 +154,7 @@ const WishlistUsers: React.FC = () => {
             </div>
           </div>
         </div>
+        <Footer />
       </>
     );
   }
@@ -439,6 +442,8 @@ const WishlistUsers: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 };

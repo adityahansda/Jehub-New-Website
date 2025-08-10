@@ -386,7 +386,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'The email address in the form must match your authenticated account email.'
         });
       }
-
       // Allow all users to register, but still verify Telegram membership
       console.log('=== TELEGRAM VERIFICATION (INFORMATIONAL) ===');
       console.log('Checking Telegram verification for user:', telegramId);

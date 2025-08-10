@@ -93,8 +93,6 @@ const getAllMembers = async (): Promise<TelegramMemberData[]> => {
       is_wishlist_verified: doc.is_wishlist_verified || false
     }));
     
-
-    
     return transformedMembers;
   } catch (error: any) {
     console.error('Failed to fetch members from Appwrite database:', error);
