@@ -81,8 +81,15 @@ const Login = () => {
   // Redirect if already logged in and verified
   useEffect(() => {
     if (user && isVerified && userProfile?.isProfileComplete) {
-      console.log('User already authenticated and profile complete, redirecting to home');
-      router.push('/');
+      console.log('User already authenticated and profile complete, redirecting');
+      // Check if there's a redirect parameter
+      const redirectTo = router.query.redirect as string;
+      if (redirectTo) {
+        console.log('Redirecting to:', redirectTo);
+        router.push(redirectTo);
+      } else {
+        router.push('/');
+      }
       return;
     } else if (user && isVerified && !userProfile?.isProfileComplete) {
       console.log('User authenticated but profile incomplete, redirecting to signup');

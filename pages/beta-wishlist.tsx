@@ -8,6 +8,7 @@ import Footer from "../src/components/Footer";
 import { useAuth } from "../src/contexts/AuthContext";
 import Link from "next/link";
 
+
 // Comprehensive list of colleges and institutes
 const COLLEGES_LIST = {
   "Government Institutes (Diploma)": [
@@ -74,7 +75,9 @@ const COLLEGES_LIST = {
 
 const WishlistRegistration: React.FC = () => {
   const router = useRouter();
-  const { user, isVerified, userProfile } = useAuth();
+  const { user, isVerified, userProfile, loading } = useAuth();
+  
+  // All hooks must be at the top level
   const [form, setForm] = useState({
     name: "",
     branch: "",
@@ -101,6 +104,14 @@ const WishlistRegistration: React.FC = () => {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicateInfo, setDuplicateInfo] = useState<any>(null);
 
+  // Check authentication on component mount
+  useEffect(() => {
+    if (!loading && !user) {
+      // Don't redirect, just show the page with login popup
+      return;
+    }
+  }, [user, loading, router]);
+
   // Pre-fill form with user data if available
   useEffect(() => {
     if (user) {
@@ -109,8 +120,45 @@ const WishlistRegistration: React.FC = () => {
         name: user.name || "",
         email: user.email || "",
       }));
+    } else {
+      // Clear form when user logs out
+      setForm({
+        name: "",
+        branch: "",
+        yearsOfStudy: "",
+        degree: "",
+        collegeName: "",
+        otherCollege: "",
+        email: "",
+        telegramId: "",
+        referCode: "",
+      });
+      setMessage("");
+      setError("");
     }
   }, [user]);
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <>
+        <Head>
+          <title>Beta Wishlist Registration - JEHub</title>
+        </Head>
+        <Navigation />
+        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-800 to-pink-600 pt-16 sm:pt-20 lg:pt-24 pb-8 sm:pb-12">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 lg:px-8">
+            <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl shadow-2xl overflow-hidden border border-purple-500/30 p-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+                <p className="text-gray-300">Checking authentication...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const fieldLabels = {
     name: "Full Name",
@@ -200,13 +248,91 @@ const WishlistRegistration: React.FC = () => {
     }
   };
 
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if all required fields are filled
+    const requiredFields = ['name', 'branch', 'yearsOfStudy', 'degree', 'collegeName', 'email', 'telegramId'];
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'collegeName') {
+        return !form.collegeName || (form.collegeName === 'other' && !form.otherCollege);
+      }
+      return !form[field as keyof typeof form];
+    });
+    
+
+    
+    // Validate branch format
+    if (form.branch && !form.branch.match(/^[a-zA-Z\s&,.-]{2,50}$/)) {
+      setError('Branch must be 2-50 characters long and contain only letters, spaces, and common punctuation');
+      return;
+    }
+    
+    // Validate years of study
+    if (form.yearsOfStudy && !['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate', 'Post Graduate'].includes(form.yearsOfStudy)) {
+      setError('Please select a valid year of study from the dropdown');
+      return;
+    }
+    
+    // Validate degree
+    if (form.degree && !['B.Tech', 'Diploma', 'M.Tech', 'MBA', 'MCA', 'Other'].includes(form.degree)) {
+      setError('Please select a valid degree from the dropdown');
+      return;
+    }
+    
+    // Validate college name
+            if (form.collegeName && !form.collegeName.match(/^[a-zA-Z\s&,.\-()]{2,100}$/)) {
+      setError('College name must be 2-100 characters long and contain only letters, spaces, and common punctuation');
+      return;
+    }
+    
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate college name
+    if (form.collegeName === 'other' && !form.otherCollege?.trim()) {
+      setError('Please specify your college/institute name');
+      return;
+    }
+    
+    // Validate Telegram ID format
+    if (form.telegramId && !form.telegramId.match(/^@?[a-zA-Z0-9_]{5,}$/)) {
+      setError('Please enter a valid Telegram username (e.g., @username or username)');
+      return;
+    }
+    
+
+    
+    // Check if user is authenticated
+    if (!user) {
+      setError("Please sign in to submit your registration.");
+      return;
+    }
+
     setMessage("");
     setError("");
     setIsSubmitting(true);
 
     try {
+      // Check if email matches user's authenticated email
+      if (user && form.email !== user.email) {
+        setError(
+          `📧 Email Mismatch\n\nThe email address in the form (${form.email}) must match your authenticated account email (${user.email}). Please update the email field to match your account.`
+        );
+        return;
+      }
+
       // Prepare the data with the correct college name
       const submitData = {
         ...form,
@@ -294,6 +420,8 @@ const WishlistRegistration: React.FC = () => {
                 Get early access to exclusive features and be part of our
                 growing community
               </p>
+              
+
             </div>
 
             {/* Telegram Group Info */}
@@ -303,9 +431,11 @@ const WishlistRegistration: React.FC = () => {
                   🚀 Join Our Telegram Community
                 </h3>
                 <p className="text-gray-300 text-sm mb-4 text-center sm:text-left leading-relaxed">
-                  {user ? "Great! You're logged in. " : ""}All users can
-                  register for the beta program! We encourage you to join our
-                  Telegram group for updates and support.
+                  {user ? (
+                    "✅ You're signed in and ready to join the beta program! We encourage you to join our Telegram group for updates and support."
+                  ) : (
+                    "📝 Fill out the form below and sign in to join the beta program! We encourage you to join our Telegram group for updates and support."
+                  )}
                 </p>
                 <div className="space-y-3 text-sm">
                   {/* Join Community Row - Mobile Friendly */}
@@ -336,66 +466,74 @@ const WishlistRegistration: React.FC = () => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
-              {message && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
-                >
-                  ✅ {message}
-                </motion.div>
-              )}
-
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
-                >
-                  ❌ {error}
-                </motion.div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-300 mb-2"
+            {user ? (
+              <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+                
+                {message && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
                   >
-                    {fieldLabels.name} *
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border-2 border-purple-500/50 text-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 hover:border-purple-400/70"}`}
-                    placeholder={"Enter your full name"}
-                  />
-                </div>
+                    ✅ {message}
+                  </motion.div>
+                )}
 
-                {/* Branch */}
-                <div>
-                  <label
-                    htmlFor="branch"
-                    className="block text-sm font-medium text-gray-300 mb-2"
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
                   >
-                    {fieldLabels.branch} *
-                  </label>
-                  <input
-                    type="text"
-                    id="branch"
-                    name="branch"
-                    value={form.branch}
-                    onChange={handleChange}
-                    placeholder="Your Branch Name"
-                    required
-                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"}`}
-                  />
-                </div>
+                    ❌ {error}
+                  </motion.div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      {fieldLabels.name} *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      required
+                      className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border-2 border-purple-500/50 text-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 hover:border-purple-400/70"}`}
+                      placeholder={"Enter your full name"}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Enter your full name (2-50 characters, letters and spaces only)
+                    </p>
+                  </div>
+
+                  {/* Branch */}
+                  <div>
+                    <label
+                      htmlFor="branch"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      {fieldLabels.branch} *
+                    </label>
+                    <input
+                      type="text"
+                      id="branch"
+                      name="branch"
+                      value={form.branch}
+                      onChange={handleChange}
+                      placeholder="Your Branch Name"
+                      required
+                      className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"}`}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Enter your branch/department (e.g., Computer Science, Mechanical Engineering)
+                    </p>
+                  </div>
 
                 {/* Years of Study */}
                 <div>
@@ -438,6 +576,9 @@ const WishlistRegistration: React.FC = () => {
                       Post Graduate
                     </option>
                   </select>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Select your current year of study or graduation status
+                  </p>
                 </div>
 
                 {/* Degree */}
@@ -486,7 +627,7 @@ const WishlistRegistration: React.FC = () => {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-300 mb-2"
                   >
-                    {fieldLabels.email} *
+                    {fieldLabels.email} * {user ? '(Auto-filled from your account)' : '(Will be set from your account after login)'}
                   </label>
                   <input
                     type="email"
@@ -495,9 +636,25 @@ const WishlistRegistration: React.FC = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                    placeholder="your.email@example.com"
+                    readOnly={!!user}
+                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${
+                      user 
+                        ? 'bg-gray-600 border border-gray-500 text-gray-300 cursor-not-allowed'
+                        : 'bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    }`}
+                    placeholder={user ? "your.email@example.com" : "Enter your email (will be verified after login)"}
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    {user 
+                      ? 'This email is automatically set from your authenticated account and cannot be changed.'
+                      : 'Enter your email address. It will be verified against your account after you sign in. Make sure it matches the email you use to sign in!'
+                    }
+                    {!user && (
+                      <span className="block mt-1 text-yellow-400">
+                        ⚠️ The email must be in a valid format (e.g., user@example.com)
+                      </span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Telegram ID with Verification */}
@@ -575,6 +732,11 @@ const WishlistRegistration: React.FC = () => {
                       {verificationMessage}
                     </motion.div>
                   )}
+                  
+                  {/* Telegram ID Format Note */}
+                  <p className="text-xs text-gray-400 mt-1">
+                    Enter your Telegram username (e.g., @username or username). Must be at least 5 characters long.
+                  </p>
                 </div>
               </div>
               {/* College/University - Full Width */}
@@ -605,6 +767,9 @@ const WishlistRegistration: React.FC = () => {
                   ))}
                   <option value="other">Other (Not Listed)</option>
                 </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Select your college from the list or choose "Other" to specify a different one
+                </p>
                 {form.collegeName === "other" && (
                   <div className="mt-3">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -619,6 +784,9 @@ const WishlistRegistration: React.FC = () => {
                       className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                       placeholder="Enter your college/institute name"
                     />
+                    <p className="text-xs text-gray-400 mt-1">
+                      This field is required when selecting "Other (Not Listed)"
+                    </p>
                   </div>
                 )}
               </div>
@@ -640,6 +808,9 @@ const WishlistRegistration: React.FC = () => {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                   placeholder="Enter referral code if you have one"
                 />
+                <p className="text-xs text-gray-400 mt-1">
+                  Optional: Enter a valid referral code (3-10 characters, letters and numbers only)
+                </p>
               </div>
 
               {/* Submit Button */}
@@ -664,12 +835,34 @@ const WishlistRegistration: React.FC = () => {
                     </div>
                   ) : form.telegramId && verificationStatus !== "verified" ? (
                     "Please verify Telegram membership first"
+                  ) : !user ? (
+                    "📝 Fill Form & Sign In"
                   ) : (
                     "🚀 Join Beta Program"
                   )}
                 </button>
               </div>
             </form>
+            ) : (
+              /* Login Required Section for Unauthenticated Users */
+              <div className="px-8 py-6 text-center">
+                <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-6 mb-6">
+                  <span className="text-4xl mb-4 block">🔐</span>
+                  <h3 className="text-xl font-semibold text-yellow-200 mb-2">
+                    Sign In Required
+                  </h3>
+                  <p className="text-yellow-300 mb-6">
+                    You need to sign in to join the beta program
+                  </p>
+                  <button
+                    onClick={() => router.push('/login?redirect=/beta-wishlist')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 text-lg"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Benefits Section */}
             <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 px-8 py-6">
@@ -694,6 +887,13 @@ const WishlistRegistration: React.FC = () => {
                   <span>Priority support and assistance</span>
                 </li>
               </ul>
+              {!user && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-blue-700 text-sm text-center">
+                    💡 <strong>Ready to join?</strong> Sign in to get started!
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -952,6 +1152,8 @@ const WishlistRegistration: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
+      
+      <Footer />
     </>
   );
 };

@@ -4,6 +4,27 @@ import { databaseId } from '../../src/lib/appwriteConfig';
 import { ID, Query } from 'appwrite';
 import { pointsService } from '../../src/services/pointsService';
 
+// Simple authentication check function
+const checkAuthentication = (req: NextApiRequest): { isAuthenticated: boolean; userEmail?: string } => {
+  try {
+    // Get user cookie
+    const userCookie = req.cookies.user;
+    if (!userCookie) {
+      return { isAuthenticated: false };
+    }
+
+    const userData = JSON.parse(decodeURIComponent(userCookie));
+    if (!userData.email) {
+      return { isAuthenticated: false };
+    }
+
+    return { isAuthenticated: true, userEmail: userData.email };
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return { isAuthenticated: false };
+  }
+};
+
 // Collection ID for beta wishlist - you may need to create this collection in Appwrite
 import { collections } from '../../src/lib/appwriteConfig';
 const BETA_WISHLIST_COLLECTION_ID = collections.betaWishlist;
@@ -22,6 +43,16 @@ interface WishlistEntry {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
+    // Check authentication
+    const { isAuthenticated, userEmail } = checkAuthentication(req);
+    
+    if (!isAuthenticated) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'You must be signed in to join the beta wishlist. Please log in and try again.'
+      });
+    }
+
     try {
       const {
         name,
@@ -45,6 +76,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
+      }
+
+      // Ensure the email matches the authenticated user's email
+      if (email.toLowerCase() !== userEmail?.toLowerCase()) {
+        return res.status(403).json({ 
+          error: 'Email mismatch',
+          message: 'The email address in the form must match your authenticated account email.'
+        });
       }
 
       // Check if email already exists

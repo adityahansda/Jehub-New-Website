@@ -5,6 +5,27 @@ import { Databases, Query } from 'node-appwrite';
 import { serverDatabases as databases } from '../../src/lib/appwrite-server';
 import { appwriteConfig } from '../../src/lib/appwriteConfig';
 
+// Simple authentication check function
+const checkAuthentication = (req: NextApiRequest): { isAuthenticated: boolean; userEmail?: string } => {
+  try {
+    // Get user cookie
+    const userCookie = req.cookies.user;
+    if (!userCookie) {
+      return { isAuthenticated: false };
+    }
+
+    const userData = JSON.parse(decodeURIComponent(userCookie));
+    if (!userData.email) {
+      return { isAuthenticated: false };
+    }
+
+    return { isAuthenticated: true, userEmail: userData.email };
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return { isAuthenticated: false };
+  }
+};
+
 // Google Sheets configuration
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_WISHLIST_ID || 'your-spreadsheet-id-here';
 const SHEET_NAME = 'Sheet1';
@@ -322,6 +343,16 @@ async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boo
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
+    // Check authentication
+    const { isAuthenticated, userEmail } = checkAuthentication(req);
+    
+    if (!isAuthenticated) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        message: 'You must be signed in to join the beta wishlist. Please log in and try again.'
+      });
+    }
+
     try {
       const {
         name,
@@ -348,6 +379,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
+      // Ensure the email matches the authenticated user's email
+      if (email.toLowerCase() !== userEmail?.toLowerCase()) {
+        return res.status(403).json({ 
+          error: 'Email mismatch',
+          message: 'The email address in the form must match your authenticated account email.'
+        });
+      }
       // Allow all users to register, but still verify Telegram membership
       console.log('=== TELEGRAM VERIFICATION (INFORMATIONAL) ===');
       console.log('Checking Telegram verification for user:', telegramId);
