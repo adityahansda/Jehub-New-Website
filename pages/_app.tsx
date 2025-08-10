@@ -14,17 +14,17 @@ import 'react-toastify/dist/ReactToastify.css'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter()
-  
+
   // Check if coming soon mode is enabled
   const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-  
+
   // Don't wrap with Layout if we're in coming soon mode and on the home page,
   // or if we're directly accessing the coming-soon page, dashboard page, or admin pages
-  const shouldUseLayout = !(isComingSoonMode && router.pathname === '/') && 
-                         router.pathname !== '/coming-soon' && 
-                         router.pathname !== '/dashboard' &&
-                         !router.pathname.startsWith('/admin')
-  
+  const shouldUseLayout = !(isComingSoonMode && router.pathname === '/') &&
+    router.pathname !== '/coming-soon' &&
+    router.pathname !== '/dashboard' &&
+    !router.pathname.startsWith('/admin')
+
   return (
     <>
       <Head>
@@ -45,21 +45,21 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
-        
+
         {/* Prevent credential harvesting false positives */}
         <meta name="password-manager-ignore" content="false" />
         <meta name="credential-type" content="oauth" />
-        
+
         {/* Favicon and Icons */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        
+        <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
+
         {/* DNS Prefetch for trusted domains */}
         <link rel="dns-prefetch" href="//accounts.google.com" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
       </Head>
-      
+
       <ThemeProvider>
         <AuthProvider>
           <BanProvider>

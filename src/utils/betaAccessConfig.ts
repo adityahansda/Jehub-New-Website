@@ -50,9 +50,21 @@ export const PAGE_CONFIGS: PageConfig[] = [
     category: 'features'
   },
   { 
+    pageName: 'Download Notes', 
+    betaRestricted: true, 
+    description: 'Notes download feature',
+    category: 'features'
+  },
+  { 
     pageName: 'Leaderboard', 
     betaRestricted: true, 
     description: 'Community leaderboard',
+    category: 'features'
+  },
+  { 
+    pageName: 'Notification Page', 
+    betaRestricted: true, 
+    description: 'User notifications',
     category: 'features'
   },
   { 
@@ -77,6 +89,18 @@ export const PAGE_CONFIGS: PageConfig[] = [
     pageName: 'Job Portal', 
     betaRestricted: true, 
     description: 'Job opportunities portal',
+    category: 'features'
+  },
+  { 
+    pageName: 'Exam Updates', 
+    betaRestricted: true, 
+    description: 'Exam updates and notifications',
+    category: 'features'
+  },
+  { 
+    pageName: 'Counselling Updates', 
+    betaRestricted: true, 
+    description: 'Counselling updates and notifications',
     category: 'features'
   },
   
@@ -177,7 +201,7 @@ export class BetaAccessConfig {
     }
     
     // Default based on environment or configuration
-    return process.env.NODE_ENV === 'development' ? false : false; // Currently disabled
+    return true; // Beta access is enabled by default
   }
   
   /**

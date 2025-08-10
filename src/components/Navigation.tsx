@@ -117,9 +117,11 @@ const Navigation = () => {
                   <Image
                     src="/images/whitelogo.svg"
                     alt="JEHUB"
-                    width={36}
-                    height={36}
-                    className="h-9 w-auto transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
+                    width={80}
+                    height={80}
+                    className="h-16 w-16 sm:h-18 sm:w-18 lg:h-20 lg:w-20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
+                    style={{ minWidth: '64px', minHeight: '64px' }}
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-400/30 to-orange-400/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                 </div>
@@ -404,14 +406,25 @@ const Navigation = () => {
                       </div>
                     </div>
                   ) : (
-                    <Link
-                      href="/login"
-                      className="group relative w-full flex items-center justify-center px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 overflow-hidden"
-                    >
-                      <span className="relative z-10">Login</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <div className="absolute top-0 left-0 w-full h-full bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                    </Link>
+                    <div className="space-y-3">
+                      <Link
+                        href="/login"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="group relative w-full flex items-center justify-center px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 overflow-hidden"
+                      >
+                        <span className="relative z-10">Login</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute top-0 left-0 w-full h-full bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                      </Link>
+                      <Link
+                        href="/signup"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="group relative w-full flex items-center justify-center px-5 py-3.5 rounded-xl border border-white/20 text-white font-semibold transition-all duration-300 hover:scale-105 hover:bg-white/10 overflow-hidden"
+                      >
+                        <span className="relative z-10">Sign Up</span>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>

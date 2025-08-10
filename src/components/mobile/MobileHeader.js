@@ -17,9 +17,9 @@ const MobileHeader = ({ user, notificationCount = 0 }) => {
           <Image 
             src="/images/logo.png" 
             alt="JEHUB" 
-            width={32}
-            height={32}
-            className="h-8 w-auto"
+            width={40}
+            height={40}
+            className="h-10 w-10"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'block';
