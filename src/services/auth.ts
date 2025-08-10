@@ -1,4 +1,4 @@
-import { account } from '../lib/appwrite';
+import { safeAccount } from '../lib/appwrite';
 import { ID } from 'appwrite';
 import { pointsService } from './pointsService';
 import { profilePictureService } from './profilePictureService';
@@ -22,7 +22,7 @@ class AuthService {
   // Get current user
   async getCurrentUser(): Promise<User | null> {
     try {
-      const user = await account.get();
+      const user = await safeAccount.get();
 
       // Track device login
       await deviceTrackingService.trackDeviceLogin(user.$id, user.email || '');
@@ -79,7 +79,7 @@ class AuthService {
       const successUrl = `${window.location.origin}/auth/oauth-success`;
       const failureUrl = `${window.location.origin}/auth/oauth-failure`;
       
-      account.createOAuth2Session(
+      safeAccount.createOAuth2Session(
         'google' as any,
         successUrl,
         failureUrl
@@ -95,7 +95,7 @@ class AuthService {
       const successUrl = `${window.location.origin}/auth/oauth-success`;
       const failureUrl = `${window.location.origin}/auth/oauth-failure`;
       
-      account.createOAuth2Session(
+      safeAccount.createOAuth2Session(
         'google' as any,
         successUrl,
         failureUrl
@@ -126,7 +126,7 @@ class AuthService {
       let profileImageUrl: string | null = null;
       
       try {
-        const session = await account.getSession('current');
+        const session = await safeAccount.getSession('current');
         if (session && session.providerAccessToken) {
           const { profilePictureService } = await import('./profilePictureService');
           const googleUserInfo = await profilePictureService.fetchGoogleUserInfo(session.providerAccessToken);
@@ -205,7 +205,7 @@ class AuthService {
   // Logout
   async logout(): Promise<void> {
     try {
-      await account.deleteSession('current');
+      await safeAccount.deleteSession('current');
     } catch (error: any) {
       throw new Error(error.message || 'Logout failed');
     }
@@ -215,7 +215,7 @@ class AuthService {
   async sendPasswordRecovery(email: string): Promise<void> {
     try {
       const resetUrl = `${window.location.origin}/auth/reset-password`;
-      await account.createRecovery(email, resetUrl);
+      await safeAccount.createRecovery(email, resetUrl);
     } catch (error: any) {
       throw new Error(error.message || 'Password recovery failed');
     }
@@ -224,7 +224,7 @@ class AuthService {
   // Complete password recovery
   async completePasswordRecovery(userId: string, secret: string, password: string): Promise<void> {
     try {
-      await account.updateRecovery(userId, secret, password);
+      await safeAccount.updateRecovery(userId, secret, password);
     } catch (error: any) {
       throw new Error(error.message || 'Password reset failed');
     }
@@ -233,7 +233,7 @@ class AuthService {
   // Change password
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
     try {
-      await account.updatePassword(newPassword, oldPassword);
+      await safeAccount.updatePassword(newPassword, oldPassword);
     } catch (error: any) {
       throw new Error(error.message || 'Password change failed');
     }
@@ -242,7 +242,7 @@ class AuthService {
   // Change email
   async changeEmail(newEmail: string, password: string): Promise<void> {
     try {
-      await account.updateEmail(newEmail, password);
+      await safeAccount.updateEmail(newEmail, password);
     } catch (error: any) {
       throw new Error(error.message || 'Email change failed');
     }
@@ -252,7 +252,7 @@ class AuthService {
   async sendEmailVerification(): Promise<void> {
     try {
       const verifyUrl = `${window.location.origin}/auth/verify-email`;
-      await account.createVerification(verifyUrl);
+      await safeAccount.createVerification(verifyUrl);
     } catch (error: any) {
       throw new Error(error.message || 'Email verification failed');
     }

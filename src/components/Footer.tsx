@@ -63,7 +63,7 @@ const Footer = () => {
                   alt="JEHUB Logo"
                   width={48}
                   height={48}
-                  className="sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-110"
+                  className="w-12 h-12 sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-110"
                 />
               </div>
             </Link>
