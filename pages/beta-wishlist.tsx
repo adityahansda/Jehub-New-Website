@@ -4,6 +4,7 @@ import Head from "next/head";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 import Navigation from "../src/components/Navigation";
+import Footer from "../src/components/Footer";
 import { useAuth } from "../src/contexts/AuthContext";
 import Link from "next/link";
 
@@ -103,7 +104,6 @@ const WishlistRegistration: React.FC = () => {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicateInfo, setDuplicateInfo] = useState<any>(null);
 
-  
   // Check authentication on component mount
   useEffect(() => {
     if (!loading && !user) {
@@ -120,8 +120,6 @@ const WishlistRegistration: React.FC = () => {
         name: user.name || "",
         email: user.email || "",
       }));
-      
-
     } else {
       // Clear form when user logs out
       setForm({
@@ -373,21 +371,8 @@ const WishlistRegistration: React.FC = () => {
       const errorType = err.response?.data?.type;
       const existingUser = err.response?.data?.existingUser;
 
-      // Check if it's an authentication error
-      if (err.response?.status === 401 || err.response?.data?.error === 'Authentication required') {
-        setError(
-          `🔐 Authentication Required\n\nYou must be signed in to join the beta wishlist. Please log in and try again.\n\nIf you're already signed in, please refresh the page and try again.`
-        );
-        // Redirect to login after a short delay
-        setTimeout(() => {
-          router.push('/login?redirect=/beta-wishlist');
-        }, 3000);
-      } else if (err.response?.status === 403 && err.response?.data?.error === 'Email mismatch') {
-        setError(
-          `📧 Email Mismatch\n\nThe email address in the form must match your authenticated account email (${user?.email}). Please update the email field to match your account.`
-        );
-      } else if (err.response?.data?.verificationRequired) {
-        // Check if it's a verification error
+      // Check if it's a verification error
+      if (err.response?.data?.verificationRequired) {
         setError(
           `${errorMessage}\n\n📱 To fix this issue:\n1. Join our Telegram group: https://t.me/JharkhandEnginnersHub\n2. Send /verify message in the group\n3. Try submitting again\n\nNeed help? Contact us in the group!`
         );
@@ -480,7 +465,7 @@ const WishlistRegistration: React.FC = () => {
               </div>
             </div>
 
-            {/* Form or Login Required */}
+            {/* Form */}
             {user ? (
               <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
                 
@@ -504,51 +489,51 @@ const WishlistRegistration: React.FC = () => {
                   </motion.div>
                 )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-300 mb-2"
-                  >
-                    {fieldLabels.name} *
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border-2 border-purple-500/50 text-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 hover:border-purple-400/70"}`}
-                    placeholder={"Enter your full name"}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Enter your full name (2-50 characters, letters and spaces only)
-                  </p>
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      {fieldLabels.name} *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      required
+                      className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border-2 border-purple-500/50 text-white focus:ring-2 focus:ring-purple-400 focus:border-purple-400 hover:border-purple-400/70"}`}
+                      placeholder={"Enter your full name"}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Enter your full name (2-50 characters, letters and spaces only)
+                    </p>
+                  </div>
 
-                {/* Branch */}
-                <div>
-                  <label
-                    htmlFor="branch"
-                    className="block text-sm font-medium text-gray-300 mb-2"
-                  >
-                    {fieldLabels.branch} *
-                  </label>
-                  <input
-                    type="text"
-                    id="branch"
-                    name="branch"
-                    value={form.branch}
-                    onChange={handleChange}
-                    placeholder="Your Branch Name"
-                    required
-                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"}`}
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Enter your branch/department (e.g., Computer Science, Mechanical Engineering)
-                  </p>
-                </div>
+                  {/* Branch */}
+                  <div>
+                    <label
+                      htmlFor="branch"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      {fieldLabels.branch} *
+                    </label>
+                    <input
+                      type="text"
+                      id="branch"
+                      name="branch"
+                      value={form.branch}
+                      onChange={handleChange}
+                      placeholder="Your Branch Name"
+                      required
+                      className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${"bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"}`}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Enter your branch/department (e.g., Computer Science, Mechanical Engineering)
+                    </p>
+                  </div>
 
                 {/* Years of Study */}
                 <div>
@@ -788,7 +773,7 @@ const WishlistRegistration: React.FC = () => {
                 {form.collegeName === "other" && (
                   <div className="mt-3">
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Please specify your college/institute name *
+                      Please specify your college/institute name
                     </label>
                     <input
                       type="text"
@@ -810,7 +795,8 @@ const WishlistRegistration: React.FC = () => {
               <div>
                 <label
                   htmlFor="referCode"
-                  className="block text-sm font-medium text-gray-300 mb-2">
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
                   {fieldLabels.referCode}
                 </label>
                 <input
@@ -1166,8 +1152,8 @@ const WishlistRegistration: React.FC = () => {
           </motion.div>
         </motion.div>
       )}
-
-
+      
+      <Footer />
     </>
   );
 };
