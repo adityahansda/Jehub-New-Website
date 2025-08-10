@@ -27,12 +27,12 @@
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "@react-icons/all-files": "^4.1.0",
-    "@types/nodemailer": "^6.4.17",
     "@vercel/speed-insights": "^1.2.0",
     "appwrite": "^18.2.0",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
+    "emailjs-com": "^3.2.0",
     "framer-motion": "^11.11.17",
     "googleapis": "^154.1.0",
     "html-react-parser": "^5.2.6",
@@ -54,6 +54,7 @@
   "devDependencies": {
     "@next/bundle-analyzer": "^14.2.18",
     "@types/node": "20.19.9",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "18.3.23",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.21",

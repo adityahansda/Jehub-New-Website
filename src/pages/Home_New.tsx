@@ -12,13 +12,6 @@ import {
 
 const Home = () => {
   const router = useRouter();
-  const [countdown, setCountdown] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  });
-
   const [waitlistCount, setWaitlistCount] = useState(431);
   const [displayCount, setDisplayCount] = useState(0);
   const [revealedElements, setRevealedElements] = useState(new Set());
@@ -122,38 +115,7 @@ const Home = () => {
   }, []);
 
 
-  // Countdown timer with proper error handling and timezone
-  useEffect(() => {
-    const targetDate = new Date('2025-08-15T12:00:00+05:30').getTime(); // IST timezone
 
-    const updateCountdown = () => {
-      try {
-        const now = new Date().getTime();
-        const difference = targetDate - now;
-
-        if (difference > 0) {
-          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-          setCountdown({ days, hours, minutes, seconds });
-        } else {
-          // Set to 0 if target date has passed
-          setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        }
-      } catch (error) {
-        console.error('Countdown error:', error);
-        // Fallback: set countdown to 0 on error
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
-
-    updateCountdown(); // Call immediately
-    const timer = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
 
   // Scroll reveal animation and active section tracking
@@ -505,38 +467,37 @@ const Home = () => {
                   <Gift className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
-                  Wishlist & Countdown to Launch
+                  Beta Test Coming Soon
                 </h2>
 
-                {/* Countdown Display */}
-                <div className="flex justify-center space-x-6 mb-8">
+                {/* Beta Test Message */}
+                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8 mb-8 backdrop-blur-sm">
                   <div className="text-center">
-                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.days}</span>
-                    <span className="text-sm sm:text-lg text-[#d1d5db]">Days</span>
-                  </div>
-                  <div className="text-center">
-                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.hours}</span>
-                    <span className="text-sm sm:text-lg text-[#d1d5db]">Hours</span>
-                  </div>
-                  <div className="text-center">
-                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.minutes}</span>
-                    <span className="text-sm sm:text-lg text-[#d1d5db]">Minutes</span>
-                  </div>
-                  <div className="text-center">
-                    <span className="block text-2xl sm:text-4xl font-bold text-white mb-2">{countdown.seconds}</span>
-                    <span className="text-sm sm:text-lg text-[#d1d5db]">Seconds</span>
+                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Zap className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      Beta Test Starting Soon
+                    </h3>
+                    <p className="text-lg text-[#d1d5db] mb-4">
+                      We're preparing for an exciting beta test phase. Join our waitlist to be among the first to experience JEHUB!
+                    </p>
+                    <div className="flex items-center justify-center space-x-2 text-blue-400">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium">Preparing for launch</span>
+                    </div>
                   </div>
                 </div>
 
                 <p className="text-xl text-[#d1d5db] mb-8">
-                  Be the first to know when JEHUB launches and secure your spot on our wishlist!
+                  Get ready for the beta test! Join our waitlist to be notified when testing begins.
                 </p>
 
                 <button
                   onClick={handleWishlistNavigation}
-                  className="px-8 py-4 bg-gradient-to-r from-[#ef4444] via-[#f97316] to-[#f59e0b] text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                 >
-                  Join the Wishlist Now
+                  Join Beta Test Waitlist
                 </button>
               </div>
             </div>
