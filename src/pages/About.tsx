@@ -3,8 +3,82 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Users, BookOpen, Star, Globe, Heart, Shield, Mail, Phone, MapPin, Target, Award, Zap, TrendingUp, Calendar, GraduationCap, MessageCircle, Code, Palette, PenTool, Megaphone, Github, Linkedin, Twitter, Instagram, Building, CheckCircle, ArrowRight, Sparkles, Lightbulb, Rocket, Network, FileText, UserCheck, Headphones, Monitor, Briefcase, School, Clock, ChevronRight } from 'lucide-react';
 import { coreTeam } from '../data/teamData';
+import { emailService } from '../services/emailService';
 
 const About = () => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    college: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      // Validate form data
+      if (!formData.name || !formData.email || !formData.message) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Please enter a valid email address');
+      }
+
+      // Send email using our email service
+      const result = await emailService.sendContactFormEmail({
+        name: formData.name,
+        email: formData.email,
+        college: formData.college,
+        message: formData.message
+      });
+
+      if (result.success) {
+        // Success
+        setSubmitStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          college: '',
+          message: ''
+        });
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setSubmitStatus('idle');
+        }, 5000);
+      } else {
+        throw new Error(result.message);
+      }
+
+    } catch (error: any) {
+      setSubmitStatus('error');
+      console.error('Form submission error:', error);
+      
+      // Reset error message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus('idle');
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const coreValues = [
     {
       icon: BookOpen,
@@ -468,6 +542,110 @@ const About = () => {
           </div>
         </div>
 
+        {/* Key Highlights Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Key Highlights of JEHUB
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Discover what makes JEHUB a vibrant, collaborative community for engineering and polytechnic students
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Community-Powered Platform</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                A vibrant community of learners and future engineers where students actively share notes, study materials, and experiences through active Telegram and WhatsApp groups.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-green-500 to-teal-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Study Materials & Notes</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Access and contribute semester-wise notes, textbooks, and exam resources in PDF format, making learning easier and more accessible for all members.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Exam & Result Updates</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Stay updated with the latest exam schedules, results, and syllabus changes from universities and polytechnic colleges in Jharkhand.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Briefcase className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Career & Admission Guidance</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Information on internships, job opportunities, lateral entry for diploma holders, and other career-related resources.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Gamification & Rewards</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Earn XP points, badges, and leaderboard positions by contributing to the community, motivating active participation.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 group">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Award className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Campus Ambassador Program</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Become a JEHUB ambassador to represent your college and lead initiatives that benefit the wider student community.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Community Impact Section */}
+        <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-3xl p-8 sm:p-12 mb-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Collaborative Learning Network
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Over 1,000 students from 50+ colleges are connected through JEHUB, creating a strong network for academic growth
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Network className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Student-Driven Community</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                JEHUB truly embodies the spirit of a community-powered hub built by students, for students — making it an invaluable ecosystem for engineering students in Jharkhand and beyond.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="bg-gradient-to-r from-green-500 to-teal-500 w-12 h-12 rounded-full flex items-center justify-center">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Official Platform</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                Visit our official website at <span className="font-semibold text-blue-600">jehub.vercel.app</span> to explore all features and join our growing community of engineering students.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Contact Section */}
         <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-xl border border-gray-200 p-8 sm:p-12">
           <div className="max-w-5xl mx-auto">
@@ -516,46 +694,97 @@ const About = () => {
                   <p className="text-sm text-gray-600 mt-1">For faster response, mention your college, state, and branch when reaching out!</p>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-                <h3 className="text-2xl font-semibold text-gray-900 mb-6">Send us a Message</h3>
-                <form className="space-y-6">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Your Name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Your Email"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Your College & Branch (e.g., ABC College, Delhi - Computer Science)"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div>
-                    <textarea
-                      rows={4}
-                      placeholder="Your Message"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <span>Send Message</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </form>
-              </div>
+                             <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+                 <h3 className="text-2xl font-semibold text-gray-900 mb-6">Send us a Message</h3>
+                 
+                 {/* Status Messages */}
+                 {submitStatus === 'success' && (
+                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                     <div className="flex items-center gap-2">
+                       <CheckCircle className="h-5 w-5 text-green-600" />
+                       <p className="text-green-800 font-medium">Message sent successfully!</p>
+                     </div>
+                     <p className="text-green-700 text-sm mt-1">We'll get back to you soon.</p>
+                   </div>
+                 )}
+                 
+                 {submitStatus === 'error' && (
+                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                     <div className="flex items-center gap-2">
+                       <Shield className="h-5 w-5 text-red-600" />
+                       <p className="text-red-800 font-medium">Failed to send message</p>
+                     </div>
+                     <p className="text-red-700 text-sm mt-1">Please try again or contact us directly.</p>
+                   </div>
+                 )}
+
+                 <form onSubmit={handleSubmit} className="space-y-6">
+                   <div>
+                     <input
+                       type="text"
+                       name="name"
+                       value={formData.name}
+                       onChange={handleInputChange}
+                       placeholder="Your Name *"
+                       required
+                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                     />
+                   </div>
+                   <div>
+                     <input
+                       type="email"
+                       name="email"
+                       value={formData.email}
+                       onChange={handleInputChange}
+                       placeholder="Your Email *"
+                       required
+                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                     />
+                   </div>
+                   <div>
+                     <input
+                       type="text"
+                       name="college"
+                       value={formData.college}
+                       onChange={handleInputChange}
+                       placeholder="Your College & Branch (e.g., ABC College, Delhi - Computer Science)"
+                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                     />
+                   </div>
+                   <div>
+                     <textarea
+                       name="message"
+                       value={formData.message}
+                       onChange={handleInputChange}
+                       rows={4}
+                       placeholder="Your Message *"
+                       required
+                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                     />
+                   </div>
+                   <button
+                     type="submit"
+                     disabled={isSubmitting}
+                     className={`w-full py-3 rounded-lg font-medium transition-all duration-200 shadow-md flex items-center justify-center gap-2 ${
+                       isSubmitting 
+                         ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                         : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-lg'
+                     }`}
+                   >
+                     {isSubmitting ? (
+                       <>
+                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                         <span>Sending...</span>
+                       </>
+                     ) : (
+                       <>
+                         <span>Send Message</span>
+                         <ChevronRight className="h-4 w-4" />
+                       </>
+                     )}
+                   </button>
+                 </form>
+               </div>
             </div>
           </div>
         </div>
