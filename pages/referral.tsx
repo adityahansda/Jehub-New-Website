@@ -24,6 +24,7 @@ const ReferralDashboard: React.FC = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedWishlistLink, setCopiedWishlistLink] = useState(false);
   const [isWelcome, setIsWelcome] = useState(false);
 
   useEffect(() => {
@@ -388,6 +389,30 @@ const ReferralDashboard: React.FC = () => {
                       {copiedLink ? 'Copied!' : 'Copy'}
                     </button>
                   </div>
+                </div>
+
+                {/* Wishlist Referral Link */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Referral Link</label>
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value="http://jehub.vercel.app/wishlist-users?ref=JHAJH54936518"
+                      readOnly
+                      className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 text-gray-900 text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText("http://jehub.vercel.app/wishlist-users?ref=JHAJH54936518");
+                        setCopiedWishlistLink(true);
+                        setTimeout(() => setCopiedWishlistLink(false), 2000);
+                      }}
+                      className="px-4 py-2 bg-purple-600 text-white border border-purple-600 rounded-r-md hover:bg-purple-700 transition-colors"
+                    >
+                      {copiedWishlistLink ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Share this link for the wishlist registration page</p>
                 </div>
 
                 {/* Share Buttons */}

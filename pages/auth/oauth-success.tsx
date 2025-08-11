@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { authService } from '../../src/services/auth';
-import { account } from '../../src/lib/appwrite';
+import { account, safeAccount } from '../../src/lib/appwrite';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { profilePictureService } from '../../src/services/profilePictureService';
 import { extractGoogleProfilePictureUrl } from '../../src/lib/profileUtils';
@@ -36,12 +36,23 @@ const OAuthSuccess: React.FC = () => {
         
         addDebug(`URL search params: ${window.location.search}`);
         addDebug(`URL fragment: ${window.location.hash}`);
+        addDebug(`Full URL: ${window.location.href}`);
+        
+        // Log all URL parameters for debugging
+        for (const [key, value] of urlParams.entries()) {
+          addDebug(`URL param: ${key} = ${key.includes('secret') ? '***' : value}`);
+        }
+        for (const [key, value] of fragmentParams.entries()) {
+          addDebug(`Fragment param: ${key} = ${key.includes('secret') ? '***' : value}`);
+        }
         
         // Look for OAuth success indicators in URL
         const hasOAuthSuccess = urlParams.has('success') || 
                               fragmentParams.has('success') ||
                               urlParams.has('userId') ||
                               fragmentParams.has('userId') ||
+                              urlParams.has('code') ||
+                              fragmentParams.has('code') ||
                               window.location.pathname.includes('oauth-success');
         
         if (!hasOAuthSuccess) {
@@ -52,6 +63,17 @@ const OAuthSuccess: React.FC = () => {
         
         addDebug('OAuth success indicators found, attempting to establish session...');
         
+        // Check for existing sessions first
+        try {
+          const sessions = await safeAccount.listSessions();
+          addDebug(`Found ${sessions.length} existing sessions`);
+          if (sessions.length > 0) {
+            addDebug(`Session IDs: ${sessions.map((s: any) => s.$id).join(', ')}`);
+          }
+        } catch (error: any) {
+          addDebug(`Error listing sessions: ${error.message}`);
+        }
+        
         // Try to create session from URL parameters if available
         const userId = urlParams.get('userId') || fragmentParams.get('userId');
         const secret = urlParams.get('secret') || fragmentParams.get('secret');
@@ -59,11 +81,27 @@ const OAuthSuccess: React.FC = () => {
         if (userId && secret) {
           addDebug(`Found OAuth parameters: userId=${userId}, secret=***`);
           try {
-            await account.createSession(userId, secret);
-            addDebug('Session created successfully from OAuth parameters');
+            const session = await account.createSession(userId, secret);
+            addDebug('Session created successfully: ' + JSON.stringify(session));
+            // Check if cookie is set
+            addDebug('Document cookies after session creation: ' + document.cookie);
           } catch (sessionError: any) {
-            addDebug(`Session creation failed: ${sessionError.message}`);
-            // Continue to try other methods
+            addDebug('Session creation failed: ' + sessionError.message);
+            console.error('Session creation error:', sessionError);
+            addDebug('Document cookies after failed session creation: ' + document.cookie);
+          }
+        } else {
+          addDebug('No userId/secret found in URL - checking if Appwrite created session automatically');
+          // Try to get current session
+          try {
+            const currentSession = await safeAccount.getSession('current');
+            if (currentSession) {
+              addDebug(`Found current session: ${currentSession.$id}`);
+            } else {
+              addDebug('No current session found');
+            }
+          } catch (error: any) {
+            addDebug(`Error getting current session: ${error.message}`);
           }
         }
         
@@ -111,7 +149,7 @@ const OAuthSuccess: React.FC = () => {
         
         addDebug(`User authenticated: ${currentUser.email}`);
         
-        // Try to fetch and store Google profile picture
+        // Try to fetch and store Google profile picture only if user already registered
         try {
           addDebug('Attempting to fetch Google profile picture...');
           
@@ -133,19 +171,7 @@ const OAuthSuccess: React.FC = () => {
             
             if (googleUserInfo && googleUserInfo.picture) {
               addDebug(`Found Google profile picture: ${googleUserInfo.picture}`);
-              
-              // Save the profile picture URL to user profile
-              const savedPictureUrl = await profilePictureService.saveProfilePictureFromGoogle(
-                currentUser.$id,
-                currentUser.email,
-                googleUserInfo.picture
-              );
-              
-              if (savedPictureUrl) {
-                addDebug('Successfully saved Google profile picture to user profile');
-              } else {
-                addDebug('Failed to save Google profile picture');
-              }
+              // Defer saving until after registration check; handled below
             } else {
               addDebug('No profile picture found in Google user info or failed to fetch');
               addDebug(`GoogleUserInfo structure: ${JSON.stringify(googleUserInfo)}`);
@@ -157,16 +183,7 @@ const OAuthSuccess: React.FC = () => {
             // Try alternative approach - check if user already has profile data in Appwrite prefs
             if (currentUser.prefs && currentUser.prefs.picture) {
               addDebug(`Found profile picture in user prefs: ${currentUser.prefs.picture}`);
-              
-              const savedPictureUrl = await profilePictureService.saveProfilePictureFromGoogle(
-                currentUser.$id,
-                currentUser.email,
-                currentUser.prefs.picture
-              );
-              
-              if (savedPictureUrl) {
-                addDebug('Successfully saved profile picture from user prefs');
-              }
+              // Defer saving until after registration check; handled below
             } else {
               addDebug('No profile picture found in user prefs either');
             }
@@ -182,8 +199,16 @@ const OAuthSuccess: React.FC = () => {
         addDebug(`User registered in database: ${isRegistered}`);
         
         if (isRegistered) {
-          console.log('OAuth Success: User is registered, redirecting to home');
-          addDebug('User is registered, refreshing auth context and redirecting to home');
+          console.log('OAuth Success: User is registered, deciding final redirect');
+          addDebug('User is registered, refreshing auth context and deciding redirect');
+          // Now that we know the profile exists, attempt to save profile picture if we fetched one
+          try {
+            const picture = (currentUser.prefs && currentUser.prefs.picture) ? currentUser.prefs.picture : undefined;
+            if (picture) {
+              const saved = await profilePictureService.saveProfilePictureFromGoogle(currentUser.$id, currentUser.email, picture);
+              if (saved) addDebug('Saved Google profile picture after registration check');
+            }
+          } catch {}
           
           // Refresh auth context first
           await forceRefreshAuth();
@@ -191,17 +216,41 @@ const OAuthSuccess: React.FC = () => {
           // Small delay to ensure state is updated
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          // Redirect to home
-          router.replace('/');
+          // Respect redirect param; default to home. If profile is incomplete, send to signup.
+          const redirectParam = new URL(window.location.href).searchParams.get('redirect') || '/';
+          try {
+            const target = redirectParam;
+            // We don't import context here; assume forceRefreshAuth updated client state
+            // Navigate to redirect target (even if signup later enforces completion)
+            router.replace(target);
+          } catch {
+            router.replace('/');
+          }
         } else {
-          console.log('OAuth Success: User not registered, redirecting to signup');
-          addDebug('User not registered, redirecting to signup page');
+          console.log('OAuth Success: User not registered, creating user profile...');
+          addDebug('User not registered, attempting to create user profile');
           
-          // Refresh auth context to ensure user state is correct
-          await forceRefreshAuth();
-          
-          // Don't logout - keep the OAuth session for signup
-          router.replace('/auth/signup');
+          try {
+            // Try to create user profile automatically
+            await authService.createNewUserProfile(currentUser);
+            addDebug('User profile created successfully');
+            
+            // Refresh auth context
+            await forceRefreshAuth();
+            
+            // Redirect to signup to complete profile
+            router.replace('/auth/signup');
+          } catch (profileError: any) {
+            addDebug(`Failed to create user profile: ${profileError.message}`);
+            console.error('Error creating user profile:', profileError);
+            
+            // If profile creation fails, still redirect to signup
+            // Refresh auth context to ensure user state is correct
+            await forceRefreshAuth();
+            
+            // Don't logout - keep the OAuth session for signup
+            router.replace('/auth/signup');
+          }
         }
         
       } catch (error: any) {

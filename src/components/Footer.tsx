@@ -170,6 +170,9 @@ const Footer = () => {
               <p className="text-gray-400 text-xs sm:text-sm">
                 © 2024 JEHUB - Jharkhand Engineer&apos;s Hub. All rights reserved.
               </p>
+              <p className="text-gray-500 text-xs">
+                V4.0
+              </p>
               <div className="flex flex-wrap justify-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
                 <Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</Link>
                 <span className="text-gray-600">•</span>
