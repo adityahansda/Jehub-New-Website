@@ -122,6 +122,16 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/admin') ||
     adminPages.some((page) => pathname.startsWith(page))
   ) {
+    // If we already have an Appwrite session cookie, let client-side enforce role
+    const hasAppwriteSession = Array.from(request.cookies.getAll()).some(
+      (cookie) => cookie.name.startsWith('a_session_')
+    );
+    if (hasAppwriteSession || sessionCookie) {
+      // Allow and defer role enforcement to client-side guards
+      return NextResponse.next();
+    }
+
+    // Otherwise fall back to user cookie role check
     const result = tryAccessControl(
       userCookie,
       ['admin', 'manager', 'intern'],
@@ -187,6 +197,9 @@ export async function middleware(request: NextRequest) {
 
     if (!hasValidAuth) {
       const loginUrl = new URL('/login', request.url);
+      // Preserve intended destination
+      const redirectTarget = request.nextUrl.pathname + (request.nextUrl.search || '');
+      loginUrl.searchParams.set('redirect', redirectTarget);
       return NextResponse.redirect(loginUrl);
     }
   }

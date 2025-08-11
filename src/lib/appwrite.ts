@@ -27,6 +27,18 @@ client
 // Set locale to ensure proper error messages
 client.setLocale('en');
 
+// Enable cookie fallback for cross-site (third-party) cookie restrictions
+// This helps when the Appwrite endpoint is on a different domain than the app
+// and the browser blocks third-party cookies by default.
+// @ts-ignore - Method exists in newer Appwrite SDKs
+if (typeof (client as any).setCookieFallback === 'function') {
+  (client as any).setCookieFallback(true);
+} else {
+  // Fallback header toggle for older SDKs/servers that support it
+  // @ts-ignore
+  client.headers = { ...(client as any).headers, 'X-Fallback-Cookies': '1' };
+}
+
 // Create account instance with error handling
 export const account = new Account(client);
 
@@ -40,7 +52,39 @@ export const safeAccount = {
       if (error.code !== 401) {
         console.error('Appwrite account error:', error);
       }
+      // Return null instead of throwing for 401 errors
+      if (error.code === 401) {
+        return null;
+      }
       throw error;
+    }
+  },
+
+  // Add method to get current session (handles 401 gracefully)
+  getSession: async (sessionId: string = 'current') => {
+    try {
+      return await account.getSession(sessionId);
+    } catch (error: any) {
+      if (error.code !== 401) {
+        console.error('Appwrite session error:', error);
+      }
+      return null;
+    }
+  },
+
+  // Add method to list sessions
+  listSessions: async () => {
+    try {
+      const result = await account.listSessions();
+      // Normalize to array for callers
+      if (Array.isArray(result)) return result;
+      if (result && Array.isArray((result as any).sessions)) return (result as any).sessions;
+      return [];
+    } catch (error: any) {
+      if (error.code !== 401) {
+        console.error('Appwrite list sessions error:', error);
+      }
+      return [];
     }
   },
   
@@ -61,15 +105,7 @@ export const safeAccount = {
             throw error;
           }
         },
-        
-        getSession: async (sessionId: string) => {
-          try {
-            return await account.getSession(sessionId);
-          } catch (error: any) {
-            console.error('Session retrieval error:', error);
-            throw error;
-          }
-        },
+
         
         deleteSession: async (sessionId: string) => {
           try {

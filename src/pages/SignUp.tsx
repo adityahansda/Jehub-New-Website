@@ -86,7 +86,7 @@ interface SignupData {
 }
 
 const SignUp: React.FC = () => {
-  const { user, refreshUserProfile, forceRefreshAuth } = useAuth();
+  const { user, userProfile, refreshUserProfile, forceRefreshAuth } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState<SignupData>({
     name: '',
@@ -116,13 +116,27 @@ const SignUp: React.FC = () => {
       return () => clearTimeout(timer);
     }
 
+    // If user is logged in and profile is not yet loaded, try to refresh it
+    if (user && userProfile === null) {
+      refreshUserProfile().catch(() => {});
+    }
+
     // Pre-fill with user data from OAuth
     setFormData(prev => ({
       ...prev,
       name: user.name || '',
       email: user.email || ''
     }));
-  }, [user, router]);
+  }, [user, userProfile, router, refreshUserProfile]);
+
+  // If user is logged in and profile is complete, redirect away from signup
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (user && userProfile?.isProfileComplete) {
+      const redirectTarget = new URL(window.location.href).searchParams.get('redirect') || '/dashboard';
+      router.replace(redirectTarget);
+    }
+  }, [user, userProfile, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -176,7 +190,7 @@ const SignUp: React.FC = () => {
         semester: formData.semester || undefined,
         bio: formData.bio || undefined,
         telegramUsername: formData.telegramUsername || undefined,
-        isProfileComplete: true,
+        isProfileComplete: true, // Ensure this is always set
         profileCompletedAt: new Date().toISOString(),
         role: 'student' as const,
         createdAt: new Date().toISOString(),

@@ -583,7 +583,8 @@ export default function ProtectedAdminDashboard() {
             // Wait for user and userProfile to load
             if (!user) {
                 console.log('No user detected, redirecting to login.');
-                router.push('/login');
+                const nextUrl = router.asPath || '/admin-dashboard';
+                router.push({ pathname: '/login', query: { redirect: nextUrl } });
                 return;
             }
 
