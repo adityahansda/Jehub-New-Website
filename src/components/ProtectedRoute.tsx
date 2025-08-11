@@ -23,12 +23,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     // If authentication is required but user is not logged in OR not verified in database
     if (requireAuth && (!user || !isVerified)) {
+      const nextUrl = router.asPath || router.pathname;
       if (user && !isVerified) {
-        // User is logged in via Google but not registered in database - redirect to signup
-        router.push('/auth/signup');
+        router.push({ pathname: '/auth/signup', query: { redirect: nextUrl } });
       } else {
-        // User is not logged in at all - redirect to login
-        router.push('/login');
+        router.push({ pathname: '/login', query: { redirect: nextUrl } });
       }
       return;
     }
