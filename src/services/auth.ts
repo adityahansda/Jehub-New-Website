@@ -19,17 +19,62 @@ export interface User {
 }
 
 class AuthService {
+  private setCookieConsentIfMissing(): void {
+    if (typeof document === 'undefined') return;
+    const hasConsent = document.cookie.split('; ').some(row => row.startsWith('cookie_consent='));
+    if (!hasConsent) {
+      document.cookie = 'cookie_consent=1; path=/; max-age=31536000; SameSite=Lax';
+    }
+  }
+
+  private buildOAuthRedirectUrls(): { successUrl: string; failureUrl: string } {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const params = new URLSearchParams();
+    const currentUrl = typeof window !== 'undefined' ? new URL(window.location.href) : null;
+    const ref = currentUrl?.searchParams.get('ref') || sessionStorage.getItem('referralCode') || '';
+    if (ref) params.set('ref', ref);
+    const redirectParam = currentUrl?.searchParams.get('redirect') || '';
+    if (redirectParam) params.set('redirect', redirectParam);
+    const success = `${origin}/auth/oauth-success${params.toString() ? `?${params.toString()}` : ''}`;
+    const failure = `${origin}/auth/oauth-failure`;
+    return { successUrl: success, failureUrl: failure };
+  }
+
+  async startGoogleOAuth(): Promise<void> {
+    this.setCookieConsentIfMissing();
+    const { successUrl, failureUrl } = this.buildOAuthRedirectUrls();
+    await safeAccount.createOAuth2Session('google' as any, successUrl, failureUrl);
+  }
   // Get current user
   async getCurrentUser(): Promise<User | null> {
     try {
+      // First check if we have any sessions
+      const sessions = await safeAccount.listSessions();
+      const sessionCount = Array.isArray(sessions)
+        ? sessions.length
+        : (sessions as any)?.sessions?.length ?? 0;
+      console.log(`Found ${sessionCount} active sessions`);
+      
+      if (sessionCount === 0) {
+        console.log('No active sessions found');
+        return null;
+      }
+      
       const user = await safeAccount.get();
 
+      if (!user) {
+        console.log('No active session - user data not available');
+        return null;
+      }
+
+      console.log(`User authenticated: ${user.email}`);
+      
       // Track device login
       await deviceTrackingService.trackDeviceLogin(user.$id, user.email || '');
 
       return user as User;
     } catch (error) {
-      console.log('No active session');
+      console.log('Error getting current user:', error);
       return null;
     }
   }
@@ -76,14 +121,7 @@ class AuthService {
   // Simple Google OAuth login
   async loginWithGoogle(): Promise<void> {
     try {
-      const successUrl = `${window.location.origin}/auth/oauth-success`;
-      const failureUrl = `${window.location.origin}/auth/oauth-failure`;
-      
-      safeAccount.createOAuth2Session(
-        'google' as any,
-        successUrl,
-        failureUrl
-      );
+      await this.startGoogleOAuth();
     } catch (error: any) {
       throw new Error(error.message || 'Google login failed');
     }
@@ -92,14 +130,7 @@ class AuthService {
   // Simple Google OAuth signup
   async signupWithGoogle(): Promise<void> {
     try {
-      const successUrl = `${window.location.origin}/auth/oauth-success`;
-      const failureUrl = `${window.location.origin}/auth/oauth-failure`;
-      
-      safeAccount.createOAuth2Session(
-        'google' as any,
-        successUrl,
-        failureUrl
-      );
+      await this.startGoogleOAuth();
     } catch (error: any) {
       throw new Error(error.message || 'Google signup failed');
     }
@@ -108,10 +139,12 @@ class AuthService {
   // Create new user profile (for signup flow)
   async createNewUserProfile(user: User, referralCode?: string): Promise<void> {
     try {
+      console.log('Creating new user profile for:', user.email);
       await this.createUserProfile(user, referralCode);
+      console.log('User profile created successfully for:', user.email);
     } catch (error: any) {
       console.error('Error creating new user profile:', error);
-      throw new Error('Failed to create user account');
+      throw new Error(`Failed to create user account: ${error.message}`);
     }
   }
 
@@ -140,6 +173,13 @@ class AuthService {
         console.log('Could not fetch Google profile picture during user creation:', profileError);
       }
       
+      console.log('Creating user document with:', {
+        databaseId: DATABASE_ID,
+        collectionId: USERS_COLLECTION_ID,
+        documentId: customUserId,
+        userEmail: user.email
+      });
+      
       // Create user profile document with custom 8-digit ID as document ID
       await databases.createDocument(
         DATABASE_ID,
@@ -153,6 +193,8 @@ class AuthService {
           joinDate: new Date().toISOString(),
           role: 'student',
           isProfileComplete: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           ...(profileImageUrl && { profileImageUrl })
         }
       );
