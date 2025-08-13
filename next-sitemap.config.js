@@ -152,7 +152,7 @@ module.exports = {
     // High priority pages
     if (
       path === '/' ||
-      path === '/notes/download' ||
+      path === '/notes-download' ||
       path === '/about' ||
       path === '/events'
     ) {

@@ -192,7 +192,7 @@ export default function ModernDashboard() {
                 <span>Upload</span>
               </button>
             </Link>
-            <Link href="/notes/download">
+            <Link href="/notes-download">
               <button className="bg-white hover:bg-gray-100 text-purple-600 px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center space-x-2">
                 <Download className="h-5 w-5" />
                 <span>Browse</span>

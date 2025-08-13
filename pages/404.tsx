@@ -37,7 +37,7 @@ export default function Custom404() {
             </Link>
             
             <Link
-              href="/notes/download"
+              href="/notes-download"
               className="inline-flex items-center justify-center w-full bg-white text-gray-700 px-6 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-all duration-200"
             >
               <Search className="h-5 w-5 mr-2" />
@@ -49,7 +49,7 @@ export default function Custom404() {
           <div className="mt-8">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Popular Pages</h3>
             <div className="space-y-2">
-              <Link href="/notes/download" className="block text-blue-600 hover:text-blue-800 transition-colors">
+              <Link href="/notes-download" className="block text-blue-600 hover:text-blue-800 transition-colors">
                 Engineering Notes
               </Link>
               <Link href="/events" className="block text-blue-600 hover:text-blue-800 transition-colors">

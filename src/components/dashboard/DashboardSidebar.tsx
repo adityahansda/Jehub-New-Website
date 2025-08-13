@@ -51,7 +51,7 @@ const sidebarItems = [
     group: 'Academic',
     items: [
       { href: '/notes/upload', label: 'Upload Notes', icon: Upload },
-      { href: '/notes/download', label: 'Browse Notes', icon: Download },
+      { href: '/notes-download', label: 'Browse Notes', icon: Download },
       { href: '/dashboard/my-notes', label: 'My Notes', icon: BookOpen },
       { href: '/dashboard/bookmarks', label: 'Bookmarks', icon: Bookmark },
     ]

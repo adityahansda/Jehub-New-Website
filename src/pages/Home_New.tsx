@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import {
   Upload, Download, Search, Gift, Trophy, Smartphone,
   DollarSign, Award, Crown, Star, Zap, Target,
-  Users, MessageCircle, Camera, ChevronDown
+  Users, MessageCircle, Camera, ChevronDown, X
 } from 'lucide-react';
 
 const Home = () => {
@@ -16,6 +16,10 @@ const Home = () => {
   const [displayCount, setDisplayCount] = useState(0);
   const [revealedElements, setRevealedElements] = useState(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Search functionality state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFunnyModal, setShowFunnyModal] = useState(false);
 
   // Animated counter for waitlist
   useEffect(() => {
@@ -188,6 +192,25 @@ const Home = () => {
   // Navigation handler for wishlist registration - redirect to beta wishlist page
   const handleWishlistNavigation = () => {
     router.push('/beta-wishlist'); // Navigate to beta wishlist registration page
+  };
+
+  // Search handlers
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setShowFunnyModal(true);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e as any);
+    }
+  };
+
+  const closeFunnyModal = () => {
+    setShowFunnyModal(false);
+    setSearchQuery('');
   };
 
   return (
@@ -446,6 +469,142 @@ const Home = () => {
             </button>
           </div>
         </section>
+
+        {/* Search Section */}
+        <section className="py-20 bg-gradient-to-br from-[#1a1a1d] via-[#1c1c1f] to-[#0e0e10] relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/3 -left-40 w-80 h-80 bg-gradient-to-r from-[#3b82f6]/10 to-[#9333ea]/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/3 -right-40 w-80 h-80 bg-gradient-to-r from-[#9333ea]/10 to-[#3b82f6]/10 rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="max-w-4xl mx-auto text-center">
+              <div
+                data-reveal="search-section"
+                className={`transition-all duration-1000 transform ${revealedElements.has('search-section')
+                  ? 'opacity-100 translate-y-0 scale-100'
+                  : 'opacity-0 translate-y-10 scale-95'
+                  }`}
+              >
+                {/* Search Icon */}
+                <div className="w-20 h-20 bg-gradient-to-r from-[#3b82f6] to-[#9333ea] rounded-full flex items-center justify-center mx-auto mb-6 transform transition-transform duration-300 hover:scale-110">
+                  <Search className="h-10 w-10 text-white" />
+                </div>
+                
+                <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+                  Search Notes
+                </h2>
+                
+                <p className="text-xl text-[#d1d5db] mb-8 max-w-2xl mx-auto">
+                  Find exactly what you're looking for with our powerful search functionality.
+                </p>
+
+                {/* Search Bar */}
+                <div className="max-w-2xl mx-auto">
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search for notes, subjects, topics..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={handleSearchKeyPress}
+                        className="w-full px-6 py-4 pl-14 pr-32 bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+                      />
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
+                      <button
+                        type="submit"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 bg-gradient-to-r from-[#3b82f6] to-[#9333ea] text-white rounded-xl font-medium hover:from-[#2563eb] hover:to-[#7c3aed] transition-all duration-300 shadow-lg hover:shadow-xl"
+                      >
+                        Search
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Quick Search Suggestions */}
+                  <div className="flex flex-wrap justify-center gap-3 mt-6">
+                    <span className="text-sm text-gray-400">Popular searches:</span>
+                    {['Mathematics', 'Physics', 'Chemistry', 'Engineering', 'Computer Science'].map((term) => (
+                      <button
+                        key={term}
+                        onClick={() => {
+                          setSearchQuery(term);
+                          setShowFunnyModal(true);
+                        }}
+                        className="px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Funny Modal */}
+        {showFunnyModal && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="relative max-w-2xl w-full bg-gradient-to-br from-[#1a1a1d] via-[#1c1c1f] to-[#0e0e10] rounded-3xl p-8 border border-white/10 shadow-2xl animate-fade-in-up">
+              {/* Close Button */}
+              <button
+                onClick={closeFunnyModal}
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-200"
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+
+              {/* Meme Image */}
+              <div className="text-center mb-6">
+                <div className="w-64 h-64 mx-auto mb-6 rounded-2xl overflow-hidden shadow-2xl">
+                  <img
+                    src="https://i.pinimg.com/originals/13/75/7f/13757ff4b62025394ea27aaf46fe12ae.jpg"
+                    alt="Wait meme"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgdmlld0JveD0iMCAwIDI1NiAyNTYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiBmaWxsPSIjMUExQTFEIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRDFENURCIiBmb250LXNpemU9IjE0cHgiPldhaXQgTWVtZTwvdGV4dD4KPC9zdmc+';
+                    }}
+                  />
+                </div>
+
+                {/* Funny Message */}
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-bold text-white mb-2">
+                    रुको जरा, सब्र करो! 😅
+                  </h3>
+                  <p className="text-xl text-[#d1d5db] leading-relaxed">
+                    अभी website launch में time है! 🚀
+                  </p>
+                  <p className="text-lg text-gray-400">
+                    Search feature is coming soon... until then, enjoy this meme! 😄
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <button
+                  onClick={closeFunnyModal}
+                  className="px-8 py-3 bg-gradient-to-r from-[#3b82f6] to-[#9333ea] text-white rounded-xl font-medium hover:from-[#2563eb] hover:to-[#7c3aed] transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  Samjh Gaya! 😂
+                </button>
+                <button
+                  onClick={() => {
+                    closeFunnyModal();
+                    handleWishlistNavigation();
+                  }}
+                  className="px-8 py-3 bg-transparent border-2 border-white/20 text-white rounded-xl font-medium hover:bg-white/10 transition-all duration-300"
+                >
+                  Join Waitlist Instead
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Wishlist Section with Countdown */}
         <section className="py-20 bg-[#0e0e10] relative overflow-hidden">
