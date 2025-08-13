@@ -43,7 +43,7 @@ Add this meta tag to your `_app.tsx` or create a custom document:
 Submit these important pages for immediate indexing:
 - `https://jehub.vercel.app/` (Homepage)
 - `https://jehub.vercel.app/about`
-- `https://jehub.vercel.app/notes/download`
+- `https://jehub.vercel.app/notes-download`
 - `https://jehub.vercel.app/events`
 - `https://jehub.vercel.app/internships`
 - `https://jehub.vercel.app/blog`
@@ -73,7 +73,7 @@ npm run build  # Ensure sitemap regenerates
 ### 1. **High Priority Pages** (Priority: 1.0)
 - Homepage (`/`)
 - About page (`/about`) 
-- Notes download (`/notes/download`)
+- Notes download (`/notes-download`)
 - Events (`/events`)
 
 ### 2. **Medium Priority Pages** (Priority: 0.8)

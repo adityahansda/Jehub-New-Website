@@ -283,7 +283,7 @@ function StudentDashboard() {
                                     <span>Upload</span>
                                 </button>
                             </Link>
-                            <Link href="/notes/download" className="w-full sm:w-auto">
+                            <Link href="/notes-download" className="w-full sm:w-auto">
                                 <button className="w-full bg-white hover:bg-gray-100 text-purple-600 px-4 sm:px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2">
                                     <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                                     <span>Browse</span>

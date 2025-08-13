@@ -6,7 +6,7 @@
 - **Public Pages** (No authentication required):
   - ✅ Homepage (`/`)
   - ✅ About (`/about`)
-  - ✅ Notes Download (`/notes/download`) 
+  - ✅ Notes Download (`/notes-download`)
   - ✅ Team (`/team`)
   - ✅ Terms (`/terms`)
   - ✅ Privacy (`/privacy`)
@@ -49,7 +49,7 @@
 ```
 / (Homepage)
 /about
-/notes/download
+/notes-download
 /team
 /terms
 /privacy

@@ -27,6 +27,17 @@ client
 // Set locale to ensure proper error messages
 client.setLocale('en');
 
+// Configure client for better cookie handling
+// Enable credentials for cross-origin requests
+client.headers['Access-Control-Allow-Credentials'] = 'true';
+client.headers['X-Requested-With'] = 'XMLHttpRequest';
+
+// Add SameSite cookie handling for OAuth
+if (typeof window !== 'undefined') {
+  // Configure cookie settings for better compatibility
+  document.cookie = 'SameSite=None; Secure';
+}
+
 // Create account instance with error handling
 export const account = new Account(client);
 

@@ -114,7 +114,7 @@ JEHUB-New-Website/
 ### Notes Pages
 ```
 📁 pages/notes/
-├── 📄 download.tsx                 → /notes/download
+├── 📄 download.tsx                 → /notes/download (legacy)
 ├── 📄 request.tsx                  → /notes/request
 ├── 📄 upload.tsx                   → /notes/upload
 └── 📁 preview/

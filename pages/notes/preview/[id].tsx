@@ -26,7 +26,19 @@ import {
   AlertCircle,
   Loader,
   FileText,
-  Palette
+  Palette,
+  Menu,
+  Home,
+  Upload,
+  Users,
+  MapPin,
+  Building,
+  GraduationCap,
+  Clock,
+  BookmarkPlus,
+  Coins,
+  Search,
+  ChevronDown
 } from 'lucide-react';
 import { databases } from '@/lib/appwrite';
 import { Query, Models } from 'appwrite';
@@ -39,7 +51,8 @@ import ReportsSection from '@/components/ReportsSection';
 import ShareModal from '@/components/ShareModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { pointsService } from '@/services/pointsService';
-import { showError, showWarning } from '@/utils/toast';
+import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '@/utils/toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Format file size in human-readable format
 function formatFileSize(bytes: number | null): string {
@@ -933,18 +946,63 @@ showWarning('Please sign in to download this premium note. Premium notes require
           }}
         />
       )}
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link
-            href="/notes-download"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            Back to Notes
-          </Link>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Header - Modern Study Hub Style */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <Link href="/" className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <GraduationCap className="h-7 w-7 text-white" />
+                  </div>
+                  <span className="font-bold text-2xl text-gray-900">JEHub</span>
+                </Link>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                {user ? (
+                  <div className="flex items-center space-x-3">
+                    {/* Points Display */}
+                    <div className="hidden sm:flex items-center space-x-2 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                      <Coins className="h-4 w-4 text-amber-600" />
+                      <span className="text-sm font-medium text-amber-800">0</span>
+                    </div>
+                    
+                    {/* User Avatar */}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="hidden sm:block text-sm font-medium text-gray-700">
+                        {user.name || 'Guest user'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Link
+              href="/notes-download"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <ChevronLeft className="h-5 w-5 mr-1" />
+              Back to Notes
+            </Link>
+          </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
           {/* Main Preview Area */}
@@ -1007,13 +1065,16 @@ showWarning('Please sign in to download this premium note. Premium notes require
                     ))}
                   </div>
                 </div>
-                <div className={`px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start ${
-                  note.points > 0 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                }`}>
-                  {note.points > 0 ? `${note.points} PTS` : 'FREE'}
-                </div>
+                {note.points > 0 ? (
+                  <div className="flex items-center space-x-1 bg-amber-50 border border-amber-200 px-3 py-2 rounded-full self-start">
+                    <Coins className="h-4 w-4 text-amber-600" />
+                    <span className="text-base lg:text-lg font-bold text-amber-700">{note.points}</span>
+                  </div>
+                ) : (
+                  <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-base lg:text-lg font-bold self-start">
+                    FREE
+                  </span>
+                )}
               </div>
 
               {/* Action Buttons */}

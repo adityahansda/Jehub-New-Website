@@ -29,7 +29,7 @@
 - `/notes-download` - Download notes
 - `/notes-upload` - Upload notes  
 - `/notes-request` - Request notes
-- `/notes/download` - Notes download page
+- `/notes/download` - Notes download page (legacy)
 - `/notes/upload` - Notes upload page
 - `/notes/request` - Notes request page
 - `/notes/preview/[id]` - Preview specific note

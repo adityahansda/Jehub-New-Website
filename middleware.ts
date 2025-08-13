@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const publicPages = [
     '/',
     '/about',
-    '/notes/download',
+    '/notes-download',
     '/team',
     '/terms',
     '/privacy',

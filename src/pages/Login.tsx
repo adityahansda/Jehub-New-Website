@@ -18,6 +18,7 @@ const Login = () => {
     referrer?: any;
   } | null>(null);
   const [validatingReferral, setValidatingReferral] = useState(false);
+  const [isIncognito, setIsIncognito] = useState(false);
 
   const { user, isVerified, userProfile } = useAuth();
   const router = useRouter();
@@ -77,6 +78,35 @@ const Login = () => {
       setValidatingReferral(false);
     }
   };
+
+  // Detect incognito mode
+  useEffect(() => {
+    const detectIncognitoMode = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          // Test localStorage availability and functionality
+          localStorage.setItem('__incognito_test__', '1');
+          localStorage.removeItem('__incognito_test__');
+          
+          // Check for other indicators
+          const indicators = [
+            !window.indexedDB,
+            !navigator.cookieEnabled,
+            !window.RTCPeerConnection,
+            window.navigator.webdriver === true
+          ];
+          
+          const incognitoCount = indicators.filter(Boolean).length;
+          setIsIncognito(incognitoCount >= 2);
+        }
+      } catch (e) {
+        // If localStorage throws, likely in incognito mode
+        setIsIncognito(true);
+      }
+    };
+    
+    detectIncognitoMode();
+  }, []);
 
   // Redirect if already logged in and verified
   useEffect(() => {
@@ -212,6 +242,30 @@ const Login = () => {
           {/* Login Form */}
           <div className="bg-white py-8 px-6 shadow-lg rounded-lg">
             <div className="space-y-6">
+              {/* Incognito Mode Warning */}
+              {isIncognito && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.866 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-amber-800">
+                        🕵️ Incognito/Private Mode Detected
+                      </h3>
+                      <p className="text-xs text-amber-700 mt-1">
+                        You're in private browsing mode. Login may take longer or require multiple attempts due to cookie restrictions.
+                      </p>
+                      <p className="text-xs text-amber-700 mt-1">
+                        For best experience, try signing in using regular browsing mode.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Notice about Google-only login */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-center">

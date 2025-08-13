@@ -65,7 +65,7 @@ const staticRoutes = [
   '/groups',
   '/leaderboard',
   '/wishlist',
-  '/notes/download',
+  '/notes-download',
   '/notes/upload',
   '/notes/request',
   '/team',
