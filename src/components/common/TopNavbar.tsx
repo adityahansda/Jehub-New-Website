@@ -22,12 +22,14 @@ export default function TopNavbar() {
           </button>
         </div>
         
-        {/* Notifications */}
-        <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200 relative">
-          <Bell className="h-5 w-5" />
-          {/* Notification dot */}
-          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-        </button>
+        {/* Notifications - Only show for logged in users */}
+        {user && (
+          <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200 relative">
+            <Bell className="h-5 w-5" />
+            {/* Notification dot */}
+            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+          </button>
+        )}
         
         {/* Theme Toggle */}
         <ThemeToggle variant="compact" />

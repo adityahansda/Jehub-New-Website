@@ -213,9 +213,9 @@ const Navigation = () => {
                   <Image
                     src="/images/whitelogo.svg"
                     alt="JEHUB"
-                    width={56}
-                    height={56}
-                    className="h-14 w-14 transition-all duration-300"
+                    width={72}
+                    height={72}
+                    className="h-18 w-18 transition-all duration-300"
                     priority
                   />
                 </div>
@@ -372,11 +372,13 @@ const Navigation = () => {
                 </div>
               )}
 
-              {/* Notifications */}
-              <button className="p-2 rounded-lg transition-all duration-200 relative text-gray-300 hover:text-white hover:bg-gray-800">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              {/* Notifications - Only show for authenticated users */}
+              {user && isVerified && (
+                <button className="p-2 rounded-lg transition-all duration-200 relative text-gray-300 hover:text-white hover:bg-gray-800">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+              )}
 
               {/* User Profile Section */}
               <div className="flex items-center">
@@ -541,12 +543,9 @@ const Navigation = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center space-x-3">
-                    <Link href="/login" className="px-4 py-2 font-medium text-sm transition-colors duration-200 text-gray-300 hover:text-white">
-                      Login
-                    </Link>
-                    <Link href="/signup" className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                      Sign Up
+                  <div className="flex items-center">
+                    <Link href="/login" className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                      Sign In
                     </Link>
                   </div>
                 )}
@@ -574,9 +573,9 @@ const Navigation = () => {
                 <Image
                   src="/images/whitelogo.svg"
                   alt="JEHUB"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12"
                   priority
                 />
               </div>
@@ -731,16 +730,9 @@ const Navigation = () => {
                       <Link
                         href="/login"
                         onClick={() => setIsMenuOpen(false)}
-                        className="w-full flex items-center justify-center px-4 py-3 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        href="/signup"
-                        onClick={() => setIsMenuOpen(false)}
                         className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
                       >
-                        Sign Up
+                        Sign In
                       </Link>
                     </div>
                   )}

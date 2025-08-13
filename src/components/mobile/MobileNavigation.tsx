@@ -51,8 +51,8 @@ const MobileNavigation = () => {
         <div className="p-6 pt-20">
           {/* Home Icon */}
           <div className="flex items-center mb-8">
-            <Home className="h-8 w-8 text-blue-600 mr-3" />
-            <h2 className="text-xl font-bold text-gray-800">Jehub</h2>
+            <Home className="h-10 w-10 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold text-gray-800">Jehub</h2>
           </div>
 
           {/* Navigation Links */}

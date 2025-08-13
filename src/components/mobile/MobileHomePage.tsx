@@ -261,9 +261,9 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
               <Image
                 src="/images/logo.png"
                 alt="JEHUB"
-                width={40}
-                height={40}
-                className="h-10 w-10"
+                width={56}
+                height={56}
+                className="h-14 w-14"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'block');

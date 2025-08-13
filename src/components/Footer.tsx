@@ -61,9 +61,9 @@ const Footer = () => {
                 <Image
                   src="/images/whitelogo.svg"
                   alt="JEHUB Logo"
-                  width={48}
-                  height={48}
-                  className="w-12 h-12 sm:w-14 sm:h-14 transition-transform duration-300 group-hover:scale-110"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 sm:w-18 sm:h-18 transition-transform duration-300 group-hover:scale-110"
                 />
               </div>
             </Link>
