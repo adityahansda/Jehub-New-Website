@@ -52,6 +52,49 @@ export interface UserProfile {
 }
 
 export class UserService {
+  // Determine if profile has minimum required fields to be considered complete
+  private hasMinimumProfileFields(profile: UserProfile): boolean {
+    return Boolean(profile && profile.name && profile.email);
+  }
+
+  // Ensure baseline fields exist; optionally mark complete if eligible
+  async ensureBaselineProfileByEmail(email: string): Promise<UserProfile | null> {
+    try {
+      const existing = await this.getUserProfile(email);
+      if (!existing) return null;
+
+      const updates: Partial<UserProfile> = {};
+      const now = new Date().toISOString();
+
+      if (!existing.createdAt) (updates as any).createdAt = now;
+      if (!existing.updatedAt) (updates as any).updatedAt = now;
+      if (!existing.joinDate) updates.joinDate = now;
+      if (!existing.role) updates.role = 'student';
+
+      // If already marked complete, just update timestamps
+      if (existing.isProfileComplete) {
+        if (Object.keys(updates).length > 0) {
+          return await this.updateUserProfile(email, updates);
+        }
+        return existing;
+      }
+
+      // If has minimum fields, mark complete automatically
+      if (this.hasMinimumProfileFields(existing)) {
+        updates.isProfileComplete = true;
+        updates.profileCompletedAt = now;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return existing;
+      }
+
+      return await this.updateUserProfile(email, updates);
+    } catch (error) {
+      console.error('Error ensuring baseline profile:', error);
+      return null;
+    }
+  }
   // Get user profile by email
   async getUserProfile(email: string): Promise<UserProfile | null> {
     try {
@@ -194,6 +237,24 @@ export class UserService {
       return userDoc.referralCode || null;
     } catch (error) {
       console.error('Error fetching user referral code:', error);
+      return null;
+    }
+  }
+
+  // Get user referral code by email
+  async getUserReferralCodeByEmail(email: string): Promise<string | null> {
+    try {
+      const userProfile = await this.getUserProfile(email);
+      
+      if (userProfile && userProfile.referralCode) {
+        console.log('Found existing referral code:', userProfile.referralCode);
+        return userProfile.referralCode;
+      } else {
+        console.warn('No referral code found for user:', email);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching referral code by email:', error);
       return null;
     }
   }

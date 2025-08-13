@@ -1200,7 +1200,8 @@ export default function ProtectedStudentDashboard() {
         const checkAccess = async () => {
             // Wait for user to load
             if (!user) {
-                router.push('/login');
+                const nextUrl = router.asPath || '/dashboard';
+                router.push({ pathname: '/login', query: { redirect: nextUrl } });
                 return;
             }
 

@@ -89,10 +89,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsVerified(isRegistered);
         
         if (isRegistered) {
+          // Ensure baseline fields and auto-complete if eligible
+          await userService.ensureBaselineProfileByEmail(currentUser.email);
           const profile = await userService.getUserProfile(currentUser.email);
           setUserProfile(profile);
           
-          // Set user cookie if authenticated but cookie missing (for middleware)
+          // Set user cookie if authenticated (always, with long expiry)
           if (typeof window !== 'undefined' && profile) {
             const userData = {
               $id: currentUser.$id,
@@ -100,7 +102,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               email: currentUser.email,
               role: profile.role
             };
-            document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+            // Set cookie for 7 days
+            document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=604800; SameSite=Lax`;
           }
         } else {
           // Keep user data but clear profile and cookie - they need to complete registration
@@ -157,6 +160,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       await checkAuthStatus();
+      // After refresh, always set user cookie if user and profile are present and profile is complete
+      if (typeof window !== 'undefined' && user && userProfile && userProfile.isProfileComplete) {
+        const userData = {
+          $id: user.$id,
+          name: user.name,
+          email: user.email,
+          role: userProfile.role
+        };
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=604800; SameSite=Lax`;
+      }
     } finally {
       setLoading(false);
     }
@@ -170,7 +183,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const profile = await userService.getUserProfile(loggedInUser.email);
       setUserProfile(profile);
       
-      // Set user cookie for middleware after successful login
+      // Set user cookie for middleware after successful login (always, with long expiry)
       if (typeof window !== 'undefined' && loggedInUser && profile) {
         const userData = {
           $id: loggedInUser.$id,
@@ -178,7 +191,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email: loggedInUser.email,
           role: profile.role
         };
-        document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
+        // Set cookie for 7 days
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=604800; SameSite=Lax`;
         console.log('Set user cookie after login');
       }
     } catch (error) {
