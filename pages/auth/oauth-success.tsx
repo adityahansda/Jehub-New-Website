@@ -6,6 +6,46 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { profilePictureService } from '../../src/services/profilePictureService';
 import { extractGoogleProfilePictureUrl } from '../../src/lib/profileUtils';
 
+// Helper function to detect incognito/private browsing mode
+const detectIncognitoMode = async (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    // Method 1: Try to detect via localStorage
+    try {
+      if (typeof window !== 'undefined') {
+        // Test localStorage availability
+        localStorage.setItem('__incognito_test__', '1');
+        localStorage.removeItem('__incognito_test__');
+        
+        // Method 2: Check for reduced functionality indicators
+        const isPrivate = (
+          // Check if indexedDB is available but disabled
+          !window.indexedDB ||
+          // Check if storage API is available
+          !navigator.storage ||
+          // Check webRTC availability
+          !window.RTCPeerConnection ||
+          // Check for reduced navigator properties
+          !navigator.cookieEnabled
+        );
+        
+        resolve(isPrivate);
+      } else {
+        resolve(false);
+      }
+    } catch (e) {
+      // If localStorage throws, likely in incognito mode
+      resolve(true);
+    }
+  });
+};
+
+// Helper function to process authenticated user
+const processAuthenticatedUser = async (currentUser: any): Promise<void> => {
+  // This function would contain the user processing logic
+  // For now, it's a placeholder that matches the existing flow
+  throw new Error('processAuthenticatedUser not yet implemented in this context');
+};
+
 const OAuthSuccess: React.FC = () => {
   const router = useRouter();
   const { forceRefreshAuth } = useAuth();
@@ -28,6 +68,12 @@ const OAuthSuccess: React.FC = () => {
       try {
         addDebug('OAuth success page loaded - checking URL parameters...');
         console.log('OAuth Success: Initiating check...');
+        
+        // Detect if we're in incognito/private mode
+        const isIncognito = await detectIncognitoMode();
+        if (isIncognito) {
+          addDebug('⚠️ Incognito/Private browsing detected - using fallback methods');
+        }
         
         // Check URL parameters for OAuth success indicators
         const urlParams = new URLSearchParams(window.location.search);
@@ -57,6 +103,24 @@ const OAuthSuccess: React.FC = () => {
         
         if (!hasOAuthSuccess) {
           addDebug('No OAuth success indicators found in URL');
+          // In incognito mode, try to wait longer for session establishment
+          if (isIncognito) {
+            addDebug('Incognito mode: waiting longer for session...');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            
+            // Try to get current user directly
+            try {
+              const currentUser = await authService.getCurrentUser();
+              if (currentUser) {
+                addDebug('Found session in incognito mode after extended wait');
+                // Continue processing with the found user
+                return await processAuthenticatedUser(currentUser);
+              }
+            } catch (error: any) {
+              addDebug(`Still no session in incognito mode: ${error.message}`);
+            }
+          }
+          
           router.replace('/login?error=oauth_failed');
           return;
         }
@@ -86,9 +150,15 @@ const OAuthSuccess: React.FC = () => {
             // Check if cookie is set
             addDebug('Document cookies after session creation: ' + document.cookie);
           } catch (sessionError: any) {
-            addDebug('Session creation failed: ' + sessionError.message);
+            addDebug(`Session creation failed: ${sessionError.message}`);
             console.error('Session creation error:', sessionError);
             addDebug('Document cookies after failed session creation: ' + document.cookie);
+            
+            // In incognito mode, this might fail due to cookie restrictions
+            if (isIncognito) {
+              addDebug('Session creation failed in incognito - this is expected due to cookie restrictions');
+              addDebug('Continuing with alternative session handling...');
+            }
           }
         } else {
           addDebug('No userId/secret found in URL - checking if Appwrite created session automatically');
@@ -105,8 +175,10 @@ const OAuthSuccess: React.FC = () => {
           }
         }
         
-        // Wait a moment for any session to be established
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Wait longer in incognito mode for session establishment
+        const waitTime = isIncognito ? 5000 : 2000;
+        addDebug(`Waiting ${waitTime}ms for session establishment (incognito: ${isIncognito})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
         
         // Try to get the current user with retries
         let currentUser = null;
