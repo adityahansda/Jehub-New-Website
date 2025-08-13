@@ -19,6 +19,13 @@ const Login = () => {
   } | null>(null);
   const [validatingReferral, setValidatingReferral] = useState(false);
   const [isIncognito, setIsIncognito] = useState(false);
+  const [showCookiePopup, setShowCookiePopup] = useState(false);
+
+  // Helper to check if cookie_consent is set
+  function hasCookieConsent() {
+    if (typeof document === 'undefined') return false;
+    return document.cookie.split('; ').some(row => row.startsWith('cookie_consent='));
+  }
 
   const { user, isVerified, userProfile } = useAuth();
   const router = useRouter();
@@ -132,11 +139,24 @@ const Login = () => {
     }
   }, [user, isVerified, userProfile, router]);
 
+  // Show popup if oauth_failed error and cookie_consent is not set
+  useEffect(() => {
+    if (router.query.error === 'oauth_failed' && !hasCookieConsent()) {
+      setShowCookiePopup(true);
+    } else {
+      setShowCookiePopup(false);
+    }
+  }, [router.query]);
+
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     setError('');
 
     try {
+      // Persist referral code for the OAuth roundtrip if present
+      if (referralCode) {
+        try { sessionStorage.setItem('referralCode', referralCode); } catch {}
+      }
       await authService.loginWithGoogle();
       // The redirect will be handled by the OAuth flow
     } catch (error: any) {
@@ -234,7 +254,54 @@ const Login = () => {
                       Go to Sign Up
                     </button>
                   )}
+                  {/* Troubleshooting Guide for Session/Cookie Issues */}
+                  {router.query.error === 'oauth_failed' && (
+                    <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <h4 className="text-xs font-bold text-yellow-800 mb-1">Trouble Signing In?</h4>
+                      <ul className="text-xs text-yellow-700 list-disc pl-4 space-y-1">
+                        <li>Make sure you are using <b>HTTPS</b> (not HTTP) in your browser address bar.</li>
+                        <li>Enable cookies for this site in your browser settings.</li>
+                        <li>Try disabling browser extensions that block cookies or third-party scripts.</li>
+                        <li>If using incognito/private mode, try a regular window.</li>
+                        <li>If you are on localhost, try running both the frontend and Appwrite backend on the same protocol (both HTTP or both HTTPS).</li>
+                        <li>If the problem persists, <a href="/contact" className="underline text-blue-700">contact support</a>.</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cookie Allow Popup */}
+          {showCookiePopup && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                <h3 className="text-lg font-semibold mb-2 text-gray-900">Cookies Required</h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  To sign in with Google, cookies must be enabled in your browser. Cookies are used to keep you logged in securely.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-medium"
+                    onClick={() => {
+                      document.cookie = 'cookie_consent=1; path=/; max-age=31536000; SameSite=Lax';
+                      setShowCookiePopup(false);
+                      window.location.reload();
+                    }}
+                  >
+                    Allow Cookies & Reload
+                  </button>
+                  <button
+                    className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 font-medium"
+                    onClick={() => setShowCookiePopup(false)}
+                  >
+                    Continue Without Allowing (May Not Work)
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  You can change your cookie settings anytime in your browser.
+                </p>
               </div>
             </div>
           )}
