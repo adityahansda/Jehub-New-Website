@@ -10,12 +10,13 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield, Search, Zap, Coins, Settings, User, LogOut, Home, Activity, Award, Target, Bookmark, LayoutDashboard, FileText } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
 import ProfilePicture from './ProfilePicture';
 import AuthLoader from './AuthLoader';
+import { pointsService } from '../services/pointsService';
 
 // Utility function to check if user is eligible to upload notes
 const isEligibleForNotesUpload = (userRole: string | undefined): boolean => {
@@ -29,22 +30,113 @@ const Navigation = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isAllPagesOpen, setIsAllPagesOpen] = useState(false);
+  const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0, pointsSpent: 0 });
+  const [pointsLoading, setPointsLoading] = useState(false);
   const router = useRouter();
   const { user, userProfile, isVerified, loading, logout } = useAuth();
 
   const navItems = useMemo(() => [
-    { path: '/', label: 'Home', icon: BookOpen },
-    { path: '/notes-download', label: 'Download Notes', icon: Download },
-    { path: '/notifications', label: 'Notifications', icon: Bell },
-    { path: '/exam-updates', label: 'Exam Updates', icon: Calendar },
-    { path: '/counselling-updates', label: 'Counselling Updates', icon: UserCheck },
-    { path: '/groups', label: 'Join Groups', icon: Users },
-    { path: '/leaderboard', label: 'Leaderboard', icon: Star },
-    { path: '/about', label: 'About Us', icon: Info },
-    { path: '/wishlist-users', label: 'Wishlist Users', icon: Users },
-    { path: '/telegram-members', label: 'Telegram Members', icon: MessageCircle }
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/notes-download', label: 'Notes', icon: Download },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/events', label: 'Events', icon: Calendar },
+    { path: '/internships', label: 'Internships', icon: Briefcase },
+    { path: '/groups', label: 'Groups', icon: Users },
+    { path: '/blog', label: 'Blog', icon: BookOpen },
+    { path: '/about', label: 'About', icon: Info },
+    { path: '/team', label: 'Team', icon: Star }
   ], []);
 
+  // All Pages Mega Menu - comprehensive list of all site pages
+  const allPagesMenu = useMemo(() => [
+    {
+      category: 'Main Pages',
+      pages: [
+        { path: '/', label: 'Home', icon: Home, description: 'Welcome to JEHUB' },
+        { path: '/about', label: 'About Us', icon: Info, description: 'Learn about JEHUB' },
+        { path: '/contact', label: 'Contact Us', icon: MessageCircle, description: 'Get in touch with us' }
+      ]
+    },
+    {
+      category: 'Academic Resources',
+      pages: [
+        { path: '/notes-download', label: 'Download Notes', icon: Download, description: 'Browse & download study materials' },
+        { path: '/notes/upload', label: 'Upload Notes', icon: Upload, description: 'Share your study materials' },
+        { path: '/notes/request', label: 'Request Notes', icon: GitPullRequest, description: 'Request specific materials' },
+        { path: '/exam-updates', label: 'Exam Updates', icon: Bell, description: 'Latest exam notifications' },
+        { path: '/counselling-updates', label: 'Counselling Updates', icon: UserCheck, description: 'Admission counselling info' }
+      ]
+    },
+    {
+      category: 'Community & Events',
+      pages: [
+        { path: '/events', label: 'Events', icon: Calendar, description: 'Upcoming academic events' },
+        { path: '/groups', label: 'Study Groups', icon: Users, description: 'Join study communities' },
+        { path: '/leaderboard', label: 'Leaderboard', icon: Trophy, description: 'Top contributors ranking' },
+        { path: '/blog', label: 'Blog', icon: BookOpen, description: 'Educational articles & tips' },
+        { path: '/telegram-members', label: 'Telegram Community', icon: MessageCircle, description: 'Join our Telegram group' }
+      ]
+    },
+    {
+      category: 'Career & Opportunities',
+      pages: [
+        { path: '/internships', label: 'Internships', icon: Briefcase, description: 'Latest internship opportunities' },
+        { path: '/job-updates', label: 'Job Updates', icon: Target, description: 'Career opportunities' },
+        { path: '/placement-prep', label: 'Placement Prep', icon: GraduationCap, description: 'Interview preparation' }
+      ]
+    },
+    {
+      category: 'Team & Organization',
+      pages: [
+        { path: '/team', label: 'Our Team', icon: Users, description: 'Meet the JEHUB team' },
+        { path: '/team/join-team', label: 'Join Our Team', icon: UserPlus, description: 'Become a team member' },
+        { path: '/team/old-team-members', label: 'Alumni Team', icon: Award, description: 'Former team members' }
+      ]
+    },
+    {
+      category: 'User Features',
+      pages: [
+        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Your personal dashboard' },
+        { path: '/profile', label: 'Profile', icon: User, description: 'Manage your profile' },
+        { path: '/notifications', label: 'Notifications', icon: Bell, description: 'Your updates & alerts' },
+        { path: '/settings', label: 'Settings', icon: Settings, description: 'Account preferences' },
+        { path: '/referral', label: 'Referrals', icon: Gift, description: 'Invite friends & earn rewards' }
+      ]
+    },
+    {
+      category: 'Resources & Tools',
+      pages: [
+        { path: '/wishlist-users', label: 'Beta Access', icon: Star, description: 'Join beta testing program' },
+        { path: '/features', label: 'Features', icon: Sparkles, description: 'Explore all features' },
+        { path: '/misc/pageindex', label: 'Site Map', icon: Target, description: 'All pages directory' },
+        { path: '/privacy-policy', label: 'Privacy Policy', icon: Shield, description: 'Data protection policy' },
+        { path: '/terms-of-service', label: 'Terms of Service', icon: FileText, description: 'Usage terms & conditions' }
+      ]
+    }
+  ], []);
+
+
+  // Load user points when user changes
+  useEffect(() => {
+    const loadUserPoints = async () => {
+      if (user && user.email) {
+        try {
+          setPointsLoading(true);
+          const points = await pointsService.getUserPointsByEmail(user.email);
+          setUserPoints(points);
+        } catch (error) {
+          console.error('Error loading user points:', error);
+        } finally {
+          setPointsLoading(false);
+        }
+      } else {
+        setUserPoints({ availablePoints: 0, points: 0, pointsSpent: 0 });
+      }
+    };
+
+    loadUserPoints();
+  }, [user]);
 
   useEffect(() => {
     const currentIndex = navItems.findIndex(item => {
@@ -94,138 +186,367 @@ const Navigation = () => {
     router.push(path);
   };
 
+
+  // Check if we're on the home page
+  const isHomePage = router.pathname === '/';
+  
   return (
     <>
-      {/* Enhanced Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900 backdrop-blur-md border-b border-white/10 shadow-lg">
+      {/* Top Navigation Bar - Dark mode for all pages */}
+      <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gray-900 border-b border-gray-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              {/* Enhanced Mobile Menu Button with Animation */}
+            {/* Left Section - Logo and Search */}
+            <div className="flex items-center space-x-4">
+              {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMenuOpen(true)}
-                className="group relative p-2 rounded-xl transition-all duration-300 md:hidden mr-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:scale-105 hover:shadow-lg"
+                className="p-2 rounded-lg transition-all duration-200 md:hidden text-gray-300 hover:text-white hover:bg-gray-800"
                 aria-label="Open menu"
               >
-                <Menu className="h-6 w-6 text-white group-hover:text-amber-400 transition-all duration-300" />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-400/20 to-orange-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <Menu className="h-6 w-6" />
               </button>
 
-              {/* Enhanced Logo with Animation */}
-              <Link href="/" className="flex items-center space-x-3 group" onClick={() => handleNavClick(0, '/')}>
-                <div className="relative">
+              {/* Logo */}
+              <Link href="/" className="flex items-center" onClick={() => handleNavClick(0, '/')}>
+                <div className="flex items-center">
                   <Image
                     src="/images/whitelogo.svg"
                     alt="JEHUB"
-                    width={80}
-                    height={80}
-                    className="h-16 w-16 sm:h-18 sm:w-18 lg:h-20 lg:w-20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
-                    style={{ minWidth: '64px', minHeight: '64px' }}
+                    width={56}
+                    height={56}
+                    className="h-14 w-14 transition-all duration-300"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400/30 to-orange-400/30 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
                 </div>
               </Link>
+              
+              
+              {/* Desktop Navigation Menu - Only show on home page */}
+              {isHomePage && (
+                <nav className="hidden lg:flex items-center ml-6 space-x-1">
+                  <Link
+                    href="/"
+                    onClick={() => handleNavClick(0, '/')}
+                    className={`group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      router.pathname === '/' 
+                        ? 'text-white bg-gray-800 border border-gray-700'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                    }`}
+                  >
+                    <span>Home</span>
+                  </Link>
+                  
+                  <Link
+                    href="/about"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>About Us</span>
+                  </Link>
+                  
+                  <Link
+                    href="/wishlist-users"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Wishlist User</span>
+                  </Link>
+                  
+                  <Link
+                    href="/contact"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Contact Us</span>
+                  </Link>
+                  
+                  <Link
+                    href="/groups"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Groups</span>
+                  </Link>
+                  
+                  <Link
+                    href="/events"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Events</span>
+                  </Link>
+                  
+                  <Link
+                    href="/team"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Team</span>
+                  </Link>
+                </nav>
+              )}
             </div>
 
-            {/* Enhanced Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              {/* Main Navigation Items */}
-              <nav className="flex items-center space-x-6">
-                {[
-                  { href: '/', label: 'Home', icon: BookOpen },
-                  { href: '/notes-download', label: 'Notes', icon: Download },
-                  { href: '/notifications', label: 'Updates', icon: Bell },
-                  { href: '/groups', label: 'Groups', icon: Users },
-                  { href: '/wishlist-users', label: 'Beta Users', icon: Users },
-                  { href: '/about', label: 'About', icon: Info }
-                ].map((item, index) => {
-                  const IconComponent = item.icon;
-                  // Handle groups redirect: /groups redirects to /features/groups
-                  const isActive = item.href === '/groups'
-                    ? (router.pathname === '/groups' || router.pathname === '/features/groups')
-                    : router.pathname === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onMouseEnter={() => setHoveredIndex(index)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                      className={`group relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
-                        ? 'text-amber-400'
-                        : 'text-white/80 hover:text-white'
-                        }`}
+            {/* Center Section - Spacer */}
+            <div className="flex-1"></div>
+
+            {/* Right Section - Menu, Notifications, Profile */}
+            <div className="flex items-center space-x-3">
+              {/* All Pages Menu - Desktop - Only show on non-home pages */}
+              {!isHomePage && (
+                <div className="hidden lg:flex items-center">
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAllPagesOpen(!isAllPagesOpen)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
                     >
-                      <span>{item.label}</span>
-                      {isActive && (
-                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-amber-400 rounded-full"></div>
-                      )}
-                    </Link>
-                  );
-                })}
-              </nav>
+                      <Menu className="h-4 w-4" />
+                      <span>All Pages</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isAllPagesOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  
+                  {isAllPagesOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-screen max-w-6xl bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                          {allPagesMenu.map((section, sectionIndex) => (
+                            <div key={sectionIndex} className="space-y-3">
+                              <div className="flex items-center space-x-2 mb-4">
+                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                                  {section.category}
+                                </h3>
+                              </div>
+                              <div className="space-y-2">
+                                {section.pages.map((page, pageIndex) => {
+                                  const IconComponent = page.icon;
+                                  return (
+                                    <Link
+                                      key={pageIndex}
+                                      href={page.path}
+                                      onClick={() => setIsAllPagesOpen(false)}
+                                      className="group block p-3 rounded-lg hover:bg-blue-50 transition-all duration-200 border border-transparent hover:border-blue-100"
+                                    >
+                                      <div className="flex items-start space-x-3">
+                                        <div className="w-8 h-8 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors duration-200 flex-shrink-0">
+                                          <IconComponent className="h-4 w-4 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="font-medium text-sm text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                                            {page.label}
+                                          </p>
+                                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                            {page.description}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Footer section with quick stats or call to action */}
+                        <div className="border-t border-gray-100 mt-6 pt-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-500">Explore all features of JEHUB platform</p>
+                            <button 
+                              onClick={() => setIsAllPagesOpen(false)}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Close Menu
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  </div>
+                </div>
+              )}
 
-              {/* Separator */}
-              <div className="w-px h-6 bg-white/20 mx-6"></div>
+              {/* Points Display - Only show for authenticated users */}
+              {user && isVerified && (
+                <div className="hidden sm:flex items-center space-x-2 bg-amber-100 bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full border border-amber-300 border-opacity-30">
+                  <Coins className="h-4 w-4 text-amber-400" />
+                  <span className="text-sm font-medium text-amber-200">
+                    {pointsLoading ? '...' : userPoints.availablePoints}
+                  </span>
+                </div>
+              )}
 
-              {/* Authentication / User Profile Section */}
+              {/* Notifications */}
+              <button className="p-2 rounded-lg transition-all duration-200 relative text-gray-300 hover:text-white hover:bg-gray-800">
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* User Profile Section */}
               <div className="flex items-center">
                 {loading ? (
-                  <AuthLoader className="px-3 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 transition-all duration-300" />
+                  <AuthLoader className="px-3 py-2 rounded-lg" />
                 ) : user && isVerified ? (
                   <div className="relative">
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
-                      className="group relative flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white transition-all duration-300 hover:scale-105"
+                      className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
                     >
-                      <ProfilePicture />
-                      <span className="hidden sm:block text-sm">{userProfile?.name || user?.name || 'User'}</span>
-                      <ChevronDown className={`h-4 w-4 text-white/70 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                      {userProfile?.profileImageUrl ? (
+                        <Image
+                          src={userProfile.profileImageUrl}
+                          alt="Profile"
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 text-gray-400 ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isProfileOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
-                        <div className="p-4 border-b border-white/10">
-                          <p className="text-white font-medium">{userProfile?.name || user?.name}</p>
-                          <p className="text-white/60 text-sm">{user?.email}</p>
-                          {process.env.NODE_ENV === 'development' && userProfile?.role && (
-                            <p className="text-yellow-400 text-xs mt-1">Role: {userProfile.role}</p>
+                      <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50 backdrop-blur-sm">
+                        {/* Profile Header */}
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
+                          <div className="flex items-center space-x-3">
+                            {userProfile?.profileImageUrl ? (
+                              <Image
+                                src={userProfile.profileImageUrl}
+                                alt="Profile"
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                                <span className="text-white text-lg font-medium">
+                                  {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="text-gray-900 font-semibold text-sm">{userProfile?.name || user?.name}</p>
+                              <p className="text-gray-600 text-xs">{user?.email}</p>
+                              {userProfile?.points !== undefined && (
+                                <div className="flex items-center space-x-1 mt-1 bg-white bg-opacity-70 px-2 py-1 rounded-full">
+                                  <Coins className="h-3 w-3 text-amber-600" />
+                                  <span className="text-xs text-amber-600 font-medium">{userProfile.points} Points</span>
+                                </div>
+                              )}
+                              {userProfile?.userId && (
+                                <p className="text-xs text-gray-500 mt-1">ID: {userProfile.userId}</p>
+                              )}
+                              {process.env.NODE_ENV === 'development' && userProfile?.role && (
+                                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mt-1 font-medium">
+                                  {userProfile.role}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Main Actions */}
+                        <div className="py-2">
+                          <button onClick={() => handleProfileClick(getDashboardUrl(userProfile))} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
+                            <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <GraduationCap className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Dashboard</span>
+                              <p className="text-xs text-gray-500">View your stats & activity</p>
+                            </div>
+                          </button>
+                          
+                          <button onClick={() => handleProfileClick('/settings')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 group">
+                            <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <Settings className="h-4 w-4 text-gray-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Settings</span>
+                              <p className="text-xs text-gray-500">Manage your preferences</p>
+                            </div>
+                          </button>
+                          
+                          <button onClick={() => handleProfileClick('/profile')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 group">
+                            <div className="w-8 h-8 bg-green-100 group-hover:bg-green-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <User className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Profile</span>
+                              <p className="text-xs text-gray-500">Edit your profile info</p>
+                            </div>
+                          </button>
+                          
+                          {/* Conditional Actions */}
+                          {isEligibleForNotesUpload(userProfile?.role) && (
+                            <button onClick={() => handleProfileClick('/notes/upload')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group">
+                              <div className="w-8 h-8 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                                <Upload className="h-4 w-4 text-purple-600" />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <span className="font-medium">Upload Notes</span>
+                                <p className="text-xs text-gray-500">Share your knowledge</p>
+                              </div>
+                            </button>
+                          )}
+                          
+                          <button onClick={() => handleProfileClick('/referral')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 group">
+                            <div className="w-8 h-8 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <Gift className="h-4 w-4 text-orange-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Referrals</span>
+                              <p className="text-xs text-gray-500">Invite friends & earn</p>
+                            </div>
+                          </button>
+                          
+                          <button onClick={() => handleProfileClick('/premium')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 group">
+                            <div className="w-8 h-8 bg-yellow-100 group-hover:bg-yellow-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <Star className="h-4 w-4 text-yellow-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Premium</span>
+                              <p className="text-xs text-gray-500">Upgrade your experience</p>
+                            </div>
+                          </button>
+                          
+                          {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
+                            <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 group">
+                              <div className="w-8 h-8 bg-indigo-100 group-hover:bg-indigo-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                                <Shield className="h-4 w-4 text-indigo-600" />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <span className="font-medium">Admin Panel</span>
+                                <p className="text-xs text-gray-500">Verify memberships</p>
+                              </div>
+                            </button>
                           )}
                         </div>
-                        <div className="py-2">
-                          <button onClick={() => handleProfileClick(getDashboardUrl(userProfile))} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
-                            <GraduationCap className="h-5 w-5" />
-                            <span>Dashboard</span>
-                          </button>
-                          {isEligibleForNotesUpload(userProfile?.role) && (
-                            <button onClick={() => handleProfileClick('/notes/upload')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
-                              <Upload className="h-5 w-5" />
-                              <span>Upload Notes</span>
-                            </button>
-                          )}
-                          <button onClick={() => handleProfileClick('/referral')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
-                            <Gift className="h-5 w-5" />
-                            <span>Referral Dashboard</span>
-                          </button>
-                          {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
-                            <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300">
-                              <Shield className="h-5 w-5" />
-                              <span>Verify Membership</span>
-                            </button>
-                          )}
-                          <div className="border-t border-white/10 my-2"></div>
-                          <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all duration-300">
-                            <X className="h-5 w-5" />
-                            <span>Logout</span>
+                        
+                        {/* Logout Section */}
+                        <div className="border-t border-gray-100 p-2">
+                          <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-200 group rounded-lg">
+                            <div className="w-8 h-8 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors duration-200">
+                              <LogOut className="h-4 w-4 text-red-600" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <span className="font-medium">Sign Out</span>
+                              <p className="text-xs text-red-500">See you later!</p>
+                            </div>
                           </button>
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center">
-                    <Link href="/login" className="px-6 py-2.5 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 shadow-md hover:shadow-lg">
+                  <div className="flex items-center space-x-3">
+                    <Link href="/login" className="px-4 py-2 font-medium text-sm transition-colors duration-200 text-gray-300 hover:text-white">
                       Login
+                    </Link>
+                    <Link href="/signup" className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                      Sign Up
                     </Link>
                   </div>
                 )}
@@ -235,46 +556,41 @@ const Navigation = () => {
         </div>
       </header>
 
-      {/* Enhanced Overlay with Backdrop Blur */}
+      {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-50 transition-all duration-500 ease-in-out md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-black/50 z-40 transition-all duration-300 ease-in-out md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         onClick={() => setIsMenuOpen(false)}
       />
 
-      {/* Enhanced Left Sidebar Menu */}
+      {/* Mobile Sidebar Menu */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-[#0a0a0b]/95 via-[#121214]/95 to-[#0a0a0b]/95 backdrop-blur-xl border-r border-white/10 z-50 transition-all duration-500 ease-in-out md:hidden ${isMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
-          }`}>
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-10 w-20 h-20 bg-amber-400 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0s' }}></div>
-          <div className="absolute top-40 right-10 w-16 h-16 bg-orange-400 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-40 left-8 w-12 h-12 bg-amber-300 rounded-full blur-lg animate-pulse" style={{ animationDelay: '2s' }}></div>
-        </div>
+        className={`fixed top-0 left-0 h-full w-80 z-50 transition-all duration-300 ease-in-out md:hidden shadow-xl bg-gray-900 border-r border-gray-800 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-        <div className="relative h-full overflow-y-auto">
-          <div className="p-6 pb-8">
+        <div className="h-full overflow-y-auto">
+          <div className="p-6">
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">JEHUB</h2>
-                  <p className="text-xs text-white/60">Student Hub</p>
-                </div>
+              <div className="flex items-center">
+                <Image
+                  src="/images/whitelogo.svg"
+                  alt="JEHUB"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                  priority
+                />
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="group p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all duration-300 hover:scale-105"
+                className="p-2 rounded-lg transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
                 aria-label="Close menu"
               >
-                <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <nav className="flex flex-col space-y-3">
+
+            <nav className="flex flex-col space-y-2">
               {navItems.map((item, index) => {
                 const IconComponent = item.icon;
                 const isActive = activeIndex === index;
@@ -282,40 +598,28 @@ const Navigation = () => {
                   <button
                     key={item.path}
                     onClick={() => handleNavClick(index, item.path)}
-                    className={`group relative w-full flex items-center space-x-4 px-5 py-4 rounded-xl text-left transition-all duration-300 hover:scale-105 ${isActive
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold shadow-xl shadow-amber-500/25'
-                      : 'text-white/70 hover:text-white hover:bg-white/10 hover:backdrop-blur-xl'
-                      }`}
+                    className={`group w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      isActive
+                        ? 'bg-blue-900 text-blue-300 font-medium border-r-2 border-blue-400'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                    }`}
                   >
-                    <div className={`p-2 rounded-lg transition-all duration-300 ${isActive ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10'
-                      }`}>
-                      <IconComponent className={`h-5 w-5 transition-all duration-300 ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white group-hover:scale-110'
-                        }`} />
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-medium">{item.label}</span>
-                      {isActive && (
-                        <div className="w-full h-0.5 bg-white/30 rounded-full mt-1 animate-pulse"></div>
-                      )}
-                    </div>
-
-                    {/* Hover indicator */}
-                    <div className={`w-1 h-8 bg-amber-400 rounded-full transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
-                      }`}></div>
-
-                    {/* Ripple effect */}
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-400/10 to-orange-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                    <IconComponent className={`h-5 w-5 transition-all duration-200 ${
+                      isActive 
+                        ? 'text-blue-400'
+                        : 'text-gray-400 group-hover:text-gray-200'
+                    }`} />
+                    <span className="font-medium">{item.label}</span>
                   </button>
                 );
               })}
 
-              {/* Enhanced Divider */}
-              <div className="relative my-6">
-                <div className="border-t border-white/10"></div>
-                <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-20 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+              {/* Divider */}
+              <div className="my-6">
+                <div className="border-t border-gray-200"></div>
               </div>
 
-              {/* Enhanced Additional Links - Only show dashboard for verified users */}
+              {/* Additional Links - Only show dashboard for verified users */}
               {user && isVerified && (
                 <div className="space-y-2">
                   <button
@@ -323,41 +627,58 @@ const Navigation = () => {
                       setIsMenuOpen(false);
                       router.push(getDashboardUrl(userProfile));
                     }}
-                    className="group w-full flex items-center space-x-4 px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all duration-300 hover:scale-105"
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
                   >
-                    <div className="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-all duration-300">
-                      <GraduationCap className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                    </div>
+                    <GraduationCap className="h-5 w-5 text-gray-500" />
                     <span className="font-medium">Dashboard</span>
                   </button>
                 </div>
               )}
 
-              {/* Enhanced Auth Section */}
-              <div className="relative mt-8 pt-6">
-                <div className="border-t border-white/10"></div>
-                <div className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+              {/* Auth Section */}
+              <div className="mt-8 pt-6">
+                <div className="border-t border-gray-200"></div>
 
                 <div className="mt-6">
                   {loading ? (
                     // Loading state for mobile menu
-                    <div className="flex items-center space-x-3 px-4 py-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-lg">
                       <div className="animate-pulse flex items-center space-x-3 w-full">
-                        <div className="rounded-full bg-white/10 h-10 w-10"></div>
+                        <div className="rounded-full bg-gray-200 h-10 w-10"></div>
                         <div className="flex-1 space-y-2">
-                          <div className="h-3 bg-white/10 rounded w-3/4"></div>
-                          <div className="h-2 bg-white/10 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-2 bg-gray-200 rounded w-1/2"></div>
                         </div>
                       </div>
                     </div>
                   ) : user && isVerified ? (
                     <div className="space-y-3">
                       {/* User Info */}
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-white/5 rounded-xl">
-                        <ProfilePicture size="lg" />
+                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-lg">
+                        {userProfile?.profileImageUrl ? (
+                          <Image
+                            src={userProfile.profileImageUrl}
+                            alt="Profile"
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-medium">
+                              {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex-1">
-                          <p className="text-white font-medium text-sm">{userProfile?.name || user?.name}</p>
-                          <p className="text-white/60 text-xs">{user?.email}</p>
+                          <p className="text-gray-900 font-medium text-sm">{userProfile?.name || user?.name}</p>
+                          <p className="text-gray-600 text-xs">{user?.email}</p>
+                          {userProfile?.points !== undefined && (
+                            <div className="flex items-center space-x-1 mt-1">
+                              <Coins className="h-3 w-3 text-amber-600" />
+                              <span className="text-xs text-amber-600 font-medium">{userProfile.points} Points</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -365,7 +686,7 @@ const Navigation = () => {
                       <div className="space-y-2">
                         <button
                           onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
                         >
                           <GraduationCap className="h-5 w-5" />
                           <span>Dashboard</span>
@@ -374,7 +695,7 @@ const Navigation = () => {
                         {isEligibleForNotesUpload(userProfile?.role) && (
                           <button
                             onClick={() => handleProfileClick('/notes/upload')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
                           >
                             <Upload className="h-5 w-5" />
                             <span>Upload Notes</span>
@@ -382,7 +703,7 @@ const Navigation = () => {
                         )}
                         <button
                           onClick={() => handleProfileClick('/referral')}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
                         >
                           <Gift className="h-5 w-5" />
                           <span>Referral Dashboard</span>
@@ -390,7 +711,7 @@ const Navigation = () => {
                         {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
                           <button
                             onClick={() => handleProfileClick('/user/verify')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-white/70 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-300"
+                            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
                           >
                             <Shield className="h-5 w-5" />
                             <span>Verify Membership</span>
@@ -398,7 +719,7 @@ const Navigation = () => {
                         )}
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-xl transition-all duration-300"
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
                         >
                           <X className="h-5 w-5" />
                           <span>Logout</span>
@@ -410,19 +731,16 @@ const Navigation = () => {
                       <Link
                         href="/login"
                         onClick={() => setIsMenuOpen(false)}
-                        className="group relative w-full flex items-center justify-center px-5 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 overflow-hidden"
+                        className="w-full flex items-center justify-center px-4 py-3 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
                       >
-                        <span className="relative z-10">Login</span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="absolute top-0 left-0 w-full h-full bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                        Login
                       </Link>
                       <Link
                         href="/signup"
                         onClick={() => setIsMenuOpen(false)}
-                        className="group relative w-full flex items-center justify-center px-5 py-3.5 rounded-xl border border-white/20 text-white font-semibold transition-all duration-300 hover:scale-105 hover:bg-white/10 overflow-hidden"
+                        className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
                       >
-                        <span className="relative z-10">Sign Up</span>
-                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        Sign Up
                       </Link>
                     </div>
                   )}

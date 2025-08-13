@@ -27,6 +27,11 @@ client
 // Set locale to ensure proper error messages
 client.setLocale('en');
 
+// Configure client for better cookie handling
+// Enable credentials for cross-origin requests
+client.headers['Access-Control-Allow-Credentials'] = 'true';
+client.headers['X-Requested-With'] = 'XMLHttpRequest';
+
 // Enable cookie fallback for cross-site (third-party) cookie restrictions
 // This helps when the Appwrite endpoint is on a different domain than the app
 // and the browser blocks third-party cookies by default.
@@ -37,6 +42,12 @@ if (typeof (client as any).setCookieFallback === 'function') {
   // Fallback header toggle for older SDKs/servers that support it
   // @ts-ignore
   client.headers = { ...(client as any).headers, 'X-Fallback-Cookies': '1' };
+}
+
+// Add SameSite cookie handling for OAuth
+if (typeof window !== 'undefined') {
+  // Configure cookie settings for better compatibility
+  document.cookie = 'SameSite=None; Secure';
 }
 
 // Create account instance with error handling

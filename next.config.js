@@ -123,6 +123,12 @@ const nextConfig = {
 
   // Security headers
   async headers() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    const cspValue = isProduction 
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com blob:; worker-src 'self' blob: data: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.dicebear.com https://ui-avatars.com https://accounts.google.com https://www.googleapis.com https://googleapis.com https://appwrite.io https://*.appwrite.io https://www.google-analytics.com https://github.com https://api.github.com https://raw.githubusercontent.com https://api.emailjs.com https://cdnjs.cloudflare.com; frame-src 'self' https://accounts.google.com https://docs.google.com https://drive.google.com https://mozilla.github.io https://raw.githubusercontent.com; object-src 'self' https://raw.githubusercontent.com; base-uri 'self'; form-action 'self' https://accounts.google.com;"
+      : "default-src 'self' 'unsafe-eval' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob: data:; worker-src 'self' blob: data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: ws:; frame-src 'self' https:; object-src 'self' https:; base-uri 'self'; form-action 'self' https:;";
+
     return [
       {
         source: '/(.*)',
@@ -153,7 +159,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.dicebear.com https://ui-avatars.com https://accounts.google.com https://www.googleapis.com https://googleapis.com https://appwrite.io https://*.appwrite.io https://www.google-analytics.com https://github.com https://api.github.com https://raw.githubusercontent.com https://api.emailjs.com; frame-src 'self' https://accounts.google.com https://docs.google.com https://drive.google.com https://mozilla.github.io https://raw.githubusercontent.com; object-src 'self' https://raw.githubusercontent.com; base-uri 'self'; form-action 'self' https://accounts.google.com;"
+            value: cspValue
           }
         ]
       }
