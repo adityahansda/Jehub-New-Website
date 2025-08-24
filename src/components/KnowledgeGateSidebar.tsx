@@ -621,13 +621,14 @@ const KnowledgeGateSidebar: React.FC<SidebarProps> = ({
         />
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar with enhanced theme support */}
       <div className={`
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         lg:translate-x-0 fixed lg:sticky top-0 lg:top-16 left-0 z-50 lg:z-30 w-64 h-screen lg:h-auto 
-        bg-slate-800/95 lg:bg-slate-800 backdrop-blur-xl border-r border-slate-700/50 
-        transition-transform duration-300 ease-in-out lg:transition-none overflow-y-auto 
-        shadow-2xl lg:shadow-none ${className}
+        bg-white dark:bg-slate-800/95 lg:bg-white lg:dark:bg-slate-800 backdrop-blur-xl 
+        border-r border-gray-200 dark:border-slate-700/50 
+        transition-all duration-300 ease-in-out lg:transition-none overflow-y-auto 
+        shadow-2xl lg:shadow-lg ${className}
       `}>
         {/* Mobile Header */}
         <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-700">

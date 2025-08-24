@@ -11,22 +11,50 @@ import { DefaultSeo } from 'next-seo'
 import SEO from '../next-seo.config'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { useAuth } from '../src/contexts/AuthContext'
 
-export default function App({ Component, pageProps }: AppProps) {
+// Inner App component that can access auth context
+function AppContent({ Component, pageProps }: AppProps) {
   const router = useRouter()
+  const { user, loading } = useAuth()
 
   // Check if coming soon mode is enabled
   const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
 
-  // Don't wrap with Layout if we're in coming soon mode and on the home page,
-  // or if we're directly accessing the coming-soon page, dashboard page, admin pages, or notes download page
+  // Check if user is on home page and authenticated (would see dashboard)
+  const isAuthenticatedHomePage = router.pathname === '/' && user && !isComingSoonMode
+
+  // Don't wrap with Layout if:
+  // - Coming soon mode and on home page
+  // - Authenticated user on home page (sees dashboard)
+  // - Dashboard pages
+  // - Admin pages
+  // - Special pages
   const shouldUseLayout = !(isComingSoonMode && router.pathname === '/') &&
+    !isAuthenticatedHomePage &&
     router.pathname !== '/coming-soon' &&
     router.pathname !== '/dashboard' &&
+    router.pathname !== '/dashboard-demo' &&
     router.pathname !== '/NoteHubStyleNotesDownload' &&
     router.pathname !== '/notes-download' &&
     !router.pathname.startsWith('/admin')
 
+  return (
+    <>
+      <DefaultSeo {...SEO} />
+      <ToastContainer />
+      {shouldUseLayout ? (
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      ) : (
+        <Component {...pageProps} />
+      )}
+    </>
+  )
+}
+
+export default function App(appProps: AppProps) {
   return (
     <>
       <Head>
@@ -66,15 +94,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <AuthProvider>
           <BanProvider>
             <NavigationProvider>
-              <DefaultSeo {...SEO} />
-              <ToastContainer />
-              {shouldUseLayout ? (
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              ) : (
-                <Component {...pageProps} />
-              )}
+              <AppContent {...appProps} />
             </NavigationProvider>
           </BanProvider>
         </AuthProvider>
