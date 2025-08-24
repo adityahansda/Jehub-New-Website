@@ -2,11 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Root styling and theme transitions */
+@layer base {
+  html {
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+  
+  html.dark {
+    color-scheme: dark;
+  }
+  
+  html.light {
+    color-scheme: light;
+  }
+}
+
 /* Smooth navigation transitions */
 @layer utilities {
   .nav-smooth {
     transition: all 0.3s ease-in-out;
     will-change: transform;
+  }
+  
+  .theme-transition {
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, border-color 0.3s ease-in-out;
   }
 }
 
@@ -18,4 +37,34 @@
 
 .animate-shimmer {
   animation: shimmer 1.5s infinite;
+}
+
+/* Mobile menu utilities */
+@layer utilities {
+  .no-scroll {
+    overflow: hidden;
+  }
+  
+  .mobile-menu-slide {
+    will-change: transform;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-menu-slide.open {
+    transform: translateX(0);
+  }
+  
+  .mobile-overlay {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  
+  /* Improve touch targets for mobile */
+  @media (max-width: 768px) {
+    .touch-target {
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
 }

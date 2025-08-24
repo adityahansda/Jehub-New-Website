@@ -38,7 +38,9 @@ import {
   BookmarkPlus,
   Coins,
   Search,
-  ChevronDown
+  ChevronDown,
+  Video,
+  Play
 } from 'lucide-react';
 import { databases } from '@/lib/appwrite';
 import { Query, Models } from 'appwrite';
@@ -49,6 +51,7 @@ import EnhancedCommentsSection from '@/components/EnhancedCommentsSection';
 import ReportModal from '@/components/ReportModal';
 import ReportsSection from '@/components/ReportsSection';
 import ShareModal from '@/components/ShareModal';
+import VideoModal from '@/components/VideoModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { pointsService } from '@/services/pointsService';
 import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '@/utils/toast';
@@ -305,6 +308,10 @@ const NotesPreview = () => {
 
   // Share modal state
   const [showShareModal, setShowShareModal] = useState(false);
+  
+  // Video modal state
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState<any>(null);
 
   // Track report modal state changes
 
@@ -625,6 +632,19 @@ showWarning('Please sign in to download this premium note. Premium notes require
 
   const handleReport = () => {
     setShowReportModal(true);
+  };
+  
+  const handlePlayVideo = () => {
+    const demoVideo = {
+      title: 'How to Upload Notes - Demo Tutorial',
+      type: 'youtube' as const,
+      url: 'https://www.youtube.com/watch?v=cOSTc6qBRQw',
+      duration: 'Demo',
+      description: 'Learn how to upload your notes to Jharkhand Engineer\'s Hub platform. This tutorial covers the complete process from selecting files to successful upload.',
+      instructor: 'JEHub Team'
+    };
+    setCurrentVideo(demoVideo);
+    setShowVideoModal(true);
   };
 
   // Handle report submission
@@ -1077,6 +1097,28 @@ showWarning('Please sign in to download this premium note. Premium notes require
                 )}
               </div>
 
+              {/* Quick Tutorial Banner */}
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-2 rounded-lg">
+                      <Video className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-800">📹 Want to upload your own notes?</h4>
+                      <p className="text-xs text-gray-600">Watch our quick demo tutorial</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handlePlayVideo}
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-200 text-sm font-medium"
+                  >
+                    <Play className="h-4 w-4" />
+                    Watch Demo
+                  </button>
+                </div>
+              </div>
+              
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                 <button
@@ -1629,6 +1671,16 @@ showWarning('Please sign in to download this premium note. Premium notes require
         noteTitle={note?.title || ''}
       />
 
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={showVideoModal}
+        onClose={() => {
+          setShowVideoModal(false);
+          setCurrentVideo(null);
+        }}
+        video={currentVideo}
+      />
+      
       {/* Download Popup */}
       {downloadPopup.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">

@@ -393,17 +393,26 @@ const ReferralDashboard: React.FC = () => {
 
                 {/* Wishlist Referral Link */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Referral Link</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Wishlist Referral Link</label>
                   <div className="flex">
                     <input
                       type="text"
-                      value="http://jehub.vercel.app/wishlist-users?ref=JHAJH54936518"
+                      value={(() => {
+                        const baseUrl = process.env.NODE_ENV === 'development' 
+                          ? 'http://localhost:3000' 
+                          : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+                        return `${baseUrl}/wishlist-users?ref=${referralCode}`;
+                      })()}
                       readOnly
                       className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 text-gray-900 text-sm"
                     />
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText("http://jehub.vercel.app/wishlist-users?ref=JHAJH54936518");
+                        const baseUrl = process.env.NODE_ENV === 'development' 
+                          ? 'http://localhost:3000' 
+                          : (process.env.NEXT_PUBLIC_BASE_URL || 'https://jehub.vercel.app');
+                        const wishlistReferralLink = `${baseUrl}/wishlist-users?ref=${referralCode}`;
+                        navigator.clipboard.writeText(wishlistReferralLink);
                         setCopiedWishlistLink(true);
                         setTimeout(() => setCopiedWishlistLink(false), 2000);
                       }}

@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import UniversalSidebar from '../UniversalSidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { getDashboardUrl } from '../../utils/dashboardRouter';
 
@@ -297,7 +296,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
                 )}
               </motion.button>
               {/* Profile */}
-              <Link href={getDashboardUrl(userProfile)}>
+              <Link href={getDashboardUrl(userProfile || undefined)}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -314,8 +313,6 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({
           </div>
         </motion.div>
 
-        {/* Universal Sidebar */}
-        <UniversalSidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
 
         {/* Announcement Strip */}

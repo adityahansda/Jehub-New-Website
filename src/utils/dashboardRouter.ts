@@ -1,62 +1,62 @@
-import { UserProfile } from '../services/userService';
+// Dashboard routing utilities
+// This utility helps determine the appropriate dashboard URL based on user role
 
-export type UserRole = 'student' | 'admin' | 'manager' | 'intern' | 'team' | 'betatest' | 'user';
+export interface UserProfile {
+  role?: string;
+  id?: string;
+  [key: string]: any;
+}
 
 /**
- * Determines the appropriate dashboard URL based on user role
- * @param userProfile - The user profile containing role information
- * @returns The dashboard URL path
+ * Get the appropriate dashboard URL based on user profile
+ * @param userProfile - User profile object with role information
+ * @returns Dashboard URL string
  */
-export function getDashboardUrl(userProfile: UserProfile | null): string {
-  // Default to student dashboard if no profile or role
-  if (!userProfile || !userProfile.role) {
+export function getDashboardUrl(userProfile?: UserProfile): string {
+  if (!userProfile) {
     return '/dashboard';
   }
 
-  // Convert role to lowercase for case-insensitive comparison
-  const role = userProfile.role.toLowerCase();
-
+  const role = (userProfile.role || 'user').toLowerCase();
+  
   switch (role) {
     case 'admin':
-      return '/admin-dashboard';
     case 'manager':
-      return '/admin-dashboard'; // Managers also use admin dashboard but with limited access
     case 'intern':
-      return '/admin-dashboard'; // Interns also use admin dashboard but with limited access
-    case 'team':
-      return '/admin-dashboard'; // Team members also use admin dashboard but with limited access
-    case 'betatest':
-      return '/dashboard'; // Beta testers use regular dashboard but have access to all pages
+      return '/admin';
     case 'student':
     case 'user':
+      return '/dashboard';
     default:
       return '/dashboard';
   }
 }
 
 /**
- * Gets user role priority for access control
- * Higher numbers indicate higher privileges
+ * Check if user has required role for accessing a resource
+ * @param userProfile - User profile object with role information
+ * @param requiredRoles - Array of required roles
+ * @returns Boolean indicating if user has required role
  */
-export function getRolePriority(role: UserRole): number {
-  const priorities = {
-    'admin': 6,
-    'manager': 5,
-    'team': 4,
-    'intern': 3,
-    'betatest': 3, // Same level as intern for beta access
-    'student': 2,
-    'user': 1
-  };
-  
-  // Convert to lowercase for case-insensitive comparison
-  const normalizedRole = role.toLowerCase() as UserRole;
-  return priorities[normalizedRole] || 1;
+export function hasRequiredRole(userProfile?: UserProfile, requiredRoles: string[] = []): boolean {
+  if (!userProfile || requiredRoles.length === 0) {
+    return true;
+  }
+
+  const userRole = (userProfile.role || 'user').toLowerCase();
+  return requiredRoles.map(role => role.toLowerCase()).includes(userRole);
 }
 
 /**
- * Checks if user has required role or higher
+ * Get user role display name
+ * @param userProfile - User profile object with role information
+ * @returns Formatted role display name
  */
-export function hasRequiredRole(userRole: UserRole, requiredRole: UserRole): boolean {
-  return getRolePriority(userRole) >= getRolePriority(requiredRole);
+export function getRoleDisplayName(userProfile?: UserProfile): string {
+  if (!userProfile) {
+    return 'User';
+  }
+
+  const role = userProfile.role || 'user';
+  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 }

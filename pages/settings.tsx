@@ -1,6 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../src/components/dashboard/DashboardLayout';
+import Layout from '../src/components/Layout';
 import ThemeToggle from '../src/components/common/ThemeToggle';
 import { useTheme } from '../src/contexts/ThemeContext';
 import {
@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const { darkMode } = useTheme();
 
   return (
-    <DashboardLayout>
+    <Layout>
       <Head>
         <title>Settings - JEHUB Dashboard</title>
         <meta name="description" content="Configure your dashboard preferences and account settings" />
@@ -144,6 +144,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </Layout>
   );
 }

@@ -1,0 +1,144 @@
+{
+  "collectionId": "ai_knowledge_collection",
+  "name": "AI Knowledge Base",
+  "enabled": true,
+  "documentSecurity": true,
+  "attributes": [
+    {
+      "key": "title",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": true,
+      "array": false,
+      "size": 255,
+      "default": null
+    },
+    {
+      "key": "content",
+      "type": "string",
+      "status": "available", 
+      "error": "",
+      "required": true,
+      "array": false,
+      "size": 10000,
+      "default": null
+    },
+    {
+      "key": "category",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": true,
+      "array": false,
+      "size": 50,
+      "default": "general"
+    },
+    {
+      "key": "rules",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": false,
+      "array": false,
+      "size": 2000,
+      "default": null
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "status": "available",
+      "error": "",
+      "required": true,
+      "array": false,
+      "default": true
+    },
+    {
+      "key": "tags",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": false,
+      "array": true,
+      "size": 50,
+      "default": null
+    },
+    {
+      "key": "createdBy",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": false,
+      "array": false,
+      "size": 100,
+      "default": "Anonymous"
+    },
+    {
+      "key": "userEmail",
+      "type": "string",
+      "status": "available",
+      "error": "",
+      "required": false,
+      "array": false,
+      "size": 255,
+      "default": null
+    },
+    {
+      "key": "createdAt",
+      "type": "datetime",
+      "status": "available",
+      "error": "",
+      "required": true,
+      "array": false,
+      "format": "datetime",
+      "default": null
+    },
+    {
+      "key": "updatedAt",
+      "type": "datetime",
+      "status": "available",
+      "error": "",
+      "required": true,
+      "array": false,
+      "format": "datetime",
+      "default": null
+    }
+  ],
+  "indexes": [
+    {
+      "key": "category_index",
+      "type": "key",
+      "status": "available",
+      "error": "",
+      "attributes": ["category"]
+    },
+    {
+      "key": "active_index",
+      "type": "key",
+      "status": "available",
+      "error": "",
+      "attributes": ["isActive"]
+    },
+    {
+      "key": "created_index",
+      "type": "key",
+      "status": "available",
+      "error": "",
+      "attributes": ["createdAt"],
+      "orders": ["DESC"]
+    },
+    {
+      "key": "title_search_index",
+      "type": "fulltext",
+      "status": "available",
+      "error": "",
+      "attributes": ["title", "content"]
+    }
+  ],
+  "permissions": [
+    "read(\"any\")",
+    "create(\"users\")",
+    "update(\"users\")",
+    "delete(\"users\")"
+  ]
+}

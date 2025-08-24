@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff, Coins, ExternalLink } from 'lucide-react';
+import { Upload, FileText, Star, CheckCircle, AlertCircle, Wifi, WifiOff, Coins, ExternalLink, Play, Video } from 'lucide-react';
 import { uploadWithFallback, checkUploadStatus } from '../lib/uploadService';
 import { validateFile } from '../lib/github';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -251,6 +251,28 @@ const NotesUpload = () => {
           <p className="text-xl text-gray-600 mb-4">
             Share your knowledge with others and earn points - No login required!
           </p>
+          
+          {/* Demo Video Section */}
+          <div className="mb-6">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl px-6 py-4 shadow-sm">
+              <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-2 rounded-lg">
+                <Video className="h-5 w-5 text-white" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-gray-800 mb-1">📺 Need help with uploading?</p>
+                <a 
+                  href="https://www.youtube.com/watch?v=cOSTc6qBRQw" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors text-sm font-semibold"
+                >
+                  <Play className="h-4 w-4" />
+                  Watch Upload Demo Video
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </div>
           
           {/* Upload Status Indicator */}
           <div className="inline-flex items-center px-4 py-2 rounded-lg bg-gray-50 border border-gray-200">

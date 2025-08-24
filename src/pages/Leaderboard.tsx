@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { Trophy, Star, Medal, Crown } from 'lucide-react';
 import { mockLeaderboard } from '../data/mockData';
 import PageHeader from '../components/PageHeader';
-import UniversalSidebar from '../components/UniversalSidebar';
 const Leaderboard = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'weekly' | 'monthly'>('all');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -39,10 +38,6 @@ const Leaderboard = () => {
         title="Leaderboard" 
         icon={Trophy}
         onMenuClick={() => setIsSidebarOpen(true)}
-      />
-      <UniversalSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
       />
       
       <div className="pt-16 pb-8 px-4 sm:px-6 lg:px-8">

@@ -1,34 +1,47 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertCircle, RefreshCw, ExternalLink, Download, Loader2 } from 'lucide-react';
+import { AlertCircle, RefreshCw, ExternalLink, Download, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 
 interface GoogleDocsPDFViewerProps {
-  pdfUrl: string;
+  pdfUrl?: string;
+  fileUrl?: string; // Alternative prop name for compatibility
   fileName?: string;
+  title?: string;
+  className?: string;
+  showControls?: boolean;
   onDownload?: () => void;
 }
 
 const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
   pdfUrl,
+  fileUrl,
   fileName = 'document.pdf',
+  title,
+  className = '',
+  showControls = true,
   onDownload
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [viewerMethod, setViewerMethod] = useState<'gview' | 'direct' | 'mozilla'>('gview');
+  
+  // Use pdfUrl or fileUrl (for compatibility)
+  const actualUrl = pdfUrl || fileUrl;
+  const displayTitle = title || fileName;
 
   // Validate PDF URL on mount and when URL changes
   useEffect(() => {
-    if (pdfUrl && !pdfUrl.toLowerCase().includes('.pdf')) {
+    if (actualUrl && !actualUrl.toLowerCase().includes('.pdf')) {
       setError('The provided URL does not appear to be a PDF file.');
       setIsLoading(false);
-    } else if (pdfUrl) {
+    } else if (actualUrl) {
       setError(null);
       setIsLoading(true);
     }
-  }, [pdfUrl]);
+  }, [actualUrl]);
 
-  // Convert various URL formats to Google Docs Viewer compatible URLs
-  const getGoogleDocsViewerUrl = (url: string): string => {
+  // Convert various URL formats to viewer compatible URLs
+  const getViewerUrl = (url: string, method: 'gview' | 'direct' | 'mozilla' = 'gview'): string => {
     if (!url) return '';
 
     // Validate that the URL is a PDF
@@ -48,6 +61,11 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
     if (url.includes('github.com') && url.includes('/raw/')) {
       processedUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/raw/', '/');
     }
+    
+    // Handle raw.githubusercontent.com URLs - they're already in correct format
+    if (url.includes('raw.githubusercontent.com')) {
+      processedUrl = url;
+    }
 
     // For Google Drive URLs, extract file ID and use preview URL
     if (url.includes('drive.google.com')) {
@@ -61,11 +79,27 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
       }
     }
 
-    // For other URLs, use Google Docs Viewer
-    return `https://docs.google.com/gview?url=${encodeURIComponent(processedUrl)}&embedded=true`;
+    // Choose viewer method
+    switch (method) {
+      case 'gview':
+        // Google Docs Viewer with cache busting
+        const timestamp = new Date().getTime();
+        return `https://docs.google.com/gview?url=${encodeURIComponent(processedUrl)}&embedded=true&v=${timestamp}`;
+      
+      case 'mozilla':
+        // Mozilla PDF.js viewer
+        return `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(processedUrl)}`;
+      
+      case 'direct':
+        // Direct URL embedding (modern browsers support)
+        return processedUrl;
+      
+      default:
+        return processedUrl;
+    }
   };
 
-  const viewerUrl = useMemo(() => getGoogleDocsViewerUrl(pdfUrl), [pdfUrl]);
+  const viewerUrl = useMemo(() => getViewerUrl(actualUrl || '', viewerMethod), [actualUrl, viewerMethod]);
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -74,19 +108,32 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
 
   const handleIframeError = () => {
     setIsLoading(false);
+    // Try different viewer methods on error
+    if (viewerMethod === 'gview') {
+      console.log('Google Docs Viewer failed, trying Mozilla PDF.js...');
+      setViewerMethod('mozilla');
+      setIsLoading(true);
+      return;
+    } else if (viewerMethod === 'mozilla') {
+      console.log('Mozilla PDF.js failed, trying direct embedding...');
+      setViewerMethod('direct');
+      setIsLoading(true);
+      return;
+    }
     setError('Failed to load PDF. The document may not be accessible or the URL may be invalid.');
   };
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
     setError(null);
-    if (pdfUrl && pdfUrl.toLowerCase().includes('.pdf')) {
+    setViewerMethod('gview'); // Reset to first method
+    if (actualUrl && actualUrl.toLowerCase().includes('.pdf')) {
       setIsLoading(true);
     }
   };
 
   const openInNewTab = () => {
-    window.open(pdfUrl, '_blank');
+    window.open(actualUrl, '_blank');
   };
 
   const handleDownload = () => {
@@ -95,7 +142,7 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
     } else {
       // Fallback: try to download directly
       const link = document.createElement('a');
-      link.href = pdfUrl;
+      link.href = actualUrl || '';
       link.download = fileName;
       link.target = '_blank';
       document.body.appendChild(link);
@@ -138,9 +185,10 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
   }
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className={`w-full bg-white rounded-lg border border-gray-200 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
+      {showControls && (
+        <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-gray-700">PDF Preview</h3>
           {fileName && (
@@ -177,7 +225,8 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
             Open
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Error Display */}
       {error && (
@@ -204,7 +253,9 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
               <Loader2 className="inline-block animate-spin h-8 w-8 text-blue-600 mb-4" />
               <p className="text-gray-600">Loading PDF preview...</p>
               <p className="text-gray-500 text-sm mt-2">
-                Using Google Docs Viewer
+                Using {viewerMethod === 'gview' ? 'Google Docs Viewer' : 
+                       viewerMethod === 'mozilla' ? 'Mozilla PDF.js' : 
+                       'Direct PDF Embedding'}
               </p>
             </div>
           </div>
@@ -246,9 +297,10 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
             title={`PDF Viewer - ${fileName}`}
             onLoad={handleIframeLoad}
             onError={handleIframeError}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
             style={{ minHeight: '400px' }}
             loading="lazy"
+            allow="fullscreen"
           />
         )}
       </div>
@@ -258,9 +310,11 @@ const GoogleDocsPDFViewer: React.FC<GoogleDocsPDFViewerProps> = ({
         <details className="text-xs text-gray-600">
           <summary className="cursor-pointer hover:text-gray-800">Technical Details</summary>
           <div className="mt-2 space-y-1 text-xs">
-            <p><strong>Original URL:</strong> <span className="break-all">{pdfUrl}</span></p>
+            <p><strong>Original URL:</strong> <span className="break-all">{actualUrl}</span></p>
             <p><strong>Viewer URL:</strong> <span className="break-all">{viewerUrl}</span></p>
-            <p><strong>Method:</strong> Google Docs Viewer</p>
+            <p><strong>Method:</strong> {viewerMethod === 'gview' ? 'Google Docs Viewer' : 
+                                          viewerMethod === 'mozilla' ? 'Mozilla PDF.js' : 
+                                          'Direct PDF Embedding'}</p>
           </div>
         </details>
       </div>

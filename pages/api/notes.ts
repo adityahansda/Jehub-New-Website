@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { databases } from '../../src/lib/appwrite';
-import { Query } from 'appwrite';
+import { serverDatabases } from '../../src/lib/appwrite-server';
+import { Query } from 'node-appwrite';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // Public API endpoint - no authentication required
-    const response = await databases.listDocuments(
+    const response = await serverDatabases.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
       process.env.NEXT_PUBLIC_APPWRITE_NOTES_COLLECTION_ID!,
       [Query.orderDesc('uploadDate')]

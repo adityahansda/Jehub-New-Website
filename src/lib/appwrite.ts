@@ -27,9 +27,8 @@ client
 // Set locale to ensure proper error messages
 client.setLocale('en');
 
-// Configure client for better cookie handling
-// Enable credentials for cross-origin requests
-client.headers['Access-Control-Allow-Credentials'] = 'true';
+// Configure client for better authentication handling
+// Set standard headers for proper API communication
 client.headers['X-Requested-With'] = 'XMLHttpRequest';
 
 // Enable cookie fallback for cross-site (third-party) cookie restrictions
@@ -38,16 +37,6 @@ client.headers['X-Requested-With'] = 'XMLHttpRequest';
 // @ts-ignore - Method exists in newer Appwrite SDKs
 if (typeof (client as any).setCookieFallback === 'function') {
   (client as any).setCookieFallback(true);
-} else {
-  // Fallback header toggle for older SDKs/servers that support it
-  // @ts-ignore
-  client.headers = { ...(client as any).headers, 'X-Fallback-Cookies': '1' };
-}
-
-// Add SameSite cookie handling for OAuth
-if (typeof window !== 'undefined') {
-  // Configure cookie settings for better compatibility
-  document.cookie = 'SameSite=None; Secure';
 }
 
 // Create account instance with error handling
@@ -62,6 +51,11 @@ export const safeAccount = {
       // Don't log 401 errors as they're expected when not authenticated
       if (error.code !== 401) {
         console.error('Appwrite account error:', error);
+        // Log CORS related errors for debugging
+        if (error.message && error.message.includes('CORS')) {
+          console.error('CORS error detected. Check Appwrite platform settings for allowed origins.');
+          console.error('Current origin:', typeof window !== 'undefined' ? window.location.origin : 'unknown');
+        }
       }
       // Return null instead of throwing for 401 errors
       if (error.code === 401) {
@@ -168,6 +162,34 @@ export const safeAccount = {
             return await account.createVerification(url);
           } catch (error: any) {
             console.error('Verification creation error:', error);
+            throw error;
+          }
+        },
+        
+        // Email/Password Authentication Methods
+        create: async (userId: string, email: string, password: string, name?: string) => {
+          try {
+            return await account.create(userId, email, password, name);
+          } catch (error: any) {
+            console.error('Account creation error:', error);
+            throw error;
+          }
+        },
+        
+        createEmailPasswordSession: async (email: string, password: string) => {
+          try {
+            return await account.createEmailPasswordSession(email, password);
+          } catch (error: any) {
+            console.error('Email/Password session creation error:', error);
+            throw error;
+          }
+        },
+        
+        updateVerification: async (userId: string, secret: string) => {
+          try {
+            return await account.updateVerification(userId, secret);
+          } catch (error: any) {
+            console.error('Verification update error:', error);
             throw error;
           }
         }

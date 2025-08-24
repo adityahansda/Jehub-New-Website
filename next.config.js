@@ -121,7 +121,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Security headers
+  // Security headers and CORS
   async headers() {
     const isProduction = process.env.NODE_ENV === 'production';
     

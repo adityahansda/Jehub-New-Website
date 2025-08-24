@@ -2,11 +2,10 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { AlertCircle, Home, ArrowLeft, Shield, User } from 'lucide-react';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { getDashboardUrl } from '../../src/utils/dashboardRouter';
 
 const AccessDeniedPage: React.FC = () => {
   const router = useRouter();
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
   const { reason } = router.query;
 
   const handleGoHome = () => {
@@ -18,11 +17,11 @@ const AccessDeniedPage: React.FC = () => {
   };
 
   const handleGoToDashboard = () => {
-    const dashboardUrl = getDashboardUrl(userProfile);
-    router.push(dashboardUrl);
+    // Default dashboard redirect - in production, you would check user role from database
+    router.push('/dashboard');
   };
 
-  const userRole = userProfile?.role || 'user';
+  const userRole = user?.prefs?.role || 'user';
   const isStudent = userRole === 'student' || userRole === 'user';
   const isAdmin = userRole === 'admin' || userRole === 'manager' || userRole === 'intern';
 

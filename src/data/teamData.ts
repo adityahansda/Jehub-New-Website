@@ -4,7 +4,7 @@ export const coreTeam: CoreTeamMember[] = [
   {
     name: 'Aditya Hansda',
     role: 'Founder & CEO',
-    education: 'Diploma in Computer Science Engineering, JUT',
+    education: 'B.Tech in Cyber Security',
     specialization: 'Full-Stack Development & Community Building',
     bio: 'Visionary diploma student who founded JEHUB to create a space where fellow learners feel heard, guided, and connected. Experience: JEHUB - Founder & CEO',
     image: '/team/Aditya Hansda.jpg',
