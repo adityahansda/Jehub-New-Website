@@ -46,6 +46,13 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { databases } from '../lib/appwrite';
+import { pointsService } from '../services/pointsService';
+import { likesService } from '../services/likesService';
+import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '../utils/toast';
+import { toast } from 'react-toastify';
+import { generateNoteSlug } from '../utils/seo';
+import { checkUrlStatus } from '../lib/pdfValidation';
 
 // Types
 interface PageType {
@@ -634,149 +641,37 @@ const MyLibrary = () => {
   );
 };
 
+interface Note {
+  id: string;
+  title: string;
+  branch: string;
+  semester: string;
+  subject: string;
+  description: string;
+  tags: string[];
+  uploader: string;
+  uploaderAvatar?: string;
+  uploaderEmail?: string;
+  uploadDate: string;
+  githubUrl: string;
+  fileName: string;
+  downloads: number;
+  likes: number;
+  points: number;
+  views: number;
+  reports: number;
+  fileSize: number;
+  noteType: 'free' | 'premium';
+  degree: string;
+  rating: number;
+  isVerified: boolean;
+  lastDownloaded?: string;
+}
+
 const NotesDownload = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
-  const [notes, setNotes] = useState([
-    {
-      id: '1',
-      title: 'Data Structures and Algorithms - Complete Guide',
-      branch: 'Computer Science',
-      semester: '3rd',
-      subject: 'Data Structures',
-      description: 'Comprehensive notes covering arrays, linked lists, trees, graphs, and advanced algorithms with practical examples.',
-      tags: ['DSA', 'Algorithms', 'Programming', 'CS'],
-      uploader: 'Prof. Kumar',
-      uploadDate: '2024-08-15',
-      githubUrl: 'https://github.com/example/dsa-notes.pdf',
-      fileName: 'DSA_Complete_Guide.pdf',
-      downloads: 2847,
-      likes: 394,
-      points: 0,
-      views: 5234,
-      reports: 2,
-      fileSize: 2540000,
-      noteType: 'free',
-      degree: 'B.Tech',
-      rating: 4.8,
-      isVerified: true
-    },
-    {
-      id: '2',
-      title: 'Advanced Mathematics for Engineers',
-      branch: 'Mathematics',
-      semester: '2nd',
-      subject: 'Engineering Mathematics',
-      description: 'Detailed mathematical concepts including calculus, differential equations, linear algebra and their engineering applications.',
-      tags: ['Calculus', 'Linear Algebra', 'Mathematics', 'Engineering'],
-      uploader: 'Dr. Singh',
-      uploadDate: '2024-08-10',
-      githubUrl: 'https://github.com/example/math-notes.pdf',
-      fileName: 'Advanced_Mathematics.pdf',
-      downloads: 1923,
-      likes: 267,
-      points: 25,
-      views: 3421,
-      reports: 0,
-      fileSize: 1850000,
-      noteType: 'premium',
-      degree: 'B.Tech',
-      rating: 4.6,
-      isVerified: true
-    },
-    {
-      id: '3',
-      title: 'Digital Electronics Fundamentals',
-      branch: 'Electronics',
-      semester: '4th',
-      subject: 'Digital Electronics',
-      description: 'Complete coverage of digital logic gates, flip-flops, counters, registers and memory systems with circuit diagrams.',
-      tags: ['Digital Logic', 'Electronics', 'Circuits', 'Hardware'],
-      uploader: 'Prof. Patel',
-      uploadDate: '2024-08-12',
-      githubUrl: 'https://github.com/example/digital-electronics.pdf',
-      fileName: 'Digital_Electronics_Fundamentals.pdf',
-      downloads: 1456,
-      likes: 198,
-      points: 15,
-      views: 2567,
-      reports: 1,
-      fileSize: 3200000,
-      noteType: 'premium',
-      degree: 'B.Tech',
-      rating: 4.7,
-      isVerified: false
-    },
-    {
-      id: '4',
-      title: 'Physics Mechanics and Thermodynamics',
-      branch: 'Physics',
-      semester: '1st',
-      subject: 'Engineering Physics',
-      description: 'Fundamental physics concepts covering mechanics, thermodynamics, waves, and quantum physics basics for engineers.',
-      tags: ['Mechanics', 'Thermodynamics', 'Physics', 'Waves'],
-      uploader: 'Dr. Sharma',
-      uploadDate: '2024-08-08',
-      githubUrl: 'https://github.com/example/physics-notes.pdf',
-      fileName: 'Physics_Mechanics_Thermodynamics.pdf',
-      downloads: 2103,
-      likes: 312,
-      points: 0,
-      views: 4123,
-      reports: 0,
-      fileSize: 2100000,
-      noteType: 'free',
-      degree: 'B.Tech',
-      rating: 4.9,
-      isVerified: true
-    },
-    {
-      id: '5',
-      title: 'Database Management Systems - Complete Course',
-      branch: 'Computer Science',
-      semester: '5th',
-      subject: 'Database Systems',
-      description: 'Comprehensive DBMS notes covering SQL, normalization, indexing, transactions, and database design principles.',
-      tags: ['DBMS', 'SQL', 'Database Design', 'Normalization'],
-      uploader: 'Prof. Gupta',
-      uploadDate: '2024-08-14',
-      githubUrl: 'https://github.com/example/dbms-notes.pdf',
-      fileName: 'DBMS_Complete_Course.pdf',
-      downloads: 1789,
-      likes: 245,
-      points: 20,
-      views: 3234,
-      reports: 0,
-      fileSize: 2890000,
-      noteType: 'premium',
-      degree: 'B.Tech',
-      rating: 4.5,
-      isVerified: true
-    },
-    {
-      id: '6',
-      title: 'Mechanical Engineering Drawing',
-      branch: 'Mechanical',
-      semester: '2nd',
-      subject: 'Engineering Drawing',
-      description: 'Technical drawing standards, projections, sectional views, and CAD fundamentals for mechanical engineering students.',
-      tags: ['Technical Drawing', 'CAD', 'Mechanical', 'Projections'],
-      uploader: 'Prof. Joshi',
-      uploadDate: '2024-08-11',
-      githubUrl: 'https://github.com/example/mech-drawing.pdf',
-      fileName: 'Mechanical_Engineering_Drawing.pdf',
-      downloads: 987,
-      likes: 134,
-      points: 10,
-      views: 1876,
-      reports: 0,
-      fileSize: 4100000,
-      noteType: 'premium',
-      degree: 'B.Tech',
-      rating: 4.4,
-      isVerified: false
-    }
-  ]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('Most relevant');
@@ -831,9 +726,137 @@ const NotesDownload = () => {
     return 'Advanced';
   };
 
-  // Simulate loading
+  // Fetch notes from API
   useEffect(() => {
-    setTimeout(() => setLoading(false), 1500);
+    const fetchNotes = async () => {
+      try {
+        setLoading(true);
+        console.log('Fetching notes from API...');
+        const response = await fetch('/api/notes');
+        console.log('API response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('API response data:', data);
+          
+          if (data.notes && Array.isArray(data.notes)) {
+            console.log('Setting notes:', data.notes.length, 'notes found');
+            setNotes(data.notes);
+          } else {
+            console.warn('No notes array in response, using demo data');
+            setDemoData();
+          }
+        } else {
+          console.error('API response not OK:', response.status);
+          setDemoData();
+        }
+      } catch (error) {
+        console.error('Error fetching notes:', error);
+        setDemoData();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const setDemoData = () => {
+      console.log('Setting demo data...');
+      setNotes([
+        {
+          id: '1',
+          title: 'Data Structures and Algorithms - Complete Guide',
+          branch: 'Computer Science',
+          semester: '3rd',
+          subject: 'Data Structures',
+          description: 'Comprehensive notes covering arrays, linked lists, trees, graphs, and advanced algorithms with practical examples.',
+          tags: ['DSA', 'Algorithms', 'Programming', 'CS'],
+          uploader: 'Prof. Kumar',
+          uploadDate: '2024-08-15',
+          githubUrl: 'https://github.com/example/dsa-notes.pdf',
+          fileName: 'DSA_Complete_Guide.pdf',
+          downloads: 2847,
+          likes: 394,
+          points: 0,
+          views: 5234,
+          reports: 2,
+          fileSize: 2540000,
+          noteType: 'free' as 'free' | 'premium',
+          degree: 'B.Tech',
+          rating: 4.8,
+          isVerified: true
+        },
+        {
+          id: '2',
+          title: 'Advanced Mathematics for Engineers',
+          branch: 'Mathematics',
+          semester: '2nd',
+          subject: 'Engineering Mathematics',
+          description: 'Detailed mathematical concepts including calculus, differential equations, linear algebra and their engineering applications.',
+          tags: ['Calculus', 'Linear Algebra', 'Mathematics', 'Engineering'],
+          uploader: 'Dr. Singh',
+          uploadDate: '2024-08-10',
+          githubUrl: 'https://github.com/example/math-notes.pdf',
+          fileName: 'Advanced_Mathematics.pdf',
+          downloads: 1923,
+          likes: 267,
+          points: 25,
+          views: 3421,
+          reports: 0,
+          fileSize: 1850000,
+          noteType: 'premium' as 'free' | 'premium',
+          degree: 'B.Tech',
+          rating: 4.6,
+          isVerified: true
+        },
+        {
+          id: '3',
+          title: 'Digital Electronics Fundamentals',
+          branch: 'Electronics',
+          semester: '4th',
+          subject: 'Digital Electronics',
+          description: 'Complete coverage of digital logic gates, flip-flops, counters, registers and memory systems with circuit diagrams.',
+          tags: ['Digital Logic', 'Electronics', 'Circuits', 'Hardware'],
+          uploader: 'Prof. Patel',
+          uploadDate: '2024-08-12',
+          githubUrl: 'https://github.com/example/digital-electronics.pdf',
+          fileName: 'Digital_Electronics_Fundamentals.pdf',
+          downloads: 1456,
+          likes: 198,
+          points: 15,
+          views: 2567,
+          reports: 1,
+          fileSize: 3200000,
+          noteType: 'premium' as 'free' | 'premium',
+          degree: 'B.Tech',
+          rating: 4.7,
+          isVerified: false
+        },
+        {
+          id: '4',
+          title: 'Physics Mechanics and Thermodynamics',
+          branch: 'Physics',
+          semester: '1st',
+          subject: 'Engineering Physics',
+          description: 'Fundamental physics concepts covering mechanics, thermodynamics, waves, and quantum physics basics for engineers.',
+          tags: ['Mechanics', 'Thermodynamics', 'Physics', 'Waves'],
+          uploader: 'Dr. Sharma',
+          uploadDate: '2024-08-08',
+          githubUrl: 'https://github.com/example/physics-notes.pdf',
+          fileName: 'Physics_Mechanics_Thermodynamics.pdf',
+          downloads: 2103,
+          likes: 312,
+          points: 0,
+          views: 4123,
+          reports: 0,
+          fileSize: 2100000,
+          noteType: 'free' as 'free' | 'premium',
+          degree: 'B.Tech',
+          rating: 4.9,
+          isVerified: true
+        }
+      ]);
+    };
+
+    fetchNotes();
   }, []);
 
   // Filter and sort notes
