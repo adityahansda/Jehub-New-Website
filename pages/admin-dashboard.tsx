@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import DashboardLayout from '../src/components/dashboard/DashboardLayout';
 import { useAuth } from '../src/contexts/AuthContext';
 
 // Admin Components
@@ -20,6 +19,7 @@ import PointsManagement from '../src/components/admin/PointsManagement';
 import BannedDevicesManager from '../src/components/admin/BannedDevicesManager';
 import DeviceManagementSection from '../src/components/admin/DeviceManagementSection';
 import BetaAccessControlPanel from '../src/components/admin/BetaAccessControlPanel';
+import AIKnowledgeManager from '../src/components/admin/AIKnowledgeManager';
 
 import {
     BarChart3,
@@ -58,7 +58,7 @@ import {
 } from 'lucide-react';
 
 function AdminDashboard() {
-    const { user, userProfile, logout } = useAuth();
+    const { user, logout } = useAuth();
     const [activeSection, setActiveSection] = useState('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
@@ -123,32 +123,19 @@ function AdminDashboard() {
                     <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-start lg:space-x-8 space-y-6 lg:space-y-0">
                         {/* Avatar */}
                         <div className="relative">
-                            {userProfile?.profileImageUrl ? (
-                                <Image
-                                    src={userProfile.profileImageUrl}
-                                    alt="Profile"
-                                    width={96}
-                                    height={96}
-                                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-white/30 object-cover"
-                                />
-                            ) : (
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 flex items-center justify-center">
-                                    <span className="text-xl sm:text-2xl font-bold">
-                                        {(userProfile?.name || user?.name || 'A').charAt(0).toUpperCase()}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 flex items-center justify-center">
+                                <span className="text-xl sm:text-2xl font-bold">
+                                    {(user?.name || 'A').charAt(0).toUpperCase()}
+                                </span>
+                            </div>
                             <div className="absolute -bottom-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
 
                         {/* Admin Info */}
                         <div className="text-center lg:text-left flex-1 w-full">
-                            <h2 className="text-2xl sm:text-3xl font-bold mb-2">{userProfile?.name || user?.name}</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-2">{user?.name}</h2>
                             <p className="text-white/90 text-base sm:text-lg mb-4">
-                                {userProfile?.role === 'admin' ? '🛡️ Administrator' : 
-                                 userProfile?.role === 'manager' ? '👔 Manager' : 
-                                 userProfile?.role === 'intern' ? '💼 Intern' : 'Admin User'}
-                                {userProfile?.branch && ` • ${userProfile.branch}`}
+                                🛡️ Administrator
                             </p>
 
                             {/* Admin Stats */}
@@ -335,8 +322,8 @@ function AdminDashboard() {
         </div>
     );
 
-    // Get user role from profile
-    const userRole = userProfile?.role || 'admin';
+    // Get user role (default to admin for Google OAuth users)
+    const userRole = 'admin';
 
     // Function to render content based on active section
     const renderContent = () => {
@@ -369,13 +356,15 @@ case 'notes':
                 return <DeviceManagementSection />;
             case 'banned-devices':
                 return <BannedDevicesManager />;
+            case 'ai-knowledge':
+                return <AIKnowledgeManager userEmail={user?.email} userName={user?.name} />;
             default:
                 return renderDashboardContent();
         }
     };
 
     return (
-        <DashboardLayout>
+        <>
             <Head>
                 <title>Admin Dashboard - JEHUB</title>
                 <meta name="description" content="Admin control panel for managing the JEHUB platform, users, and system settings" />
@@ -508,6 +497,7 @@ case 'notes':
                                                 { key: 'leaderboard', label: 'Leaderboard', icon: TrendingUp },
                                                 { key: 'beta-access', label: 'Beta Access Control', icon: Lock },
                                                 { key: 'banned-devices', label: 'Banned Devices', icon: Ban },
+                                                { key: 'ai-knowledge', label: 'AI Knowledge Manager', icon: Database },
                                                 { key: 'logout', label: 'Logout', icon: LogOut, isLogout: true },
                                             ].map((item) => {
                                                 const IconComponent = item.icon;
@@ -563,76 +553,44 @@ case 'notes':
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        </>
     );
 }
 
 // Role-based access control wrapper
 export default function ProtectedAdminDashboard() {
-    const { user, userProfile } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
     const [isChecking, setIsChecking] = useState(true);
-    const [hasAccess, setHasAccess] = useState(false);
 
     useEffect(() => {
         const checkAccess = async () => {
-            console.log('Checking access...');
-            console.log('User:', user);
-            console.log('UserProfile:', userProfile);
-
-            // Wait for user and userProfile to load
             if (!user) {
-                console.log('No user detected, redirecting to login.');
                 const nextUrl = router.asPath || '/admin-dashboard';
                 router.push({ pathname: '/login', query: { redirect: nextUrl } });
                 return;
             }
 
-            // If userProfile is still loading, wait a bit
-            if (userProfile === undefined) {
-                console.log('UserProfile still loading...');
-                return;
-            }
-
-            // Check role-based access
-            const userRole = (userProfile?.role || 'user').toLowerCase();
-            console.log('User role:', userRole);
-
-            // Only allow access for admin roles
-            const allowedRoles = ['admin', 'manager', 'intern'];
-
-            if (allowedRoles.includes(userRole)) {
-                console.log('Access granted.');
-                setHasAccess(true);
-            } else {
-                console.log('Access denied, redirecting.');
-                // Redirect students to student dashboard
-                if (userRole === 'student' || userRole === 'user') {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/access-denied');
-                }
-                return;
-            }
-
+            // Since we're using Google OAuth, all authenticated users can access admin (for now)
+            // You can add more sophisticated role checking here if needed
             setIsChecking(false);
         };
 
         checkAccess();
-    }, [user, userProfile, router]);
+    }, [user, router]);
 
     // Show loading while checking access
-    if (isChecking || !user) {
+    if (isChecking) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">Verifying admin access...</p>
+                    <p className="text-gray-600 dark:text-gray-400">Loading admin dashboard...</p>
                 </div>
             </div>
         );
     }
 
-    // Render admin dashboard if access is granted
-    return hasAccess ? <AdminDashboard /> : null;
+    // Render admin dashboard if user is authenticated
+    return user ? <AdminDashboard /> : null;
 }

@@ -21,6 +21,7 @@
     "setup:collections": "node scripts/setup-missing-collections.js",
     "create:telegram-collection": "node scripts/create-telegram-collection.js",
     "check:api-key": "node scripts/check-api-key.js",
+    "kb:add:aditya": "node -r dotenv/config scripts/add-aditya-knowledge.js",
     "postbuild": "next-sitemap",
     "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },

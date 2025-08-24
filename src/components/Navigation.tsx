@@ -10,10 +10,9 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield, Search, Zap, Coins, Settings, User, LogOut, Home, Activity, Award, Target, Bookmark, LayoutDashboard, FileText } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield, Search, Zap, Coins, Settings, User, LogOut, Home, Activity, Award, Target, Bookmark, LayoutDashboard, FileText, Bot } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
-import { getDashboardUrl } from '../utils/dashboardRouter';
 import ProfilePicture from './ProfilePicture';
 import AuthLoader from './AuthLoader';
 import { pointsService } from '../services/pointsService';
@@ -34,7 +33,21 @@ const Navigation = () => {
   const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0, pointsSpent: 0 });
   const [pointsLoading, setPointsLoading] = useState(false);
   const router = useRouter();
-  const { user, userProfile, isVerified, loading, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, [isMenuOpen]);
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: Home },
@@ -97,7 +110,6 @@ const Navigation = () => {
     {
       category: 'User Features',
       pages: [
-        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Your personal dashboard' },
         { path: '/profile', label: 'Profile', icon: User, description: 'Manage your profile' },
         { path: '/notifications', label: 'Notifications', icon: Bell, description: 'Your updates & alerts' },
         { path: '/settings', label: 'Settings', icon: Settings, description: 'Account preferences' },
@@ -201,8 +213,9 @@ const Navigation = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMenuOpen(true)}
-                className="p-2 rounded-lg transition-all duration-200 md:hidden text-gray-300 hover:text-white hover:bg-gray-800"
+                className="p-3 rounded-lg transition-all duration-200 md:hidden text-gray-300 hover:text-white hover:bg-gray-800 active:scale-95 touch-manipulation"
                 aria-label="Open menu"
+                style={{ minWidth: '44px', minHeight: '44px' }}
               >
                 <Menu className="h-6 w-6" />
               </button>
@@ -251,12 +264,13 @@ const Navigation = () => {
                     <span>Wishlist User</span>
                   </Link>
                   
-                  <Link
-                    href="/contact"
-                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
-                  >
-                    <span>Contact Us</span>
-                  </Link>
+              <Link
+                href="/contact"
+                className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+              >
+                <span>Contact Us</span>
+              </Link>
+              
                   
                   <Link
                     href="/groups"
@@ -363,7 +377,7 @@ const Navigation = () => {
               )}
 
               {/* Points Display - Only show for authenticated users */}
-              {user && isVerified && (
+              {user && (
                 <div className="hidden sm:flex items-center space-x-2 bg-amber-100 bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full border border-amber-300 border-opacity-30">
                   <Coins className="h-4 w-4 text-amber-400" />
                   <span className="text-sm font-medium text-amber-200">
@@ -382,27 +396,17 @@ const Navigation = () => {
               <div className="flex items-center">
                 {loading ? (
                   <AuthLoader className="px-3 py-2 rounded-lg" />
-                ) : user && isVerified ? (
+                ) : user ? (
                   <div className="relative">
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
                     >
-                      {userProfile?.profileImageUrl ? (
-                        <Image
-                          src={userProfile.profileImageUrl}
-                          alt="Profile"
-                          width={32}
-                          height={32}
-                          className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">
-                            {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
+                          {(user?.name || 'U').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <ChevronDown className={`h-4 w-4 transition-transform duration-200 text-gray-400 ${isProfileOpen ? 'rotate-180' : ''}`} />
                     </button>
 
@@ -411,53 +415,24 @@ const Navigation = () => {
                         {/* Profile Header */}
                         <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-100">
                           <div className="flex items-center space-x-3">
-                            {userProfile?.profileImageUrl ? (
-                              <Image
-                                src={userProfile.profileImageUrl}
-                                alt="Profile"
-                                width={48}
-                                height={48}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
-                                <span className="text-white text-lg font-medium">
-                                  {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                              <span className="text-white text-lg font-medium">
+                                {(user?.name || 'U').charAt(0).toUpperCase()}
+                              </span>
+                            </div>
                             <div className="flex-1">
-                              <p className="text-gray-900 font-semibold text-sm">{userProfile?.name || user?.name}</p>
+                              <p className="text-gray-900 font-semibold text-sm">{user?.name}</p>
                               <p className="text-gray-600 text-xs">{user?.email}</p>
-                              {userProfile?.points !== undefined && (
-                                <div className="flex items-center space-x-1 mt-1 bg-white bg-opacity-70 px-2 py-1 rounded-full">
-                                  <Coins className="h-3 w-3 text-amber-600" />
-                                  <span className="text-xs text-amber-600 font-medium">{userProfile.points} Points</span>
-                                </div>
-                              )}
-                              {userProfile?.userId && (
-                                <p className="text-xs text-gray-500 mt-1">ID: {userProfile.userId}</p>
-                              )}
-                              {process.env.NODE_ENV === 'development' && userProfile?.role && (
-                                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mt-1 font-medium">
-                                  {userProfile.role}
-                                </span>
-                              )}
+                              <div className="flex items-center space-x-1 mt-1 bg-white bg-opacity-70 px-2 py-1 rounded-full">
+                                <Coins className="h-3 w-3 text-amber-600" />
+                                <span className="text-xs text-amber-600 font-medium">{userPoints.availablePoints} Points</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                         
                         {/* Main Actions */}
                         <div className="py-2">
-                          <button onClick={() => handleProfileClick(getDashboardUrl(userProfile))} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
-                            <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                              <GraduationCap className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <span className="font-medium">Dashboard</span>
-                              <p className="text-xs text-gray-500">View your stats & activity</p>
-                            </div>
-                          </button>
                           
                           <button onClick={() => handleProfileClick('/settings')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 group">
                             <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors duration-200">
@@ -479,19 +454,6 @@ const Navigation = () => {
                             </div>
                           </button>
                           
-                          {/* Conditional Actions */}
-                          {isEligibleForNotesUpload(userProfile?.role) && (
-                            <button onClick={() => handleProfileClick('/notes/upload')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group">
-                              <div className="w-8 h-8 bg-purple-100 group-hover:bg-purple-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                                <Upload className="h-4 w-4 text-purple-600" />
-                              </div>
-                              <div className="flex-1 text-left">
-                                <span className="font-medium">Upload Notes</span>
-                                <p className="text-xs text-gray-500">Share your knowledge</p>
-                              </div>
-                            </button>
-                          )}
-                          
                           <button onClick={() => handleProfileClick('/referral')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 group">
                             <div className="w-8 h-8 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors duration-200">
                               <Gift className="h-4 w-4 text-orange-600" />
@@ -501,28 +463,6 @@ const Navigation = () => {
                               <p className="text-xs text-gray-500">Invite friends & earn</p>
                             </div>
                           </button>
-                          
-                          <button onClick={() => handleProfileClick('/premium')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 group">
-                            <div className="w-8 h-8 bg-yellow-100 group-hover:bg-yellow-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                              <Star className="h-4 w-4 text-yellow-600" />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <span className="font-medium">Premium</span>
-                              <p className="text-xs text-gray-500">Upgrade your experience</p>
-                            </div>
-                          </button>
-                          
-                          {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
-                            <button onClick={() => handleProfileClick('/user/verify')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 group">
-                              <div className="w-8 h-8 bg-indigo-100 group-hover:bg-indigo-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                                <Shield className="h-4 w-4 text-indigo-600" />
-                              </div>
-                              <div className="flex-1 text-left">
-                                <span className="font-medium">Admin Panel</span>
-                                <p className="text-xs text-gray-500">Verify memberships</p>
-                              </div>
-                            </button>
-                          )}
                         </div>
                         
                         {/* Logout Section */}
@@ -545,9 +485,6 @@ const Navigation = () => {
                     <Link href="/login" className="px-4 py-2 font-medium text-sm transition-colors duration-200 text-gray-300 hover:text-white">
                       Login
                     </Link>
-                    <Link href="/signup" className="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                      Sign Up
-                    </Link>
                   </div>
                 )}
               </div>
@@ -557,11 +494,13 @@ const Navigation = () => {
       </header>
 
       {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-all duration-300 ease-in-out md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-        onClick={() => setIsMenuOpen(false)}
-      />
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out md:hidden backdrop-blur-sm"
+          onClick={() => setIsMenuOpen(false)}
+          style={{ touchAction: 'none' }}
+        />
+      )}
 
       {/* Mobile Sidebar Menu */}
       <aside
@@ -619,21 +558,6 @@ const Navigation = () => {
                 <div className="border-t border-gray-200"></div>
               </div>
 
-              {/* Additional Links - Only show dashboard for verified users */}
-              {user && isVerified && (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      router.push(getDashboardUrl(userProfile));
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <GraduationCap className="h-5 w-5 text-gray-500" />
-                    <span className="font-medium">Dashboard</span>
-                  </button>
-                </div>
-              )}
 
               {/* Auth Section */}
               <div className="mt-8 pt-6">
@@ -651,77 +575,39 @@ const Navigation = () => {
                         </div>
                       </div>
                     </div>
-                  ) : user && isVerified ? (
+                  ) : user ? (
                     <div className="space-y-3">
                       {/* User Info */}
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-lg">
-                        {userProfile?.profileImageUrl ? (
-                          <Image
-                            src={userProfile.profileImageUrl}
-                            alt="Profile"
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
-                              {(userProfile?.name || user?.name || 'U').charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
+                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-800 rounded-lg">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {(user?.name || 'U').charAt(0).toUpperCase()}
+                          </span>
+                        </div>
                         <div className="flex-1">
-                          <p className="text-gray-900 font-medium text-sm">{userProfile?.name || user?.name}</p>
-                          <p className="text-gray-600 text-xs">{user?.email}</p>
-                          {userProfile?.points !== undefined && (
-                            <div className="flex items-center space-x-1 mt-1">
-                              <Coins className="h-3 w-3 text-amber-600" />
-                              <span className="text-xs text-amber-600 font-medium">{userProfile.points} Points</span>
-                            </div>
-                          )}
+                          <p className="text-white font-medium text-sm">{user?.name}</p>
+                          <p className="text-gray-300 text-xs">{user?.email}</p>
+                          <div className="flex items-center space-x-1 mt-1">
+                            <Coins className="h-3 w-3 text-amber-400" />
+                            <span className="text-xs text-amber-400 font-medium">{userPoints.availablePoints} Points</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Profile Actions */}
                       <div className="space-y-2">
                         <button
-                          onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                        >
-                          <GraduationCap className="h-5 w-5" />
-                          <span>Dashboard</span>
-                        </button>
-                        {/* Conditionally show Upload Notes button based on user role */}
-                        {isEligibleForNotesUpload(userProfile?.role) && (
-                          <button
-                            onClick={() => handleProfileClick('/notes/upload')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                          >
-                            <Upload className="h-5 w-5" />
-                            <span>Upload Notes</span>
-                          </button>
-                        )}
-                        <button
                           onClick={() => handleProfileClick('/referral')}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-all duration-200"
                         >
                           <Gift className="h-5 w-5" />
                           <span>Referral Dashboard</span>
                         </button>
-                        {(userProfile?.role === 'admin' || userProfile?.role === 'manager') && (
-                          <button
-                            onClick={() => handleProfileClick('/user/verify')}
-                            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                          >
-                            <Shield className="h-5 w-5" />
-                            <span>Verify Membership</span>
-                          </button>
-                        )}
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-all duration-200"
                         >
-                          <X className="h-5 w-5" />
+                          <LogOut className="h-5 w-5" />
                           <span>Logout</span>
                         </button>
                       </div>
@@ -734,13 +620,6 @@ const Navigation = () => {
                         className="w-full flex items-center justify-center px-4 py-3 text-gray-700 hover:text-gray-900 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200"
                       >
                         Login
-                      </Link>
-                      <Link
-                        href="/signup"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-                      >
-                        Sign Up
                       </Link>
                     </div>
                   )}

@@ -4,6 +4,7 @@ import NewsletterSubscription from '../components/NewsletterSubscription';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Upload, Download, Search, Gift, Trophy, Smartphone,
   DollarSign, Award, Crown, Star, Zap, Target,
@@ -12,6 +13,7 @@ import {
 
 const Home = () => {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [waitlistCount, setWaitlistCount] = useState(431);
   const [displayCount, setDisplayCount] = useState(0);
   const [revealedElements, setRevealedElements] = useState(new Set());
@@ -20,6 +22,14 @@ const Home = () => {
   // Search functionality state
   const [searchQuery, setSearchQuery] = useState('');
   const [showFunnyModal, setShowFunnyModal] = useState(false);
+
+  // Authentication check and redirect effect
+  useEffect(() => {
+    // Only redirect if authentication is not loading and user is authenticated
+    if (!loading && user) {
+      router.push('/notes-download');
+    }
+  }, [user, loading, router]);
 
   // Animated counter for waitlist
   useEffect(() => {
@@ -212,6 +222,18 @@ const Home = () => {
     setShowFunnyModal(false);
     setSearchQuery('');
   };
+
+  // Show loading state while authentication is being checked
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0e0e10] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#f59e0b] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#d1d5db] text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
 <>

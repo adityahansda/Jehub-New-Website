@@ -57,7 +57,7 @@ function BanPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4 text-red-600">You've been banned</h1>
+        <h1 className="text-2xl font-bold mb-4 text-red-600">You&apos;ve been banned</h1>
         <p className="text-sm text-gray-700">Reason: {banInfo.reason}</p>
         <p className="text-sm text-gray-700 mb-6">Ban Date: {new Date(banInfo.bannedAt).toLocaleDateString()}</p>
 

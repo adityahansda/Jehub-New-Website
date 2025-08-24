@@ -3,7 +3,12 @@ import Link from 'next/link';
 import { 
   Menu,
   X,
-  Home
+  Home,
+  FileText,
+  Bell,
+  Calendar,
+  Users,
+  HelpCircle
 } from 'lucide-react';
 
 const MobileNavigation = () => {
@@ -13,13 +18,27 @@ const MobileNavigation = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Prevent body scroll when mobile menu is open
+  React.useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('no-scroll');
+    };
+  }, [isMenuOpen]);
+
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/notes-download', label: 'Notes Download' },
-    { href: '/notifications', label: 'Notifications' },
-    { href: '/exam-updates', label: 'Exam Updates' },
-    { href: '/counselling-updates', label: 'Counselling Updates' },
-    { href: '/about', label: 'About Us' },
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/notes-download', label: 'Notes Download', icon: FileText },
+    { href: '/notifications', label: 'Notifications', icon: Bell },
+    { href: '/exam-updates', label: 'Exam Updates', icon: Calendar },
+    { href: '/counselling-updates', label: 'Counselling Updates', icon: Users },
+    { href: '/about', label: 'About Us', icon: HelpCircle },
   ];
 
   return (
@@ -28,8 +47,9 @@ const MobileNavigation = () => {
       <div className="md:hidden fixed top-4 right-4 z-50">
         <button
           onClick={toggleMenu}
-          className="p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+          className="p-3 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 active:scale-95 touch-manipulation"
           aria-label="Toggle Menu"
+          style={{ minWidth: '44px', minHeight: '44px' }}
         >
           {isMenuOpen ? (
             <X className="h-6 w-6 text-gray-700" />
@@ -41,7 +61,11 @@ const MobileNavigation = () => {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50" onClick={toggleMenu} />
+        <div 
+          className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out" 
+          onClick={toggleMenu}
+          style={{ touchAction: 'none' }}
+        />
       )}
 
       {/* Mobile Menu Sidebar */}
@@ -57,34 +81,36 @@ const MobileNavigation = () => {
 
           {/* Navigation Links */}
           <nav className="space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block py-3 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors font-medium"
-                onClick={toggleMenu}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center py-3 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors font-medium"
+                  onClick={toggleMenu}
+                >
+                  {IconComponent && (
+                    <IconComponent className="h-5 w-5 mr-3" />
+                  )}
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Additional Actions */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-gray-200 space-y-3">
             <Link
               href="/login"
-              className="block py-2 px-4 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium mb-3"
+              className="block py-2 px-4 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               onClick={toggleMenu}
             >
-              Login
+              Sign in with Google
             </Link>
-            <Link
-              href="/signup"
-              className="block py-2 px-4 text-center border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-              onClick={toggleMenu}
-            >
-              Sign Up
-            </Link>
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Quick and secure access with your Google account
+            </p>
           </div>
         </div>
       </div>

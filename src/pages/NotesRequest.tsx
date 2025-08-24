@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Plus, ArrowUp, Clock, CheckCircle, AlertCircle, HelpCircle } from 'lucide-react';
 import { mockRequests } from '../data/mockData';
 import PageHeader from '../components/PageHeader';
-import UniversalSidebar from '../components/UniversalSidebar';
 
 const NotesRequest = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -73,8 +72,6 @@ const NotesRequest = () => {
         onMenuClick={() => setSidebarOpen(true)}
       />
       
-      {/* Universal Sidebar */}
-      <UniversalSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pt-20">
         {/* Description */}

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import Head from 'next/head';
-import DashboardLayout from '../../src/components/dashboard/DashboardLayout';
+import Layout from '../../src/components/Layout';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { Loader2, AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
 
@@ -102,7 +102,7 @@ export default function VerifyPage() {
   };
 
   return (
-    <DashboardLayout>
+    <Layout>
       <Head>
         <title>Verify Telegram Membership - JEHUB</title>
         <meta name="description" content="Verify your Telegram group membership for full access to JEHUB features." />
@@ -112,7 +112,7 @@ export default function VerifyPage() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Verify Your Membership</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Enter your Telegram username to confirm you've joined our group.
+              Enter your Telegram username to confirm you&apos;ve joined our group.
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
@@ -144,7 +144,7 @@ export default function VerifyPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </Layout>
   );
 }
 
