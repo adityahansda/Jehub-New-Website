@@ -51,61 +51,261 @@ interface PageType {
   component: React.ComponentType;
 }
 
-// Dashboard content components (placeholders for now)
-const DashboardHome = () => (
-  <div className="p-6">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Welcome to JEHub Dashboard</h1>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {/* Stats Cards */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div className="flex items-center">
-          <BookOpen className="h-8 w-8 text-blue-600" />
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Notes</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">1,234</p>
-          </div>
+// Dashboard content components - Modern NoteHub Style
+const DashboardHome = ({ setCurrentPage }: { setCurrentPage?: (page: string) => void }) => {
+  const { theme } = useTheme();
+  const { user } = useAuth();
+  
+  const stats = [
+    {
+      icon: BookOpen,
+      label: 'Total Notes',
+      value: '1,234',
+      change: '+12%',
+      changeType: 'positive',
+      color: 'blue',
+      bgGradient: 'from-blue-500 to-blue-600'
+    },
+    {
+      icon: Download,
+      label: 'Downloads',
+      value: '5,678',
+      change: '+24%',
+      changeType: 'positive',
+      color: 'green',
+      bgGradient: 'from-green-500 to-green-600'
+    },
+    {
+      icon: Users,
+      label: 'Community',
+      value: '890',
+      change: '+8%',
+      changeType: 'positive',
+      color: 'purple',
+      bgGradient: 'from-purple-500 to-purple-600'
+    },
+    {
+      icon: Coins,
+      label: 'Your Points',
+      value: '1,500',
+      change: '+150',
+      changeType: 'positive',
+      color: 'amber',
+      bgGradient: 'from-amber-500 to-amber-600'
+    }
+  ];
+
+  const recentActivities = [
+    {
+      id: '1',
+      type: 'download',
+      title: 'Downloaded Computer Science Notes',
+      subtitle: 'Data Structures - Chapter 5',
+      time: '2 minutes ago',
+      icon: Download,
+      iconColor: 'text-green-500'
+    },
+    {
+      id: '2',
+      type: 'like',
+      title: 'Liked a note',
+      subtitle: 'Mathematics - Calculus Basics',
+      time: '1 hour ago',
+      icon: Heart,
+      iconColor: 'text-red-500'
+    },
+    {
+      id: '3',
+      type: 'upload',
+      title: 'Uploaded new notes',
+      subtitle: 'Physics - Quantum Mechanics',
+      time: '3 hours ago',
+      icon: Upload,
+      iconColor: 'text-blue-500'
+    },
+    {
+      id: '4',
+      type: 'points',
+      title: 'Earned points',
+      subtitle: 'Referral bonus: +50 points',
+      time: '1 day ago',
+      icon: Gift,
+      iconColor: 'text-yellow-500'
+    }
+  ];
+
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Welcome Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-blue-600 to-purple-700 dark:from-blue-700 dark:to-purple-800 rounded-xl p-6 text-white relative overflow-hidden"
+      >
+        <div className="relative z-10">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            Welcome back{user?.name ? `, ${user.name}` : ''}! 👋
+          </h1>
+          <p className="text-blue-100 dark:text-blue-200 text-sm sm:text-base">
+            Ready to continue your learning journey? Explore notes, connect with peers, and achieve your academic goals.
+          </p>
         </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div className="flex items-center">
-          <Download className="h-8 w-8 text-green-600" />
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Downloads</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">5,678</p>
-          </div>
+        <div className="absolute top-0 right-0 -mt-4 -mr-4 opacity-20">
+          <GraduationCap className="h-24 w-24 sm:h-32 sm:w-32" />
         </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div className="flex items-center">
-          <Users className="h-8 w-8 text-purple-600" />
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Community</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">890</p>
-          </div>
+      </motion.div>
+
+      {/* Stats Grid */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+      >
+        {stats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-all duration-300 group"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className={`inline-flex p-3 rounded-lg bg-gradient-to-r ${stat.bgGradient} mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              </div>
+              <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                stat.changeType === 'positive' 
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300'
+                  : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+              }`}>
+                {stat.change}
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+      >
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: Download, label: 'Download Notes', color: 'blue', action: 'notes-download' },
+            { icon: Upload, label: 'Upload Notes', color: 'green', action: 'notes-upload' },
+            { icon: Users, label: 'Community', color: 'purple', action: 'community' },
+            { icon: Heart, label: 'Wishlist', color: 'red', action: 'wishlist' }
+          ].map((action, index) => (
+            <motion.button
+              key={action.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+              onClick={() => setCurrentPage?.(action.action)}
+              className={`p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-${action.color}-500 dark:hover:border-${action.color}-400 hover:bg-${action.color}-50 dark:hover:bg-${action.color}-900/10 transition-all duration-300 group text-center`}
+            >
+              <action.icon className={`h-8 w-8 mx-auto mb-2 text-gray-600 dark:text-gray-400 group-hover:text-${action.color}-600 dark:group-hover:text-${action.color}-400 transition-colors`} />
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{action.label}</p>
+            </motion.button>
+          ))}
         </div>
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div className="flex items-center">
-          <Coins className="h-8 w-8 text-amber-600" />
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Points</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">1,500</p>
+      </motion.div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activity */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+            <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              View all
+            </button>
           </div>
-        </div>
+          
+          <div className="space-y-4">
+            {recentActivities.map((activity, index) => (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
+                className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              >
+                <div className={`p-2 rounded-full bg-gray-100 dark:bg-gray-700`}>
+                  <activity.icon className={`h-4 w-4 ${activity.iconColor}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.title}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{activity.subtitle}</p>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">{activity.time}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Learning Progress */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Learning Progress</h2>
+          
+          <div className="space-y-4">
+            {[
+              { subject: 'Computer Science', progress: 75, color: 'blue' },
+              { subject: 'Mathematics', progress: 60, color: 'green' },
+              { subject: 'Physics', progress: 45, color: 'purple' },
+              { subject: 'Electronics', progress: 30, color: 'orange' }
+            ].map((item, index) => (
+              <motion.div
+                key={item.subject}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                className="space-y-2"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{item.subject}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{item.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${item.progress}%` }}
+                    transition={{ duration: 1, delay: 0.9 + index * 0.1 }}
+                    className={`h-2 rounded-full bg-gradient-to-r ${
+                      item.color === 'blue' ? 'from-blue-500 to-blue-600' :
+                      item.color === 'green' ? 'from-green-500 to-green-600' :
+                      item.color === 'purple' ? 'from-purple-500 to-purple-600' :
+                      'from-orange-500 to-orange-600'
+                    }`}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
-    
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <p className="text-gray-600 dark:text-gray-400">Activity feed will be displayed here...</p>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const MyLibrary = () => (
   <div className="p-6">
@@ -265,8 +465,8 @@ const HomeDashboard = () => {
   // Available pages - comprehensive mapping for all sidebar items
   const pages: Record<string, PageType> = {
     // Main Dashboard
-    dashboard: { id: 'dashboard', title: 'Dashboard', component: DashboardHome },
-    home: { id: 'home', title: 'Dashboard', component: DashboardHome },
+    dashboard: { id: 'dashboard', title: 'Dashboard', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    home: { id: 'home', title: 'Dashboard', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
     
     // Learning Section
     courses: { id: 'courses', title: 'My Courses', component: MyLibrary },
@@ -302,22 +502,22 @@ const HomeDashboard = () => {
     'ai-chat': { id: 'ai-chat', title: 'AI Chat Assistant', component: AIChat },
     
     // Admin Control Section
-    'admin-analytics': { id: 'admin-analytics', title: 'Analytics Dashboard', component: DashboardHome },
+    'admin-analytics': { id: 'admin-analytics', title: 'Analytics Dashboard', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
     'admin-users': { id: 'admin-users', title: 'User Management', component: Community },
     'admin-moderation': { id: 'admin-moderation', title: 'Content Moderation', component: Community },
     'ai-knowledge-base': { id: 'ai-knowledge-base', title: 'AI Knowledge Base', component: AIChat },
     'ai-settings': { id: 'ai-settings', title: 'AI Settings', component: AIChat },
     'ai-training-data': { id: 'ai-training-data', title: 'AI Training Data', component: AIChat },
-    'admin-system-health': { id: 'admin-system-health', title: 'System Health', component: DashboardHome },
-    'admin-server': { id: 'admin-server', title: 'Server Management', component: DashboardHome },
-    'admin-database': { id: 'admin-database', title: 'Database Admin', component: DashboardHome },
+    'admin-system-health': { id: 'admin-system-health', title: 'System Health', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-server': { id: 'admin-server', title: 'Server Management', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-database': { id: 'admin-database', title: 'Database Admin', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
     'admin-notifications': { id: 'admin-notifications', title: 'Notification Center', component: Notifications },
     'admin-email': { id: 'admin-email', title: 'Email Management', component: Community },
-    'admin-security': { id: 'admin-security', title: 'Security Settings', component: DashboardHome },
-    'admin-settings': { id: 'admin-settings', title: 'System Settings', component: DashboardHome },
-    'admin-audit-logs': { id: 'admin-audit-logs', title: 'Audit Logs', component: DashboardHome },
-    'admin-errors': { id: 'admin-errors', title: 'Error Monitoring', component: DashboardHome },
-    'admin-api': { id: 'admin-api', title: 'API Management', component: DashboardHome },
+    'admin-security': { id: 'admin-security', title: 'Security Settings', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-settings': { id: 'admin-settings', title: 'System Settings', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-audit-logs': { id: 'admin-audit-logs', title: 'Audit Logs', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-errors': { id: 'admin-errors', title: 'Error Monitoring', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
+    'admin-api': { id: 'admin-api', title: 'API Management', component: () => <DashboardHome setCurrentPage={setCurrentPage} /> },
     'admin-bundle-management': { id: 'admin-bundle-management', title: 'Bundle Management', component: StudyBundles },
     
     // Legacy mappings for compatibility
@@ -516,14 +716,16 @@ const HomeDashboard = () => {
   };
 
   // Render current page component
-  const CurrentPageComponent = pages[currentPage]?.component || DashboardHome;
+  const CurrentPageComponent = pages[currentPage]?.component || (() => <DashboardHome setCurrentPage={setCurrentPage} />);
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         
-        {/* Top Navigation Header */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200">
+        {/* Top Navigation Header - NoteHub Style */}
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 transition-colors duration-200 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
+          {/* Mobile safe area spacing */}
+          <div className="h-2 sm:h-0 bg-white dark:bg-gray-800"></div>
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               
@@ -540,23 +742,23 @@ const HomeDashboard = () => {
                 </button>
                 
                 <Link href="/" className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <GraduationCap className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <GraduationCap className="h-7 w-7 text-white" />
                   </div>
-                  <span className="font-bold text-xl text-gray-900 dark:text-white">JEHub</span>
+                  <span className="font-bold text-2xl text-gray-900 dark:text-white">JEHub</span>
                 </Link>
               </div>
 
-              {/* Center - Search Bar (Desktop) */}
-              <div className="hidden md:flex flex-1 max-w-md mx-8">
-                <div className="relative w-full">
+              {/* Search Bar - Desktop */}
+              <div className="hidden md:block flex-1 max-w-md ml-8">
+                <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search dashboard..."
+                    placeholder="Search for courses, notes, etc."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -627,15 +829,15 @@ const HomeDashboard = () => {
           </div>
 
           {/* Mobile Search Bar */}
-          <div className="md:hidden px-4 pb-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="md:hidden px-4 pb-3 pt-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search dashboard..."
+                placeholder="Search for courses, notes, etc."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               />
             </div>
           </div>
