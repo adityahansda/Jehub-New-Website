@@ -38,7 +38,10 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  List,
+  Grid,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
@@ -307,19 +310,1069 @@ const DashboardHome = ({ setCurrentPage }: { setCurrentPage?: (page: string) => 
   );
 };
 
-const MyLibrary = () => (
-  <div className="p-6">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Library</h1>
-    <p className="text-gray-600 dark:text-gray-400">Your saved notes and resources will be displayed here...</p>
-  </div>
-);
+const MyLibrary = () => {
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([
+    {
+      id: '1',
+      title: 'Computer Science Fundamentals',
+      description: 'Complete collection of CS notes and materials',
+      progress: 85,
+      totalNotes: 24,
+      completedNotes: 20,
+      lastAccessed: '2 hours ago',
+      thumbnail: '/images/cs-thumb.jpg',
+      category: 'Computer Science',
+      difficulty: 'Intermediate',
+      estimatedTime: '40 hours',
+      instructor: 'Prof. Smith',
+      rating: 4.8
+    },
+    {
+      id: '2', 
+      title: 'Mathematics for Engineers',
+      description: 'Advanced mathematical concepts and applications',
+      progress: 65,
+      totalNotes: 18,
+      completedNotes: 12,
+      lastAccessed: '1 day ago',
+      thumbnail: '/images/math-thumb.jpg',
+      category: 'Mathematics',
+      difficulty: 'Advanced',
+      estimatedTime: '35 hours',
+      instructor: 'Dr. Johnson',
+      rating: 4.6
+    },
+    {
+      id: '3',
+      title: 'Electronics Engineering',
+      description: 'Circuit analysis and electronic systems',
+      progress: 40,
+      totalNotes: 30,
+      completedNotes: 12,
+      lastAccessed: '3 days ago',
+      thumbnail: '/images/electronics-thumb.jpg',
+      category: 'Electronics',
+      difficulty: 'Beginner',
+      estimatedTime: '50 hours',
+      instructor: 'Prof. Davis',
+      rating: 4.7
+    }
+  ]);
 
-const NotesDownload = () => (
-  <div className="p-6">
-    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Download Notes</h1>
-    <p className="text-gray-600 dark:text-gray-400">Browse and download notes from our collection...</p>
-  </div>
-);
+  useEffect(() => {
+    // Simulate loading
+    setTimeout(() => setLoading(false), 1000);
+  }, []);
+
+  const filteredCourses = courses.filter(course =>
+    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Beginner': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+      case 'Advanced': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 space-y-4">
+                <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            My Courses
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Continue your learning journey
+          </p>
+        </div>
+        
+        {/* View Mode Toggle */}
+        <div className="flex items-center mt-4 sm:mt-0">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <Grid className="h-4 w-4" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="max-w-md">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search your courses..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          />
+        </div>
+      </div>
+
+      {/* Courses Grid/List */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCourses.map((course, index) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 group overflow-hidden"
+            >
+              {/* Course Thumbnail */}
+              <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-4 left-4">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(course.difficulty)}`}>
+                    {course.difficulty}
+                  </span>
+                </div>
+                <div className="absolute top-4 right-4">
+                  <div className="flex items-center space-x-1 bg-white/90 px-2 py-1 rounded-full">
+                    <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                    <span className="text-xs font-medium text-gray-900">{course.rating}</span>
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <BookOpen className="h-12 w-12 text-white/80" />
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {course.title}
+                  </h3>
+                </div>
+                
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                  {course.description}
+                </p>
+                
+                {/* Progress */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Progress: {course.progress}%
+                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {course.completedNotes}/{course.totalNotes} notes
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${course.progress}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Course Info */}
+                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <span className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {course.estimatedTime}
+                  </span>
+                  <span className="flex items-center">
+                    <User className="h-4 w-4 mr-1" />
+                    {course.instructor}
+                  </span>
+                </div>
+                
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Last accessed {course.lastAccessed}
+                  </span>
+                  <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    Continue
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        /* List View */
+        <div className="space-y-4">
+          {filteredCourses.map((course, index) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 p-6"
+            >
+              <div className="flex items-center space-x-6">
+                {/* Course Icon */}
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="h-8 w-8 text-white" />
+                </div>
+                
+                {/* Course Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                        {course.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                        {course.description}
+                      </p>
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(course.difficulty)}`}>
+                          {course.difficulty}
+                        </span>
+                        <span className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {course.estimatedTime}
+                        </span>
+                        <span className="flex items-center">
+                          <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
+                          {course.rating}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex-shrink-0">
+                      Continue
+                    </button>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {course.progress}% Complete
+                      </span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {course.completedNotes}/{course.totalNotes} notes
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${course.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredCourses.length === 0 && (
+        <div className="text-center py-12">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            No courses found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {searchTerm ? 'Try adjusting your search terms' : 'Start your learning journey by exploring our notes collection'}
+          </p>
+          <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+            Explore Notes
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const NotesDownload = () => {
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const [notes, setNotes] = useState([
+    {
+      id: '1',
+      title: 'Data Structures and Algorithms - Complete Guide',
+      branch: 'Computer Science',
+      semester: '3rd',
+      subject: 'Data Structures',
+      description: 'Comprehensive notes covering arrays, linked lists, trees, graphs, and advanced algorithms with practical examples.',
+      tags: ['DSA', 'Algorithms', 'Programming', 'CS'],
+      uploader: 'Prof. Kumar',
+      uploadDate: '2024-08-15',
+      githubUrl: 'https://github.com/example/dsa-notes.pdf',
+      fileName: 'DSA_Complete_Guide.pdf',
+      downloads: 2847,
+      likes: 394,
+      points: 0,
+      views: 5234,
+      reports: 2,
+      fileSize: 2540000,
+      noteType: 'free',
+      degree: 'B.Tech',
+      rating: 4.8,
+      isVerified: true
+    },
+    {
+      id: '2',
+      title: 'Advanced Mathematics for Engineers',
+      branch: 'Mathematics',
+      semester: '2nd',
+      subject: 'Engineering Mathematics',
+      description: 'Detailed mathematical concepts including calculus, differential equations, linear algebra and their engineering applications.',
+      tags: ['Calculus', 'Linear Algebra', 'Mathematics', 'Engineering'],
+      uploader: 'Dr. Singh',
+      uploadDate: '2024-08-10',
+      githubUrl: 'https://github.com/example/math-notes.pdf',
+      fileName: 'Advanced_Mathematics.pdf',
+      downloads: 1923,
+      likes: 267,
+      points: 25,
+      views: 3421,
+      reports: 0,
+      fileSize: 1850000,
+      noteType: 'premium',
+      degree: 'B.Tech',
+      rating: 4.6,
+      isVerified: true
+    },
+    {
+      id: '3',
+      title: 'Digital Electronics Fundamentals',
+      branch: 'Electronics',
+      semester: '4th',
+      subject: 'Digital Electronics',
+      description: 'Complete coverage of digital logic gates, flip-flops, counters, registers and memory systems with circuit diagrams.',
+      tags: ['Digital Logic', 'Electronics', 'Circuits', 'Hardware'],
+      uploader: 'Prof. Patel',
+      uploadDate: '2024-08-12',
+      githubUrl: 'https://github.com/example/digital-electronics.pdf',
+      fileName: 'Digital_Electronics_Fundamentals.pdf',
+      downloads: 1456,
+      likes: 198,
+      points: 15,
+      views: 2567,
+      reports: 1,
+      fileSize: 3200000,
+      noteType: 'premium',
+      degree: 'B.Tech',
+      rating: 4.7,
+      isVerified: false
+    },
+    {
+      id: '4',
+      title: 'Physics Mechanics and Thermodynamics',
+      branch: 'Physics',
+      semester: '1st',
+      subject: 'Engineering Physics',
+      description: 'Fundamental physics concepts covering mechanics, thermodynamics, waves, and quantum physics basics for engineers.',
+      tags: ['Mechanics', 'Thermodynamics', 'Physics', 'Waves'],
+      uploader: 'Dr. Sharma',
+      uploadDate: '2024-08-08',
+      githubUrl: 'https://github.com/example/physics-notes.pdf',
+      fileName: 'Physics_Mechanics_Thermodynamics.pdf',
+      downloads: 2103,
+      likes: 312,
+      points: 0,
+      views: 4123,
+      reports: 0,
+      fileSize: 2100000,
+      noteType: 'free',
+      degree: 'B.Tech',
+      rating: 4.9,
+      isVerified: true
+    },
+    {
+      id: '5',
+      title: 'Database Management Systems - Complete Course',
+      branch: 'Computer Science',
+      semester: '5th',
+      subject: 'Database Systems',
+      description: 'Comprehensive DBMS notes covering SQL, normalization, indexing, transactions, and database design principles.',
+      tags: ['DBMS', 'SQL', 'Database Design', 'Normalization'],
+      uploader: 'Prof. Gupta',
+      uploadDate: '2024-08-14',
+      githubUrl: 'https://github.com/example/dbms-notes.pdf',
+      fileName: 'DBMS_Complete_Course.pdf',
+      downloads: 1789,
+      likes: 245,
+      points: 20,
+      views: 3234,
+      reports: 0,
+      fileSize: 2890000,
+      noteType: 'premium',
+      degree: 'B.Tech',
+      rating: 4.5,
+      isVerified: true
+    },
+    {
+      id: '6',
+      title: 'Mechanical Engineering Drawing',
+      branch: 'Mechanical',
+      semester: '2nd',
+      subject: 'Engineering Drawing',
+      description: 'Technical drawing standards, projections, sectional views, and CAD fundamentals for mechanical engineering students.',
+      tags: ['Technical Drawing', 'CAD', 'Mechanical', 'Projections'],
+      uploader: 'Prof. Joshi',
+      uploadDate: '2024-08-11',
+      githubUrl: 'https://github.com/example/mech-drawing.pdf',
+      fileName: 'Mechanical_Engineering_Drawing.pdf',
+      downloads: 987,
+      likes: 134,
+      points: 10,
+      views: 1876,
+      reports: 0,
+      fileSize: 4100000,
+      noteType: 'premium',
+      degree: 'B.Tech',
+      rating: 4.4,
+      isVerified: false
+    }
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('Most relevant');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedFilters, setSelectedFilters] = useState({
+    branch: '',
+    semester: '',
+    subject: '',
+    degree: '',
+    noteType: ''
+  });
+  const [likedNotes, setLikedNotes] = useState(new Set(['1', '4'])); // Demo liked notes
+  const [userPoints, setUserPoints] = useState({ availablePoints: 150, points: 300, pointsSpent: 150 });
+
+  // Filter options
+  const branches = ['Computer Science', 'Electronics', 'Mechanical', 'Civil', 'Mathematics', 'Physics'];
+  const semesters = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+  const degrees = ['B.Tech', 'Diploma', 'M.Tech'];
+  const sortOptions = ['Most relevant', 'Most recent', 'Most downloaded', 'Most liked', 'Highest rated'];
+
+  // Helper functions
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    return `${Math.floor(diffDays / 30)} months ago`;
+  };
+
+  const getNoteTypeColor = (noteType: string) => {
+    return noteType === 'premium' 
+      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+      : 'bg-gradient-to-r from-green-500 to-blue-500 text-white';
+  };
+
+  const getDifficultyFromSemester = (semester: string) => {
+    const sem = parseInt(semester);
+    if (sem <= 2) return 'Beginner';
+    if (sem <= 5) return 'Intermediate';
+    return 'Advanced';
+  };
+
+  // Simulate loading
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1500);
+  }, []);
+
+  // Filter and sort notes
+  const filteredNotes = notes.filter(note => {
+    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      note.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      note.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      note.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesBranch = !selectedFilters.branch || note.branch === selectedFilters.branch;
+    const matchesSemester = !selectedFilters.semester || note.semester === selectedFilters.semester;
+    const matchesDegree = !selectedFilters.degree || note.degree === selectedFilters.degree;
+    const matchesNoteType = !selectedFilters.noteType || note.noteType === selectedFilters.noteType;
+    const matchesSubject = !selectedFilters.subject || note.subject.toLowerCase().includes(selectedFilters.subject.toLowerCase());
+
+    return matchesSearch && matchesBranch && matchesSemester && matchesSubject && matchesDegree && matchesNoteType;
+  });
+
+  const sortedNotes = [...filteredNotes].sort((a, b) => {
+    switch (sortBy) {
+      case 'Most recent':
+        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime();
+      case 'Most downloaded':
+        return b.downloads - a.downloads;
+      case 'Most liked':
+        return b.likes - a.likes;
+      case 'Highest rated':
+        return b.rating - a.rating;
+      default:
+        return b.views - a.views; // Most relevant by views
+    }
+  });
+
+  // Event handlers
+  const handleDownload = async (noteId: string) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+
+    if (!user) {
+      alert('Please sign in to download notes.');
+      return;
+    }
+
+    if (note.noteType === 'premium' && note.points > 0) {
+      if (userPoints.availablePoints < note.points) {
+        alert(`Insufficient points! You need ${note.points} points but have ${userPoints.availablePoints}.`);
+        return;
+      }
+      // Deduct points
+      setUserPoints(prev => ({
+        ...prev,
+        availablePoints: prev.availablePoints - note.points,
+        pointsSpent: prev.pointsSpent + note.points
+      }));
+    }
+
+    // Update download count
+    setNotes(prevNotes =>
+      prevNotes.map(n =>
+        n.id === noteId ? { ...n, downloads: n.downloads + 1 } : n
+      )
+    );
+
+    // Simulate download
+    alert(`Downloading: ${note.title}`);
+  };
+
+  const handleLike = (noteId: string) => {
+    const isLiked = likedNotes.has(noteId);
+    const newLikedNotes = new Set(likedNotes);
+    
+    if (isLiked) {
+      newLikedNotes.delete(noteId);
+    } else {
+      newLikedNotes.add(noteId);
+    }
+    setLikedNotes(newLikedNotes);
+
+    // Update like count
+    setNotes(prevNotes =>
+      prevNotes.map(n =>
+        n.id === noteId 
+          ? { ...n, likes: isLiked ? n.likes - 1 : n.likes + 1 }
+          : n
+      )
+    );
+  };
+
+  const handleShare = (note: any) => {
+    const shareUrl = `${window.location.origin}/notes/${note.id}`;
+    const shareText = `Check out this note: ${note.title}\n\n${shareUrl}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: note.title,
+        text: shareText,
+        url: shareUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Link copied to clipboard!');
+      });
+    }
+  };
+
+  const handlePreview = (note: any) => {
+    alert(`Opening preview for: ${note.title}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4 sm:p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 space-y-4">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="flex gap-4">
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded flex-1"></div>
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-6 space-y-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="flex justify-between">
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Download Notes
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Discover and download high-quality study materials
+          </p>
+        </div>
+        
+        {user && (
+          <div className="flex items-center mt-4 sm:mt-0 space-x-4">
+            <div className="flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/20 px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-700/50">
+              <Coins className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                {userPoints.availablePoints} points
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Search and Filters Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+      >
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search notes by title, subject, or tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all duration-200"
+            />
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+              <span className="font-medium">{sortedNotes.length}</span> of <span className="font-medium">{notes.length}</span> notes
+            </div>
+            
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              {sortOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+            
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Grid className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Options */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <select
+            value={selectedFilters.branch}
+            onChange={(e) => setSelectedFilters({...selectedFilters, branch: e.target.value})}
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="">All Branches</option>
+            {branches.map(branch => (
+              <option key={branch} value={branch}>{branch}</option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedFilters.semester}
+            onChange={(e) => setSelectedFilters({...selectedFilters, semester: e.target.value})}
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="">All Semesters</option>
+            {semesters.map(semester => (
+              <option key={semester} value={semester}>{semester}</option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedFilters.degree}
+            onChange={(e) => setSelectedFilters({...selectedFilters, degree: e.target.value})}
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="">All Degrees</option>
+            {degrees.map(degree => (
+              <option key={degree} value={degree}>{degree}</option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedFilters.noteType}
+            onChange={(e) => setSelectedFilters({...selectedFilters, noteType: e.target.value})}
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="">All Types</option>
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+          </select>
+          
+          {(searchTerm || Object.values(selectedFilters).some(v => v)) && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedFilters({ branch: '', semester: '', subject: '', degree: '', noteType: '' });
+              }}
+              className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 whitespace-nowrap flex items-center gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear All
+            </button>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Notes Grid/List */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedNotes.map((note, index) => (
+            <motion.div
+              key={note.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 group overflow-hidden"
+            >
+              {/* Header */}
+              <div className="p-6 pb-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNoteTypeColor(note.noteType)}`}>
+                        {note.noteType === 'premium' ? '⭐ Premium' : '🆓 Free'}
+                      </span>
+                      {note.isVerified && (
+                        <CheckCircle className="h-4 w-4 text-green-500" title="Verified" />
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
+                      {note.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {note.branch} • {note.semester} Semester
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={() => handleLike(note.id)}
+                    className={`p-2 rounded-full transition-all duration-200 ${
+                      likedNotes.has(note.id)
+                        ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
+                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    }`}
+                  >
+                    <Heart className={`h-5 w-5 ${likedNotes.has(note.id) ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
+                
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+                  {note.description}
+                </p>
+                
+                {/* Tags */}
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {note.tags.slice(0, 3).map(tag => (
+                    <span key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                  {note.tags.length > 3 && (
+                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                      +{note.tags.length - 3}
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              {/* Stats */}
+              <div className="px-6 pb-4">
+                <div className="grid grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Download className="h-4 w-4 mr-1" />
+                      <span className="font-medium">{note.downloads.toLocaleString()}</span>
+                    </div>
+                    <span className="text-xs">Downloads</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Heart className="h-4 w-4 mr-1" />
+                      <span className="font-medium">{note.likes}</span>
+                    </div>
+                    <span className="text-xs">Likes</span>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center mb-1">
+                      <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
+                      <span className="font-medium">{note.rating}</span>
+                    </div>
+                    <span className="text-xs">Rating</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-100 dark:border-gray-600">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-medium">{formatFileSize(note.fileSize)}</span> • {getTimeAgo(note.uploadDate)}
+                  </div>
+                  {note.points > 0 && (
+                    <div className="flex items-center space-x-1 text-amber-600 dark:text-amber-400">
+                      <Coins className="h-4 w-4" />
+                      <span className="text-sm font-medium">{note.points}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handlePreview(note)}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
+                  >
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => handleDownload(note.id)}
+                    disabled={note.noteType === 'premium' && note.points > userPoints.availablePoints}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        /* List View */
+        <div className="space-y-4">
+          {sortedNotes.map((note, index) => (
+            <motion.div
+              key={note.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.03 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 p-6"
+            >
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                          {note.title}
+                        </h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNoteTypeColor(note.noteType)}`}>
+                          {note.noteType === 'premium' ? 'Premium' : 'Free'}
+                        </span>
+                        {note.isVerified && (
+                          <CheckCircle className="h-4 w-4 text-green-500" title="Verified" />
+                        )}
+                      </div>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                        {note.description}
+                      </p>
+                      
+                      <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        <span>{note.branch} • {note.semester} Semester</span>
+                        <span className="flex items-center">
+                          <Download className="h-4 w-4 mr-1" />
+                          {note.downloads.toLocaleString()}
+                        </span>
+                        <span className="flex items-center">
+                          <Heart className="h-4 w-4 mr-1" />
+                          {note.likes}
+                        </span>
+                        <span className="flex items-center">
+                          <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
+                          {note.rating}
+                        </span>
+                        <span>{formatFileSize(note.fileSize)}</span>
+                        <span>{getTimeAgo(note.uploadDate)}</span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1">
+                        {note.tags.map(tag => (
+                          <span key={tag} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-end gap-2 ml-4">
+                      {note.points > 0 && (
+                        <div className="flex items-center space-x-1 text-amber-600 dark:text-amber-400">
+                          <Coins className="h-4 w-4" />
+                          <span className="text-sm font-medium">{note.points} pts</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleLike(note.id)}
+                          className={`p-2 rounded-lg transition-all duration-200 ${
+                            likedNotes.has(note.id)
+                              ? 'text-red-500 bg-red-50 dark:bg-red-900/20'
+                              : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
+                          }`}
+                        >
+                          <Heart className={`h-4 w-4 ${likedNotes.has(note.id) ? 'fill-current' : ''}`} />
+                        </button>
+                        <button
+                          onClick={() => handlePreview(note)}
+                          className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => handleDownload(note.id)}
+                          disabled={note.noteType === 'premium' && note.points > userPoints.availablePoints}
+                          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {sortedNotes.length === 0 && (
+        <div className="text-center py-12">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <Search className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            No notes found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Try adjusting your search terms or filters to find what you're looking for.
+          </p>
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedFilters({ branch: '', semester: '', subject: '', degree: '', noteType: '' });
+            }}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NotesUpload = () => (
   <div className="p-6">
