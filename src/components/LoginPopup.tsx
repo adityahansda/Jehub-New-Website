@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import Link from 'next/link';
 
 interface LoginPopupProps {
   isOpen: boolean;
@@ -133,13 +134,13 @@ const LoginPopup: React.FC<LoginPopupProps> = ({
 
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm">
-            Don't have an account?{' '}
-            <a
+            Don&apos;t have an account?{' '}
+            <Link
               href="/signup"
               className="text-blue-400 hover:text-blue-300 underline transition-colors duration-200"
             >
               Sign up here
-            </a>
+            </Link>
           </p>
         </div>
       </motion.div>

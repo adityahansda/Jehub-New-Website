@@ -323,7 +323,7 @@ const Login = () => {
                         🕵️ Incognito/Private Mode Detected
                       </h3>
                       <p className="text-xs text-amber-700 mt-1">
-                        You're in private browsing mode. Login may take longer or require multiple attempts due to cookie restrictions.
+                        You&apos;re in private browsing mode. Login may take longer or require multiple attempts due to cookie restrictions.
                       </p>
                       <p className="text-xs text-amber-700 mt-1">
                         For best experience, try signing in using regular browsing mode.
@@ -443,9 +443,9 @@ const Login = () => {
               <div className="text-center">
                 <p className="text-xs text-gray-500">
                   By signing in, you agree to our{' '}
-                  <a href="/privacy-policy" className="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+                  <Link href="/privacy-policy" className="text-blue-600 hover:text-blue-500">Privacy Policy</Link>
                   {' '}and{' '}
-                  <a href="/terms-of-service" className="text-blue-600 hover:text-blue-500">Terms of Service</a>
+                  <Link href="/terms-of-service" className="text-blue-600 hover:text-blue-500">Terms of Service</Link>
                 </p>
               </div>
             </div>

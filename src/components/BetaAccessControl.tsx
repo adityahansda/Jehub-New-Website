@@ -166,7 +166,7 @@ export const BetaAccessControl: React.FC<BetaAccessControlProps> = ({
                   <div className="bg-amber-900/30 border border-amber-500/30 rounded-lg p-3 sm:p-4">
                     <h4 className="text-amber-400 font-semibold mb-2 text-sm sm:text-base">👋 Hi {user.name}!</h4>
                     <p className="text-gray-300 text-xs sm:text-sm mb-2">
-                      You're logged in as: <span className="font-medium text-white">{userProfile.role || 'User'}</span>
+                      You&apos;re logged in as: <span className="font-medium text-white">{userProfile.role || 'User'}</span>
                     </p>
                     <p className="text-gray-300 text-xs sm:text-sm">
                       Join our beta program to unlock this feature and many more!
