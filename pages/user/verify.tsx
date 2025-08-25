@@ -112,7 +112,7 @@ export default function VerifyPage() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Verify Your Membership</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
-              Enter your Telegram username to confirm you've joined our group.
+              Enter your Telegram username to confirm you&apos;ve joined our group.
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">

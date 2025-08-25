@@ -327,7 +327,7 @@ export default async function handler(
       error: 'Internal server error',
       isValid: false,
       message: 'An error occurred while verifying the certificate. Please try again later.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     });
   }
 }

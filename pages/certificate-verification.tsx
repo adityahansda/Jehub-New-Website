@@ -23,10 +23,9 @@ export default function CertificateVerificationPage() {
           ],
         }}
         twitter={{
-          card: 'summary_large_image',
-          title: "Certificate Verification - JEHUB",
-          description: "Verify the authenticity of your internship certificate issued by Jharkhand Engineer's Hub.",
-          images: ['/images/certificate-verification-og.jpg'],
+          handle: '@jehubofficial',
+          site: '@jehubofficial',
+          cardType: 'summary_large_image',
         }}
         additionalMetaTags={[
           {
