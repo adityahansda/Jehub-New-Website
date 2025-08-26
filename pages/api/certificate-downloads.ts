@@ -40,31 +40,63 @@ class GoogleSheetsService {
     }
 
     try {
-      // Look for service account JSON file
-      const fs = require('fs');
-      const possiblePaths = [
-        path.join(process.cwd(), 'google-service-account.json'),
-        path.join(process.cwd(), 'credentials.json'),
-        path.join(process.cwd(), 'service-account.json')
-      ];
-      
-      let credentialsPath = null;
-      for (const filePath of possiblePaths) {
-        if (fs.existsSync(filePath)) {
-          credentialsPath = filePath;
-          break;
-        }
-      }
-      
-      if (credentialsPath) {
-        console.log(`Using Google service account JSON file: ${path.basename(credentialsPath)}`);
+      // Check for environment variables first (preferred method)
+      if (process.env.GOOGLE_PRIVATE_KEY && process.env.GOOGLE_CLIENT_EMAIL) {
+        console.log('Using Google service account environment variables');
+        
+        const credentials = {
+          type: "service_account",
+          project_id: process.env.GOOGLE_PROJECT_ID,
+          private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+          private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          client_email: process.env.GOOGLE_CLIENT_EMAIL,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          auth_uri: "https://accounts.google.com/o/oauth2/auth",
+          token_uri: "https://oauth2.googleapis.com/token",
+          auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+          client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.GOOGLE_CLIENT_EMAIL}`
+        };
+
+        this.auth = new google.auth.GoogleAuth({
+          credentials,
+          scopes: SCOPES,
+        });
+      } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+        console.log('Using Google service account JSON from environment variable');
+        
+        const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
         
         this.auth = new google.auth.GoogleAuth({
-          keyFile: credentialsPath,
+          credentials,
           scopes: SCOPES,
         });
       } else {
-        throw new Error('Google service account JSON file not found. Please add one of: google-service-account.json, credentials.json, or service-account.json to the project root.');
+        // Fallback to JSON file (for backward compatibility)
+        const fs = require('fs');
+        const possiblePaths = [
+          path.join(process.cwd(), 'google-service-account.json'),
+          path.join(process.cwd(), 'credentials.json'),
+          path.join(process.cwd(), 'service-account.json')
+        ];
+        
+        let credentialsPath = null;
+        for (const filePath of possiblePaths) {
+          if (fs.existsSync(filePath)) {
+            credentialsPath = filePath;
+            break;
+          }
+        }
+        
+        if (credentialsPath) {
+          console.log(`Using Google service account JSON file: ${path.basename(credentialsPath)}`);
+          
+          this.auth = new google.auth.GoogleAuth({
+            keyFile: credentialsPath,
+            scopes: SCOPES,
+          });
+        } else {
+          throw new Error('Google service account credentials not found. Please set environment variables (GOOGLE_PRIVATE_KEY, GOOGLE_CLIENT_EMAIL, etc.) or add a JSON file.');
+        }
       }
 
       return this.auth;
@@ -164,24 +196,20 @@ class GoogleSheetsService {
         };
       }
 
-      if (!record.verification) {
-        return {
-          isValid: false,
-          record,
-          message: 'This internship record exists but is not verified'
-        };
-      }
-
+      // For downloads, we allow access to documents even without verification
+      // but still show verification status in the message
       return {
         isValid: true,
         record,
-        message: 'Internship certificate is valid and verified'
+        message: record.verification 
+          ? 'Documents found and ready for download'
+          : 'Documents found. Note: This internship record is not yet verified, but documents are available for download.'
       };
     } catch (error) {
       console.error('Error verifying internship:', error);
       return {
         isValid: false,
-        message: 'Error occurred while verifying the internship'
+        message: 'Error occurred while fetching documents'
       };
     }
   }
@@ -242,7 +270,7 @@ export default async function handler(
       return res.status(400).json({
         error: 'Intern ID is required',
         isValid: false,
-        message: 'Please provide an Intern ID to verify'
+        message: 'Please provide an Intern ID to access your documents'
       });
     }
 
@@ -256,12 +284,12 @@ export default async function handler(
       });
     }
 
-    console.log(`Verifying certificate for Intern ID: ${internId}`);
+    console.log(`Fetching documents for Intern ID: ${internId}`);
 
-    const verificationResult = await googleSheetsService.verifyInternship(internId);
+    const documentResult = await googleSheetsService.verifyInternship(internId);
 
-    if (verificationResult.record) {
-      const record = verificationResult.record;
+    if (documentResult.record) {
+      const record = documentResult.record;
       
       const documents = [];
       
@@ -324,7 +352,7 @@ export default async function handler(
         : new Date().toISOString();
 
       return res.status(200).json({
-        ...verificationResult,
+        ...documentResult,
         record: {
           ...record,
           documents
@@ -335,18 +363,18 @@ export default async function handler(
     }
 
     return res.status(200).json({
-      ...verificationResult,
+      ...documentResult,
       verifiedAt: new Date().toISOString(),
       internIdSearched: internId
     });
 
   } catch (error) {
-    console.error('Certificate verification error:', error);
+    console.error('Certificate downloader error:', error);
     
     return res.status(500).json({
       error: 'Internal server error',
       isValid: false,
-      message: 'An error occurred while verifying the certificate. Please try again later.',
+      message: 'An error occurred while fetching your documents. Please try again later.',
       details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
     });
   }
