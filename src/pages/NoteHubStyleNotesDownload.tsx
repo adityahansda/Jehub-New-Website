@@ -8,7 +8,6 @@ import { showError, showWarning, showSuccess, showConfirmation, showInfo } from 
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import LoadingSpinner from '../components/LoadingSpinner';
-import VideoModal from '../components/VideoModal';
 import { checkUrlStatus } from '../lib/pdfValidation';
 import { databases } from '../lib/appwrite';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,13 +15,14 @@ import { useTheme } from '../contexts/ThemeContext';
 import { pointsService } from '../services/pointsService';
 import HorizontalNotesCard from '../components/HorizontalNotesCard';
 import { likesService } from '../services/likesService';
-import KnowledgeGateSidebar from '../components/KnowledgeGateSidebar';
+// Removed KnowledgeGateSidebar import as component doesn't exist
 import CounsellingUpdates from './CounsellingUpdates';
 import { getActiveTeamSortedByXP, getOldTeamSortedByXP } from '../data/teamData';
-import AIChatPage from '../components/AIChatPage';
-import AIChatWidget from '../components/AIChatWidget';
-import AIChatComponent from '../components/AIChatComponent';
-import { aiSettingsService } from '../services/aiSettingsService';
+// AI components - removed imports for components that don't exist
+// import AIChatPage from '../components/AIChatPage';
+// import AIChatWidget from '../components/AIChatWidget';
+// import AIChatComponent from '../components/AIChatComponent';
+// import { aiSettingsService } from '../services/aiSettingsService';
 import GoogleDocsPDFViewer from '../components/GoogleDocsPDFViewer';
 import { Bundle, bundlesService, BundleNote, BundleVideo } from '../services/bundlesService';
 import { usePublishedBundles, useAdminBundles } from '../hooks/useBundles';
@@ -294,9 +294,10 @@ const NoteHubStyleNotesDownload = () => {
       duration: string;
     }>;
     instructor: string;
-    tags: string;
+    tags: string | string[];
     status: string;
     notesCount: number;
+    videosCount?: number;
     revenue?: number;
     totalSales?: number;
     targetSales?: number;
@@ -436,17 +437,17 @@ const NoteHubStyleNotesDownload = () => {
   useEffect(() => {
     const loadAiSettings = async () => {
       try {
-        const settings = await aiSettingsService.getSettings();
-        setAiSettings(settings);
+        // const settings = await aiSettingsService.getSettings();
+        // setAiSettings(settings);
       } catch (error) {
         console.error('Error loading AI settings:', error);
         // Fall back to default settings if loading fails
-        const defaultSettings = aiSettingsService.getDefaultSettings();
-        setAiSettings(defaultSettings);
+        // const defaultSettings = aiSettingsService.getDefaultSettings();
+        // setAiSettings(defaultSettings);
       }
     };
 
-    loadAiSettings();
+    // loadAiSettings();
   }, []);
 
   // Load AI Knowledge Base entries
@@ -4472,16 +4473,16 @@ const NoteHubStyleNotesDownload = () => {
             isPopular: true,
             access: 'premium', // 'free', 'premium', 'purchase'
             notes: [
-              { title: 'Arrays & Strings Fundamentals', type: 'pdf', size: '2.4 MB', description: 'Learn array manipulation and string processing techniques' },
-              { title: 'Linked Lists Complete Guide', type: 'pdf', size: '1.8 MB', description: 'Master linked list operations and implementations' },
-              { title: 'Trees & Binary Search Trees', type: 'pdf', size: '3.1 MB', description: 'Complete guide to tree data structures' },
-              { title: 'Graph Algorithms Masterclass', type: 'pdf', size: '2.7 MB', description: 'Advanced graph algorithms and applications' }
+              { id: '1-1', title: 'Arrays & Strings Fundamentals', type: 'pdf', size: '2.4 MB', description: 'Learn array manipulation and string processing techniques', fileUrl: '#' },
+              { id: '1-2', title: 'Linked Lists Complete Guide', type: 'pdf', size: '1.8 MB', description: 'Master linked list operations and implementations', fileUrl: '#' },
+              { id: '1-3', title: 'Trees & Binary Search Trees', type: 'pdf', size: '3.1 MB', description: 'Complete guide to tree data structures', fileUrl: '#' },
+              { id: '1-4', title: 'Graph Algorithms Masterclass', type: 'pdf', size: '2.7 MB', description: 'Advanced graph algorithms and applications', fileUrl: '#' }
             ],
             videos: [
-              { title: 'DSA Introduction & Roadmap', type: 'youtube', url: 'https://www.youtube.com/watch?v=0IAPZzGSbME', duration: '15:30', description: 'Complete roadmap for learning DSA effectively' },
-              { title: 'Arrays Problem Solving', type: 'youtube', url: 'https://www.youtube.com/watch?v=example1', duration: '25:45', description: 'Solve complex array problems step by step' },
-              { title: 'Linked List Implementation', type: 'youtube', url: 'https://www.youtube.com/watch?v=example2', duration: '20:15', description: 'Implement linked lists from scratch' },
-              { title: 'Binary Trees Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example3', duration: '35:20', description: 'Understanding binary trees and traversals' }
+              { id: '1-v1', title: 'DSA Introduction & Roadmap', type: 'youtube', url: 'https://www.youtube.com/watch?v=0IAPZzGSbME', duration: '15:30', description: 'Complete roadmap for learning DSA effectively' },
+              { id: '1-v2', title: 'Arrays Problem Solving', type: 'youtube', url: 'https://www.youtube.com/watch?v=example1', duration: '25:45', description: 'Solve complex array problems step by step' },
+              { id: '1-v3', title: 'Linked List Implementation', type: 'youtube', url: 'https://www.youtube.com/watch?v=example2', duration: '20:15', description: 'Implement linked lists from scratch' },
+              { id: '1-v4', title: 'Binary Trees Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example3', duration: '35:20', description: 'Understanding binary trees and traversals' }
             ]
           },
           {
@@ -8588,21 +8589,66 @@ const NoteHubStyleNotesDownload = () => {
 
       {/* Main Layout Container */}
       <div className="flex h-screen relative">
-        {/* Sidebar - KnowledgeGate Style */}
-        <KnowledgeGateSidebar 
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          activePage={currentPage}
-          likedNotesCount={likedNotes.size}
-          courseFilters={courseFilters}
-          selectedFilters={selectedFilters}
-          setSelectedFilters={setSelectedFilters}
-          semesters={semesters}
-          degrees={degrees}
-          onPageChange={handlePageChange}
-        />
+        {/* Sidebar - Basic Navigation */}
+        <nav className={`fixed inset-y-0 left-0 z-40 w-72 bg-slate-800 border-r border-slate-700 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-4">
+            <h2 className="text-xl font-bold text-white mb-4">Navigation</h2>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  handlePageChange('notes-download', 'Engineering Notes');
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                  currentPage === 'notes-download' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                📚 Engineering Notes
+              </button>
+              <button
+                onClick={() => {
+                  handlePageChange('notes-upload', 'Upload Notes');
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                  currentPage === 'notes-upload' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                📤 Upload Notes
+              </button>
+              <button
+                onClick={() => {
+                  handlePageChange('dashboard', 'Dashboard');
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                  currentPage === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                📊 Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  handlePageChange('study-bundles', 'Study Bundles');
+                  setSidebarOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                  currentPage === 'study-bundles' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                📦 Study Bundles
+              </button>
+            </div>
+          </div>
+        </nav>
 
-      {/* Note: Mobile overlay is now handled in KnowledgeGateSidebar component */}
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden" 
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
@@ -8836,6 +8882,72 @@ const NoteHubStyleNotesDownload = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Video Modal */}
+      {videoModalOpen && currentVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-6 max-w-4xl w-full mx-4 transform animate-slideUp">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">{currentVideo.title}</h3>
+              <button
+                onClick={() => {
+                  setVideoModalOpen(false);
+                  setCurrentVideo(null);
+                }}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Video Content */}
+            <div className="bg-slate-800 rounded-lg p-4 mb-4">
+              {currentVideo.url.includes('youtube.com') || currentVideo.url.includes('youtu.be') ? (
+                <div className="aspect-w-16 aspect-h-9">
+                  <iframe
+                    src={currentVideo.url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                    title={currentVideo.title}
+                    className="w-full h-64 sm:h-80 md:h-96 rounded-lg"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  ></iframe>
+                </div>
+              ) : (
+                <div className="text-center p-8">
+                  <Play className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-300 mb-4">Click to open video in new tab</p>
+                  <button
+                    onClick={() => window.open(currentVideo.url, '_blank')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                  >
+                    Open Video
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Video Description */}
+            {currentVideo.description && (
+              <div className="text-slate-300 text-sm mb-4">
+                <p>{currentVideo.description}</p>
+              </div>
+            )}
+            
+            {/* Close Button */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setVideoModalOpen(false);
+                  setCurrentVideo(null);
+                }}
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
