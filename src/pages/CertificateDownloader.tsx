@@ -24,6 +24,7 @@ import {
   Archive,
   FolderOpen
 } from 'lucide-react';
+import { maskEmail } from '../utils/emailMask';
 
 interface Document {
   type: string;
@@ -58,14 +59,55 @@ interface DownloadResult {
   internIdSearched: string;
 }
 
-const CertificateDownloader: React.FC = () => {
-  const [internId, setInternId] = useState('');
+interface CertificateDownloaderProps {
+  prefillInternId?: string;
+}
+
+const CertificateDownloader: React.FC<CertificateDownloaderProps> = ({ prefillInternId }) => {
+  const [internId, setInternId] = useState(prefillInternId || '');
   const [isLoading, setIsLoading] = useState(false);
   const [downloadResult, setDownloadResult] = useState<DownloadResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [downloadingDocument, setDownloadingDocument] = useState<string | null>(null);
+  const [autoFetched, setAutoFetched] = useState(false);
+
+  // Auto-fetch data if prefillInternId is provided
+  useEffect(() => {
+    if (prefillInternId && !autoFetched) {
+      setAutoFetched(true);
+      // Automatically trigger document search
+      const autoSearch = async () => {
+        setIsLoading(true);
+        setError(null);
+        setDownloadResult(null);
+
+        try {
+          const response = await fetch(`/api/appwrite-certificate-downloads?internId=${encodeURIComponent(prefillInternId.trim())}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || 'Failed to fetch documents');
+          }
+
+          setDownloadResult(data);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An error occurred while fetching documents');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      autoSearch();
+    }
+  }, [prefillInternId, autoFetched]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +122,7 @@ const CertificateDownloader: React.FC = () => {
     setDownloadResult(null);
 
     try {
-      const response = await fetch(`/api/certificate-downloads?internId=${encodeURIComponent(internId.trim())}`, {
+      const response = await fetch(`/api/appwrite-certificate-downloads?internId=${encodeURIComponent(internId.trim())}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -420,7 +462,9 @@ const CertificateDownloader: React.FC = () => {
                         <Mail className="h-5 w-5 text-gray-500" />
                         <div>
                           <p className="text-sm text-gray-600">Email</p>
-                          <p className="font-semibold text-gray-900">{downloadResult.record.email}</p>
+                          <p className="font-semibold text-gray-900" title={downloadResult.record.email}>
+                            {maskEmail(downloadResult.record.email)}
+                          </p>
                         </div>
                       </div>
                       

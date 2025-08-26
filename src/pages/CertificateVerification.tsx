@@ -21,6 +21,7 @@ import {
   BadgeCheck,
   Minimize2
 } from 'lucide-react';
+import { maskEmail } from '../utils/emailMask';
 
 interface Document {
   type: string;
@@ -55,13 +56,54 @@ interface VerificationResult {
   internIdSearched: string;
 }
 
-const CertificateVerification: React.FC = () => {
-  const [internId, setInternId] = useState('');
+interface CertificateVerificationProps {
+  prefillInternId?: string;
+}
+
+const CertificateVerification: React.FC<CertificateVerificationProps> = ({ prefillInternId }) => {
+  const [internId, setInternId] = useState(prefillInternId || '');
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [autoFetched, setAutoFetched] = useState(false);
+
+  // Auto-fetch data if prefillInternId is provided
+  useEffect(() => {
+    if (prefillInternId && !autoFetched) {
+      setAutoFetched(true);
+      // Automatically trigger verification
+      const autoVerify = async () => {
+        setIsLoading(true);
+        setError(null);
+        setVerificationResult(null);
+
+        try {
+          const response = await fetch(`/api/appwrite-verify-certificate?internId=${encodeURIComponent(prefillInternId.trim())}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.message || 'Verification failed');
+          }
+
+          setVerificationResult(data);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An error occurred during verification');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      autoVerify();
+    }
+  }, [prefillInternId, autoFetched]);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +118,7 @@ const CertificateVerification: React.FC = () => {
     setVerificationResult(null);
 
     try {
-      const response = await fetch(`/api/verify-certificate?internId=${encodeURIComponent(internId.trim())}`, {
+      const response = await fetch(`/api/appwrite-verify-certificate?internId=${encodeURIComponent(internId.trim())}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +407,9 @@ const CertificateVerification: React.FC = () => {
                         <Mail className="h-5 w-5 text-gray-500" />
                         <div>
                           <p className="text-sm text-gray-600">Email</p>
-                          <p className="font-semibold text-gray-900">{verificationResult.record.email}</p>
+                          <p className="font-semibold text-gray-900" title={verificationResult.record.email}>
+                            {maskEmail(verificationResult.record.email)}
+                          </p>
                         </div>
                       </div>
                       
