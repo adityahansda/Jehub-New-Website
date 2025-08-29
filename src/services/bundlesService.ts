@@ -99,7 +99,7 @@ class BundlesService {
         }
       );
 
-      return bundle as Bundle;
+      return bundle as unknown as Bundle;
     } catch (error) {
       console.error('Error creating bundle:', error);
       throw error;
@@ -142,7 +142,7 @@ class BundlesService {
         queries
       );
 
-      return response.documents as Bundle[];
+      return response.documents as unknown as Bundle[];
     } catch (error) {
       console.error('Error getting bundles:', error);
       throw error;
@@ -163,7 +163,7 @@ class BundlesService {
         bundleId
       );
 
-      return bundle as Bundle;
+      return bundle as unknown as Bundle;
     } catch (error) {
       console.error('Error getting bundle by ID:', error);
       throw error;
@@ -173,17 +173,20 @@ class BundlesService {
   // Update bundle
   async updateBundle(bundleId: string, updateData: Partial<Bundle>): Promise<Bundle> {
     try {
+      // Filter out system fields that Appwrite doesn't allow in updates
+      const { $id, $createdAt, $updatedAt, ...filteredData } = updateData;
+      
       const updatedBundle = await databases.updateDocument(
         DATABASE_ID,
         COLLECTION_ID,
         bundleId,
         {
-          ...updateData,
+          ...filteredData,
           updatedAt: new Date().toISOString()
         }
       );
 
-      return updatedBundle as Bundle;
+      return updatedBundle as unknown as Bundle;
     } catch (error) {
       console.error('Error updating bundle:', error);
       throw error;

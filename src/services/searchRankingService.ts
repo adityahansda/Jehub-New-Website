@@ -146,7 +146,7 @@ class SearchRankingService {
    * Calculate semantic similarity score
    */
   private calculateSemanticSimilarity(entry: KnowledgeEntry, queryWords: string[]): number {
-    const synonyms = {
+    const synonyms: Record<string, string[]> = {
       'programming': ['coding', 'development', 'software'],
       'mathematics': ['math', 'calculus', 'algebra'],
       'physics': ['mechanics', 'thermodynamics', 'optics'],
@@ -271,7 +271,7 @@ class SearchRankingService {
     }
 
     // Related categories
-    const categoryRelations = {
+    const categoryRelations: Record<string, string[]> = {
       'computer science': ['programming', 'software', 'algorithms'],
       'mathematics': ['physics', 'engineering', 'statistics'],
       'physics': ['mathematics', 'engineering', 'mechanics'],

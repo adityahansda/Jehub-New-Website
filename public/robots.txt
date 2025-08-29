@@ -34,3 +34,4 @@ Host: https://jehub.vercel.app
 
 # Sitemaps
 Sitemap: https://jehub.vercel.app/sitemap.xml
+Sitemap: https://jehub.vercel.app/api/sitemap

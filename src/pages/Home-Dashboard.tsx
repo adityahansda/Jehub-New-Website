@@ -1180,7 +1180,7 @@ const HomeDashboard = () => {
                               </div>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              ID: {user.id || '6891c12fc7b9a54e45b9'}
+                              ID: {user.$id || '6891c12fc7b9a54e45b9'}
                             </p>
                           </div>
 

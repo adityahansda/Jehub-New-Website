@@ -402,12 +402,27 @@ const EnhancedNotesDownload = () => {
       // Deduct points if required
       if (isPointsRequired) {
         try {
-          await pointsService.deductPointsForDownload(user.email, requiredPoints, noteId, note.title);
-          setUserPoints(prev => ({
-            ...prev,
-            availablePoints: prev.availablePoints - requiredPoints,
-            pointsSpent: prev.pointsSpent + requiredPoints
-          }));
+          // Find user profile by email to get correct user ID
+          const { databases } = await import('../lib/appwrite');
+          const { Query } = await import('appwrite');
+          const userResponse = await databases.listDocuments(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!,
+            process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID!,
+            [Query.equal('email', user.email)]
+          );
+          
+          if (userResponse.documents.length > 0) {
+            const userProfile = userResponse.documents[0];
+            await pointsService.spendPoints(userProfile.$id, user.email, requiredPoints, noteId, note.title);
+            setUserPoints(prev => ({
+              ...prev,
+              availablePoints: prev.availablePoints - requiredPoints,
+              pointsSpent: prev.pointsSpent + requiredPoints
+            }));
+          } else {
+            console.warn('User profile not found for points deduction');
+            showWarning('Download started, but there was an issue updating your points.');
+          }
         } catch (error) {
           console.error('Error deducting points:', error);
           showWarning('Download started, but there was an issue updating your points.');
