@@ -29,6 +29,9 @@ client.setLocale('en');
 
 // Configure client for better authentication handling
 // Set standard headers for proper API communication
+// Configure client for better cookie handling
+// Note: CORS headers should be set by the server (Appwrite), not the client
+// client.headers['Access-Control-Allow-Credentials'] = 'true'; // Removed - causes CORS issues
 client.headers['X-Requested-With'] = 'XMLHttpRequest';
 
 // Enable cookie fallback for cross-site (third-party) cookie restrictions

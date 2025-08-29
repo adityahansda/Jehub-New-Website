@@ -22,6 +22,11 @@
     "create:telegram-collection": "node scripts/create-telegram-collection.js",
     "check:api-key": "node scripts/check-api-key.js",
     "kb:add:aditya": "node -r dotenv/config scripts/add-aditya-knowledge.js",
+    "test-sheets": "node scripts/test-google-sheets.js",
+    "test-certificates": "node scripts/test-certificate-pages.js",
+    "verify-setup": "node scripts/verify-setup.js",
+    "interactive-setup": "node scripts/interactive-setup.js",
+    "enable-apis": "node scripts/enable-apis-guide.js",
     "postbuild": "next-sitemap",
     "postinstall": "npm ls typescript || npm install typescript@5.5.4"
   },

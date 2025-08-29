@@ -884,7 +884,7 @@ const WishlistRegistration: React.FC = () => {
                   <option value="other">Other (Not Listed)</option>
                 </select>
                 <p className="text-xs text-gray-400 mt-1">
-                  Select your college from the list or choose "Other" to specify a different one
+                  Select your college from the list or choose &quot;Other&quot; to specify a different one
                 </p>
                 {form.collegeName === "other" && (
                   <div className="mt-3">
@@ -901,7 +901,7 @@ const WishlistRegistration: React.FC = () => {
                       placeholder="Enter your college/institute name"
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      This field is required when selecting "Other (Not Listed)"
+                      This field is required when selecting &quot;Other (Not Listed)&quot;
                     </p>
                   </div>
                 )}
@@ -1100,7 +1100,7 @@ const WishlistRegistration: React.FC = () => {
                     onClick={() => setShowVerificationModal(false)}
                     className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                   >
-                    I'll join later
+                    I&apos;ll join later
                   </button>
                 </div>
               </>
@@ -1113,7 +1113,7 @@ const WishlistRegistration: React.FC = () => {
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Verification Required</h3>
-                  <p className="text-gray-300 text-sm">You're a member of our group but need to verify for beta access.</p>
+                  <p className="text-gray-300 text-sm">You&apos;re a member of our group but need to verify for beta access.</p>
                 </div>
                 
                 <div className="space-y-4 mb-6">
@@ -1161,7 +1161,7 @@ const WishlistRegistration: React.FC = () => {
                     }}
                     className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
                   >
-                    I've sent /verify - Check again
+                    I&apos;ve sent /verify - Check again
                   </button>
                   <button
                     onClick={() => setShowVerificationModal(false)}

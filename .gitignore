@@ -24,3 +24,17 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.local
+.env.production
+.env.development
+
+# Google Service Account credentials
+google-service-account.json
+credentials.json
+service-account.json
+*.json.key
+jehub25-*.json
+
+.jehub25-cdc2d0929d51.json
+.jehub25new.json
+.vercel
