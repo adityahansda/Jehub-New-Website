@@ -30,6 +30,7 @@ const Navigation = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAllPagesOpen, setIsAllPagesOpen] = useState(false);
+  const [isHomeDropdownOpen, setIsHomeDropdownOpen] = useState(false);
   const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0, pointsSpent: 0 });
   const [pointsLoading, setPointsLoading] = useState(false);
   const router = useRouter();
@@ -128,6 +129,15 @@ const Navigation = () => {
     }
   ], []);
 
+  // Home Dashboard Dropdown Menu - for authenticated users
+  const homeDropdownMenu = useMemo(() => [
+    { path: '/notes-download', label: 'Dashboard', icon: LayoutDashboard, description: 'View your stats & activity' },
+    { path: '/profile', label: 'Profile', icon: User, description: 'Edit your profile info' },
+    { path: '/referral', label: 'Referrals', icon: Gift, description: 'Invite friends & earn' },
+    { path: '/settings', label: 'Settings', icon: Settings, description: 'Manage your preferences' },
+    { path: '/notifications', label: 'Notifications', icon: Bell, description: 'Your updates & alerts' },
+    { path: '/bookmarks', label: 'Bookmarks', icon: Bookmark, description: 'Saved notes & resources' }
+  ], []);
 
   // Load user points when user changes
   useEffect(() => {
@@ -198,6 +208,11 @@ const Navigation = () => {
     router.push(path);
   };
 
+  const handleHomeDropdownClick = (path: string) => {
+    setIsHomeDropdownOpen(false);
+    router.push(path);
+  };
+
 
   // Check if we're on the home page
   const isHomePage = router.pathname === '/';
@@ -238,17 +253,69 @@ const Navigation = () => {
               {/* Desktop Navigation Menu - Only show on home page */}
               {isHomePage && (
                 <nav className="hidden lg:flex items-center ml-6 space-x-1">
-                  <Link
-                    href="/"
-                    onClick={() => handleNavClick(0, '/')}
-                    className={`group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      router.pathname === '/' 
-                        ? 'text-white bg-gray-800 border border-gray-700'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
-                    }`}
-                  >
-                    <span>Home</span>
-                  </Link>
+                  {/* Home Dropdown - Only show for authenticated users */}
+                  {user ? (
+                    <div className="relative">
+                      <button
+                        onClick={() => setIsHomeDropdownOpen(!isHomeDropdownOpen)}
+                        className={`group relative flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          router.pathname === '/' 
+                            ? 'text-white bg-gray-800 border border-gray-700'
+                            : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                        }`}
+                      >
+                        <Home className="h-4 w-4" />
+                        <span>Home</span>
+                        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                          isHomeDropdownOpen ? 'rotate-180' : ''
+                        }`} />
+                      </button>
+                      
+                      {isHomeDropdownOpen && (
+                        <div className="absolute left-0 top-full mt-2 w-64 bg-gray-800 border border-gray-700 rounded-xl shadow-xl overflow-hidden z-50 backdrop-blur-sm">
+                          {/* Header */}
+                          <div className="p-4 bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600">
+                            <h3 className="text-white font-semibold text-sm">Dashboard</h3>
+                            <p className="text-gray-300 text-xs mt-1">Quick access to your pages</p>
+                          </div>
+                          
+                          {/* Menu Items */}
+                          <div className="py-2">
+                            {homeDropdownMenu.map((item, index) => {
+                              const IconComponent = item.icon;
+                              return (
+                                <button
+                                  key={index}
+                                  onClick={() => handleHomeDropdownClick(item.path)}
+                                  className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 transition-all duration-200 group"
+                                >
+                                  <div className="w-8 h-8 bg-gray-700 group-hover:bg-gray-600 rounded-lg flex items-center justify-center transition-colors duration-200">
+                                    <IconComponent className="h-4 w-4 text-gray-300 group-hover:text-white" />
+                                  </div>
+                                  <div className="flex-1 text-left">
+                                    <span className="font-medium">{item.label}</span>
+                                    <p className="text-xs text-gray-400">{item.description}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      href="/"
+                      onClick={() => handleNavClick(0, '/')}
+                      className={`group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        router.pathname === '/' 
+                          ? 'text-white bg-gray-800 border border-gray-700'
+                          : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                      }`}
+                    >
+                      <span>Home</span>
+                    </Link>
+                  )}
                   
                   <Link
                     href="/about"
