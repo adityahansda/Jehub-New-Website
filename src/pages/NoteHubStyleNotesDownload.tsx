@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { Search, CheckCircle, X, User, Coins, Menu, GraduationCap, AlertTriangle, Upload, Grid3X3, Send, Clock, Filter, Tag, FileCheck, AlertCircle, CheckSquare, Download, Heart, Star, Trophy, BookOpen, Home, Calendar, MapPin, Info, Users, Bell, MessageCircle, Rss, ShieldCheck, Briefcase, Target, ArrowRight, Building, DollarSign, Code, Palette, Camera, Megaphone, PenTool, Globe, Award, Rocket, MessageSquare, UserPlus, UserCheck, Hash, ExternalLink, Mail, Phone, Medal, Crown, TrendingUp, Zap, Brain, Database, Activity, Server, BarChart3, FileBarChart, Gift, Share, Copy, Link as LinkIcon, Play, Video } from 'lucide-react';
+import { Search, CheckCircle, X, User, Coins, Menu, GraduationCap, AlertTriangle, Upload, Grid3X3, Send, Clock, Filter, Tag, FileCheck, AlertCircle, CheckSquare, Download, Heart, Star, Trophy, BookOpen, Home, Calendar, MapPin, Info, Users, Bell, MessageCircle, Rss, ShieldCheck, Briefcase, Target, ArrowRight, Building, DollarSign, Code, Palette, Camera, Megaphone, PenTool, Globe, Award, Rocket, MessageSquare, UserPlus, UserCheck, Hash, ExternalLink, Mail, Phone, Medal, Crown, TrendingUp, Zap, Brain, Database, Activity, Server, BarChart3, FileBarChart, Gift, Share, Copy, Link as LinkIcon, Play, Video, Moon, Sun } from 'lucide-react';
 import { generateNoteSlug } from '../utils/seo';
 import { showError, showWarning, showSuccess, showConfirmation, showInfo } from '../utils/toast';
 import { toast } from 'react-toastify';
@@ -81,6 +81,7 @@ type Note = {
 const NoteHubStyleNotesDownload = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -257,6 +258,9 @@ const NoteHubStyleNotesDownload = () => {
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<{ title: string; url: string; description?: string } | null>(null);
   
+  // Study Bundles state
+  const [studyBundles, setStudyBundles] = useState<Bundle[]>([]);
+  
   // Use real bundles from hooks
   const { bundles: publishedBundles, loading: publishedLoading, error: publishedError, createBundle: createPublishedBundle, updateBundle: updatePublishedBundle, deleteBundle: deletePublishedBundle } = usePublishedBundles();
   const { bundles: adminBundles, loading: adminLoading, error: adminError, createBundle: createAdminBundle, updateBundle: updateAdminBundle, deleteBundle: deleteAdminBundle } = useAdminBundles();
@@ -294,9 +298,16 @@ const NoteHubStyleNotesDownload = () => {
       duration: string;
     }>;
     instructor: string;
-    tags: string;
+    tags: string[];
     status: string;
     notesCount: number;
+    videosCount?: number;
+    totalDownloads?: number;
+    rating?: number;
+    reviews?: number;
+    level?: string;
+    duration?: string;
+    thumbnail?: string;
     revenue?: number;
     totalSales?: number;
     targetSales?: number;
@@ -313,7 +324,7 @@ const NoteHubStyleNotesDownload = () => {
     category: '',
     price: 0,
     access: 'free',
-    tags: '',
+    tags: [],
     status: 'draft',
     notesCount: 0,
     instructor: '',
@@ -1456,7 +1467,7 @@ const NoteHubStyleNotesDownload = () => {
                         No Notes Found
                       </h3>
                       <p className="text-slate-400 mb-8 text-lg leading-relaxed">
-                        We couldn't find any notes matching your criteria.<br/>
+                        We couldn&apos;t find any notes matching your criteria.<br/>
                         Try adjusting your search terms or filters to discover more content.
                       </p>
                       
@@ -2024,7 +2035,7 @@ const NoteHubStyleNotesDownload = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-white">Request Notes</h2>
-                  <p className="text-slate-400 text-sm">Can't find the notes you need? Request them from the community</p>
+                  <p className="text-slate-400 text-sm">Can&apos;t find the notes you need? Request them from the community</p>
                 </div>
               </div>
               
@@ -3980,7 +3991,7 @@ const NoteHubStyleNotesDownload = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Top Referrers This Month</h3>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm">See who's leading the referral game</p>
+                    <p className="text-gray-600 dark:text-slate-400 text-sm">See who&apos;s leading the referral game</p>
                   </div>
                 </div>
                 <button 
@@ -4112,7 +4123,7 @@ const NoteHubStyleNotesDownload = () => {
             {/* Hiring Badge */}
             <div className="text-center">
               <span className="bg-green-500/20 text-green-300 border border-green-400/30 px-6 py-3 rounded-full text-lg font-bold animate-pulse">
-                🔥 We're Hiring! 🔥
+                🔥 We&apos;re Hiring! 🔥
               </span>
             </div>
             
@@ -4450,7 +4461,7 @@ const NoteHubStyleNotesDownload = () => {
         
       // Study Bundles Page
       case 'study-bundles':
-        const [studyBundles, setStudyBundles] = useState<Bundle[]>([
+        const studyBundles: Bundle[] = [
           {
             id: '1',
             title: 'Complete Data Structures & Algorithms',
@@ -4471,17 +4482,18 @@ const NoteHubStyleNotesDownload = () => {
             thumbnail: '/api/placeholder/300/200',
             isPopular: true,
             access: 'premium', // 'free', 'premium', 'purchase'
+            status: 'published',
             notes: [
-              { title: 'Arrays & Strings Fundamentals', type: 'pdf', size: '2.4 MB', description: 'Learn array manipulation and string processing techniques' },
-              { title: 'Linked Lists Complete Guide', type: 'pdf', size: '1.8 MB', description: 'Master linked list operations and implementations' },
-              { title: 'Trees & Binary Search Trees', type: 'pdf', size: '3.1 MB', description: 'Complete guide to tree data structures' },
-              { title: 'Graph Algorithms Masterclass', type: 'pdf', size: '2.7 MB', description: 'Advanced graph algorithms and applications' }
+              { id: 'note1', title: 'Arrays & Strings Fundamentals', type: 'pdf', size: '2.4 MB', description: 'Learn array manipulation and string processing techniques', fileUrl: '/notes/arrays-strings.pdf' },
+              { id: 'note2', title: 'Linked Lists Complete Guide', type: 'pdf', size: '1.8 MB', description: 'Master linked list operations and implementations', fileUrl: '/notes/linked-lists.pdf' },
+              { id: 'note3', title: 'Trees & Binary Search Trees', type: 'pdf', size: '3.1 MB', description: 'Complete guide to tree data structures', fileUrl: '/notes/trees-bst.pdf' },
+              { id: 'note4', title: 'Graph Algorithms Masterclass', type: 'pdf', size: '2.7 MB', description: 'Advanced graph algorithms and applications', fileUrl: '/notes/graph-algorithms.pdf' }
             ],
             videos: [
-              { title: 'DSA Introduction & Roadmap', type: 'youtube', url: 'https://www.youtube.com/watch?v=0IAPZzGSbME', duration: '15:30', description: 'Complete roadmap for learning DSA effectively' },
-              { title: 'Arrays Problem Solving', type: 'youtube', url: 'https://www.youtube.com/watch?v=example1', duration: '25:45', description: 'Solve complex array problems step by step' },
-              { title: 'Linked List Implementation', type: 'youtube', url: 'https://www.youtube.com/watch?v=example2', duration: '20:15', description: 'Implement linked lists from scratch' },
-              { title: 'Binary Trees Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example3', duration: '35:20', description: 'Understanding binary trees and traversals' }
+              { id: 'video1', title: 'DSA Introduction & Roadmap', type: 'youtube', url: 'https://www.youtube.com/watch?v=0IAPZzGSbME', duration: '15:30', description: 'Complete roadmap for learning DSA effectively' },
+              { id: 'video2', title: 'Arrays Problem Solving', type: 'youtube', url: 'https://www.youtube.com/watch?v=example1', duration: '25:45', description: 'Solve complex array problems step by step' },
+              { id: 'video3', title: 'Linked List Implementation', type: 'youtube', url: 'https://www.youtube.com/watch?v=example2', duration: '20:15', description: 'Implement linked lists from scratch' },
+              { id: 'video4', title: 'Binary Trees Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example3', duration: '35:20', description: 'Understanding binary trees and traversals' }
             ]
           },
           {
@@ -4504,15 +4516,16 @@ const NoteHubStyleNotesDownload = () => {
             thumbnail: '/api/placeholder/300/200',
             isPopular: false,
             access: 'purchase',
+            status: 'published',
             notes: [
-              { title: 'Logic Gates & Boolean Algebra', type: 'pdf', size: '1.9 MB', description: 'Fundamentals of logic gates and Boolean operations' },
-              { title: 'Flip-Flops & Latches', type: 'pdf', size: '1.6 MB', description: 'Sequential circuits and memory elements' },
-              { title: 'Counters & Shift Registers', type: 'pdf', size: '2.2 MB', description: 'Digital counting circuits and data storage' }
+              { id: 'note5', title: 'Logic Gates & Boolean Algebra', type: 'pdf', size: '1.9 MB', description: 'Fundamentals of logic gates and Boolean operations', fileUrl: '/notes/logic-gates.pdf' },
+              { id: 'note6', title: 'Flip-Flops & Latches', type: 'pdf', size: '1.6 MB', description: 'Sequential circuits and memory elements', fileUrl: '/notes/flip-flops.pdf' },
+              { id: 'note7', title: 'Counters & Shift Registers', type: 'pdf', size: '2.2 MB', description: 'Digital counting circuits and data storage', fileUrl: '/notes/counters.pdf' }
             ],
             videos: [
-              { title: 'Digital Electronics Basics', type: 'youtube', url: 'https://www.youtube.com/watch?v=example4', duration: '18:45', description: 'Introduction to digital electronics concepts' },
-              { title: 'Logic Gates Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example5', duration: '22:30', description: 'Complete guide to logic gates and truth tables' },
-              { title: 'Flip-Flop Circuits', type: 'youtube', url: 'https://www.youtube.com/watch?v=example6', duration: '28:15', description: 'Understanding sequential logic circuits' }
+              { id: 'video5', title: 'Digital Electronics Basics', type: 'youtube', url: 'https://www.youtube.com/watch?v=example4', duration: '18:45', description: 'Introduction to digital electronics concepts' },
+              { id: 'video6', title: 'Logic Gates Explained', type: 'youtube', url: 'https://www.youtube.com/watch?v=example5', duration: '22:30', description: 'Complete guide to logic gates and truth tables' },
+              { id: 'video7', title: 'Flip-Flop Circuits', type: 'youtube', url: 'https://www.youtube.com/watch?v=example6', duration: '28:15', description: 'Understanding sequential logic circuits' }
             ]
           },
           {
@@ -4535,36 +4548,37 @@ const NoteHubStyleNotesDownload = () => {
             thumbnail: '/api/placeholder/300/200',
             isPopular: true,
             access: 'free',
+            status: 'published',
             notes: [
-              { title: 'Thermodynamics Laws & Cycles', type: 'pdf', size: '3.5 MB', description: 'Complete thermodynamics theory and applications' },
-              { title: 'Fluid Mechanics Basics', type: 'pdf', size: '2.8 MB', description: 'Fluid properties and flow analysis' },
-              { title: 'Strength of Materials', type: 'pdf', size: '4.1 MB', description: 'Stress, strain and material properties' },
-              { title: 'Heat Transfer Fundamentals', type: 'pdf', size: '3.2 MB', description: 'Conduction, convection, and radiation heat transfer' },
-              { title: 'Machine Design Principles', type: 'pdf', size: '4.5 MB', description: 'Design of mechanical components and systems' },
-              { title: 'Manufacturing Processes', type: 'pdf', size: '3.8 MB', description: 'Machining, welding, and casting processes' },
-              { title: 'Engineering Mechanics', type: 'pdf', size: '3.1 MB', description: 'Statics and dynamics of mechanical systems' },
-              { title: 'Material Science & Engineering', type: 'pdf', size: '4.2 MB', description: 'Properties and selection of engineering materials' },
-              { title: 'Vibrations & Control Systems', type: 'pdf', size: '3.6 MB', description: 'Mechanical vibrations and control theory' },
-              { title: 'Internal Combustion Engines', type: 'pdf', size: '4.3 MB', description: 'Design and analysis of IC engines' },
-              { title: 'Refrigeration & Air Conditioning', type: 'pdf', size: '3.9 MB', description: 'HVAC systems and refrigeration cycles' },
-              { title: 'Power Plant Engineering', type: 'pdf', size: '4.0 MB', description: 'Steam and gas turbine power plants' },
-              { title: 'Automotive Engineering', type: 'pdf', size: '3.7 MB', description: 'Vehicle design and automotive systems' },
-              { title: 'Finite Element Analysis', type: 'pdf', size: '4.4 MB', description: 'FEA methods and applications' },
-              { title: 'Industrial Engineering', type: 'pdf', size: '3.3 MB', description: 'Production planning and quality control' }
+              { id: 'note8', title: 'Thermodynamics Laws & Cycles', type: 'pdf', size: '3.5 MB', description: 'Complete thermodynamics theory and applications', fileUrl: '/notes/thermodynamics.pdf' },
+              { id: 'note9', title: 'Fluid Mechanics Basics', type: 'pdf', size: '2.8 MB', description: 'Fluid properties and flow analysis', fileUrl: '/notes/fluid-mechanics.pdf' },
+              { id: 'note10', title: 'Strength of Materials', type: 'pdf', size: '4.1 MB', description: 'Stress, strain and material properties', fileUrl: '/notes/strength-materials.pdf' },
+              { id: 'note11', title: 'Heat Transfer Fundamentals', type: 'pdf', size: '3.2 MB', description: 'Conduction, convection, and radiation heat transfer', fileUrl: '/notes/heat-transfer.pdf' },
+              { id: 'note12', title: 'Machine Design Principles', type: 'pdf', size: '4.5 MB', description: 'Design of mechanical components and systems', fileUrl: '/notes/machine-design.pdf' },
+              { id: 'note13', title: 'Manufacturing Processes', type: 'pdf', size: '3.8 MB', description: 'Machining, welding, and casting processes', fileUrl: '/notes/manufacturing.pdf' },
+              { id: 'note14', title: 'Engineering Mechanics', type: 'pdf', size: '3.1 MB', description: 'Statics and dynamics of mechanical systems', fileUrl: '/notes/engineering-mechanics.pdf' },
+              { id: 'note15', title: 'Material Science & Engineering', type: 'pdf', size: '4.2 MB', description: 'Properties and selection of engineering materials', fileUrl: '/notes/material-science.pdf' },
+              { id: 'note16', title: 'Vibrations & Control Systems', type: 'pdf', size: '3.6 MB', description: 'Mechanical vibrations and control theory', fileUrl: '/notes/vibrations.pdf' },
+              { id: 'note17', title: 'Internal Combustion Engines', type: 'pdf', size: '4.3 MB', description: 'Design and analysis of IC engines', fileUrl: '/notes/ic-engines.pdf' },
+              { id: 'note18', title: 'Refrigeration & Air Conditioning', type: 'pdf', size: '3.9 MB', description: 'HVAC systems and refrigeration cycles', fileUrl: '/notes/hvac.pdf' },
+              { id: 'note19', title: 'Power Plant Engineering', type: 'pdf', size: '4.0 MB', description: 'Steam and gas turbine power plants', fileUrl: '/notes/power-plant.pdf' },
+              { id: 'note20', title: 'Automotive Engineering', type: 'pdf', size: '3.7 MB', description: 'Vehicle design and automotive systems', fileUrl: '/notes/automotive.pdf' },
+              { id: 'note21', title: 'Finite Element Analysis', type: 'pdf', size: '4.4 MB', description: 'FEA methods and applications', fileUrl: '/notes/fea.pdf' },
+              { id: 'note22', title: 'Industrial Engineering', type: 'pdf', size: '3.3 MB', description: 'Production planning and quality control', fileUrl: '/notes/industrial.pdf' }
             ],
             videos: [
-              { title: 'Thermodynamics Introduction', type: 'youtube', url: 'https://www.youtube.com/watch?v=example7', duration: '30:00', description: 'Introduction to thermodynamic principles' },
-              { title: 'Heat Engines & Cycles', type: 'youtube', url: 'https://www.youtube.com/watch?v=example8', duration: '45:30', description: 'Understanding heat engines and thermodynamic cycles' },
-              { title: 'Fluid Flow Analysis', type: 'youtube', url: 'https://www.youtube.com/watch?v=example9', duration: '35:45', description: 'Analyzing fluid flow in pipes and channels' },
-              { title: 'Stress & Strain Concepts', type: 'youtube', url: 'https://www.youtube.com/watch?v=example10', duration: '25:20', description: 'Understanding material behavior under load' },
-              { title: 'Heat Transfer Mechanisms', type: 'youtube', url: 'https://www.youtube.com/watch?v=example11', duration: '40:15', description: 'Heat transfer by conduction, convection, radiation' },
-              { title: 'Machine Design Fundamentals', type: 'youtube', url: 'https://www.youtube.com/watch?v=example12', duration: '38:45', description: 'Design principles for mechanical components' },
-              { title: 'Manufacturing Process Overview', type: 'youtube', url: 'https://www.youtube.com/watch?v=example13', duration: '42:30', description: 'Common manufacturing techniques and processes' },
-              { title: 'Static Equilibrium Problems', type: 'youtube', url: 'https://www.youtube.com/watch?v=example14', duration: '28:20', description: 'Solving statics problems step by step' },
-              { title: 'Material Properties & Testing', type: 'youtube', url: 'https://www.youtube.com/watch?v=example15', duration: '33:45', description: 'Understanding material behavior and testing methods' },
-              { title: 'Vibration Analysis', type: 'youtube', url: 'https://www.youtube.com/watch?v=example16', duration: '36:15', description: 'Free and forced vibrations in mechanical systems' },
-              { title: 'IC Engine Working Principles', type: 'youtube', url: 'https://www.youtube.com/watch?v=example17', duration: '44:30', description: '4-stroke and 2-stroke engine operation' },
-              { title: 'HVAC System Design', type: 'youtube', url: 'https://www.youtube.com/watch?v=example18', duration: '41:20', description: 'Heating, ventilation, and air conditioning systems' }
+              { id: 'video8', title: 'Thermodynamics Introduction', type: 'youtube', url: 'https://www.youtube.com/watch?v=example7', duration: '30:00', description: 'Introduction to thermodynamic principles' },
+              { id: 'video9', title: 'Heat Engines & Cycles', type: 'youtube', url: 'https://www.youtube.com/watch?v=example8', duration: '45:30', description: 'Understanding heat engines and thermodynamic cycles' },
+              { id: 'video10', title: 'Fluid Flow Analysis', type: 'youtube', url: 'https://www.youtube.com/watch?v=example9', duration: '35:45', description: 'Analyzing fluid flow in pipes and channels' },
+              { id: 'video11', title: 'Stress & Strain Concepts', type: 'youtube', url: 'https://www.youtube.com/watch?v=example10', duration: '25:20', description: 'Understanding material behavior under load' },
+              { id: 'video12', title: 'Heat Transfer Mechanisms', type: 'youtube', url: 'https://www.youtube.com/watch?v=example11', duration: '40:15', description: 'Heat transfer by conduction, convection, radiation' },
+              { id: 'video13', title: 'Machine Design Fundamentals', type: 'youtube', url: 'https://www.youtube.com/watch?v=example12', duration: '38:45', description: 'Design principles for mechanical components' },
+              { id: 'video14', title: 'Manufacturing Process Overview', type: 'youtube', url: 'https://www.youtube.com/watch?v=example13', duration: '42:30', description: 'Common manufacturing techniques and processes' },
+              { id: 'video15', title: 'Static Equilibrium Problems', type: 'youtube', url: 'https://www.youtube.com/watch?v=example14', duration: '28:20', description: 'Solving statics problems step by step' },
+              { id: 'video16', title: 'Material Properties & Testing', type: 'youtube', url: 'https://www.youtube.com/watch?v=example15', duration: '33:45', description: 'Understanding material behavior and testing methods' },
+              { id: 'video17', title: 'Vibration Analysis', type: 'youtube', url: 'https://www.youtube.com/watch?v=example16', duration: '36:15', description: 'Free and forced vibrations in mechanical systems' },
+              { id: 'video18', title: 'IC Engine Working Principles', type: 'youtube', url: 'https://www.youtube.com/watch?v=example17', duration: '44:30', description: '4-stroke and 2-stroke engine operation' },
+              { id: 'video19', title: 'HVAC System Design', type: 'youtube', url: 'https://www.youtube.com/watch?v=example18', duration: '41:20', description: 'Heating, ventilation, and air conditioning systems' }
             ]
           },
           {
@@ -4587,15 +4601,23 @@ const NoteHubStyleNotesDownload = () => {
             thumbnail: '/api/placeholder/300/200',
             isPopular: false,
             access: 'premium',
+            status: 'published',
             notes: [
-              { title: 'Construction Management Principles', type: 'pdf', size: '2.6 MB', description: 'Project planning and construction management' },
-              { title: 'Structural Analysis Methods', type: 'pdf', size: '3.3 MB', description: 'Analyzing structural loads and responses' },
-              { title: 'Modern Building Materials', type: 'pdf', size: '2.1 MB', description: 'Contemporary construction materials and properties' }
+              { id: 'note23', title: 'Construction Management Principles', type: 'pdf', size: '2.6 MB', description: 'Project planning and construction management', fileUrl: '/notes/construction-management.pdf' },
+              { id: 'note24', title: 'Structural Analysis Methods', type: 'pdf', size: '3.3 MB', description: 'Analyzing structural loads and responses', fileUrl: '/notes/structural-analysis.pdf' },
+              { id: 'note25', title: 'Modern Building Materials', type: 'pdf', size: '2.1 MB', description: 'Contemporary construction materials and properties', fileUrl: '/notes/building-materials.pdf' },
+              { id: 'note26', title: 'Foundation Design & Analysis', type: 'pdf', size: '4.2 MB', description: 'Deep and shallow foundation design principles', fileUrl: '/notes/foundation-design.pdf' },
+              { id: 'note27', title: 'Concrete Technology', type: 'pdf', size: '3.8 MB', description: 'Concrete mix design and properties', fileUrl: '/notes/concrete-technology.pdf' },
+              { id: 'note28', title: 'Steel Structure Design', type: 'pdf', size: '4.5 MB', description: 'Design of steel beams, columns, and connections', fileUrl: '/notes/steel-design.pdf' },
+              { id: 'note29', title: 'Highway Engineering', type: 'pdf', size: '3.7 MB', description: 'Road design, traffic engineering, and pavement', fileUrl: '/notes/highway-engineering.pdf' },
+              { id: 'note30', title: 'Water Resources Engineering', type: 'pdf', size: '4.1 MB', description: 'Hydrology, hydraulics, and water management', fileUrl: '/notes/water-resources.pdf' },
+              { id: 'note31', title: 'Surveying & Levelling', type: 'pdf', size: '3.2 MB', description: 'Land surveying techniques and instruments', fileUrl: '/notes/surveying.pdf' },
+              { id: 'note32', title: 'Environmental Engineering', type: 'pdf', size: '3.9 MB', description: 'Water treatment and environmental impact assessment', fileUrl: '/notes/environmental-engineering.pdf' }
             ],
             videos: [
-              { title: 'Construction Project Management', type: 'youtube', url: 'https://www.youtube.com/watch?v=example11', duration: '40:15', description: 'Managing construction projects effectively' },
-              { title: 'Structural Design Basics', type: 'youtube', url: 'https://www.youtube.com/watch?v=example12', duration: '32:45', description: 'Introduction to structural design principles' },
-              { title: 'Building Materials Testing', type: 'youtube', url: 'https://www.youtube.com/watch?v=example13', duration: '28:30', description: 'Testing procedures for construction materials' }
+              { id: 'video20', title: 'Construction Project Management', type: 'youtube', url: 'https://www.youtube.com/watch?v=example11', duration: '40:15', description: 'Managing construction projects effectively' },
+              { id: 'video21', title: 'Structural Design Basics', type: 'youtube', url: 'https://www.youtube.com/watch?v=example12', duration: '32:45', description: 'Introduction to structural design principles' },
+              { id: 'video22', title: 'Building Materials Testing', type: 'youtube', url: 'https://www.youtube.com/watch?v=example13', duration: '28:30', description: 'Testing procedures for construction materials' }
             ]
           }
         ];
@@ -4703,7 +4725,7 @@ const NoteHubStyleNotesDownload = () => {
                       </div>
                     )}
                     
-                    {bundle.discount > 0 && (
+                    {bundle.discount && bundle.discount > 0 && (
                       <div className="absolute bottom-4 right-4">
                         <span className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs font-bold border border-green-400/30">
                           {bundle.discount}% OFF
@@ -4850,7 +4872,7 @@ const NoteHubStyleNotesDownload = () => {
                           {bundle.price > 0 ? (
                             <div className="flex items-center gap-2">
                               <span className="text-xl sm:text-2xl font-bold text-white">₹{bundle.price}</span>
-                              {bundle.originalPrice > bundle.price && (
+                              {bundle.originalPrice && bundle.originalPrice > bundle.price && (
                                 <span className="text-sm text-slate-400 line-through">₹{bundle.originalPrice}</span>
                               )}
                             </div>
@@ -4961,7 +4983,7 @@ const NoteHubStyleNotesDownload = () => {
               notes: [],
               videos: [],
               instructor: '',
-              tags: '',
+              tags: [],
               status: 'draft',
               notesCount: 0
             });
@@ -5024,7 +5046,7 @@ const NoteHubStyleNotesDownload = () => {
             
             await updateFunction(editingBundle.id, {
               ...newBundle,
-              updatedAt: new Date().toISOString()
+              $updatedAt: new Date().toISOString()
             });
             
             // Reset form
@@ -5038,7 +5060,7 @@ const NoteHubStyleNotesDownload = () => {
               notes: [],
               videos: [],
               instructor: '',
-              tags: '',
+              tags: [],
               status: 'draft',
               notesCount: 0
             });
@@ -5096,7 +5118,7 @@ const NoteHubStyleNotesDownload = () => {
             
             await updateFunction(bundleId, {
               status: newStatus,
-              updatedAt: new Date().toISOString()
+              $updatedAt: new Date().toISOString()
             });
             
             showSuccess(`Bundle ${newStatus === 'published' ? 'published' : 'unpublished'} successfully!`);
@@ -5123,7 +5145,7 @@ const NoteHubStyleNotesDownload = () => {
               updatedAt: new Date().toISOString()
             };
             
-            setBundles(prev => [duplicatedBundle, ...prev]);
+            setStudyBundles((prev: Bundle[]) => [duplicatedBundle, ...prev]);
             showSuccess('Bundle duplicated successfully!');
             
           } catch (error) {
@@ -5145,7 +5167,7 @@ const NoteHubStyleNotesDownload = () => {
                 // Simulate API call to bulk delete
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                setBundles(prev => prev.filter(bundle => !selectedBundles.includes(bundle.id)));
+                setStudyBundles((prev: Bundle[]) => prev.filter(bundle => !selectedBundles.includes(bundle.id)));
                 setSelectedBundles([]);
                 showSuccess(`${selectedBundles.length} bundle(s) deleted successfully!`);
                 
@@ -5531,7 +5553,7 @@ const NoteHubStyleNotesDownload = () => {
                     </div>
                     
                     {/* Sales Preview */}
-                    {(newBundle.price > 0 || newBundle.originalPrice > 0) && (
+                    {(newBundle.price > 0 || (newBundle.originalPrice && newBundle.originalPrice > 0)) && (
                       <div className="mt-4 p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
                         <h6 className="text-sm font-semibold text-white mb-2">Pricing Preview</h6>
                         <div className="flex items-center gap-4 text-sm">
@@ -5539,13 +5561,13 @@ const NoteHubStyleNotesDownload = () => {
                             <span className="text-slate-400">Final Price:</span>
                             <span className="text-xl font-bold text-green-400">₹{newBundle.price || 0}</span>
                           </div>
-                          {newBundle.originalPrice > newBundle.price && (
+                          {(newBundle.originalPrice && newBundle.originalPrice > newBundle.price) && (
                             <div className="flex items-center gap-2">
                               <span className="text-slate-400">Original:</span>
                               <span className="text-slate-400 line-through">₹{newBundle.originalPrice}</span>
                             </div>
                           )}
-                          {newBundle.discount > 0 && (
+                          {(newBundle.discount && newBundle.discount > 0) && (
                             <span className="bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-xs font-bold border border-green-400/30">
                               {newBundle.discount}% OFF
                             </span>
@@ -5559,8 +5581,8 @@ const NoteHubStyleNotesDownload = () => {
                     <label className="block text-sm font-medium text-slate-300 mb-2">Tags (comma separated)</label>
                     <input
                       type="text"
-                      value={newBundle.tags}
-                      onChange={(e) => setNewBundle({...newBundle, tags: e.target.value})}
+                      value={Array.isArray(newBundle.tags) ? newBundle.tags.join(', ') : newBundle.tags}
+                      onChange={(e) => setNewBundle({...newBundle, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
                       className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                       placeholder="tag1, tag2, tag3"
                     />
@@ -5952,8 +5974,8 @@ const NoteHubStyleNotesDownload = () => {
                       <label className="block text-sm font-medium text-slate-300 mb-2">Tags (comma separated)</label>
                       <input
                         type="text"
-                        value={newBundle.tags}
-                        onChange={(e) => setNewBundle({...newBundle, tags: e.target.value})}
+                        value={Array.isArray(newBundle.tags) ? newBundle.tags.join(', ') : newBundle.tags}
+                        onChange={(e) => setNewBundle({...newBundle, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
                         className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20"
                         placeholder="tag1, tag2, tag3"
                         disabled={isCreatingBundle}
@@ -7934,7 +7956,7 @@ const NoteHubStyleNotesDownload = () => {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                       <span className="text-lg font-bold text-white">
-                        {previewBundle.instructor.split(' ').map(n => n[0]).join('')}
+                        {previewBundle.instructor.split(' ').map((n: string) => n[0]).join('')}
                       </span>
                     </div>
                     <div>
@@ -8159,8 +8181,8 @@ const NoteHubStyleNotesDownload = () => {
               <div className="relative bg-gray-50 dark:bg-slate-900">
                 <div className="h-[400px] xs:h-[450px] sm:h-[550px] md:h-[600px] lg:h-[700px] xl:h-[800px] w-full">
                   <GoogleDocsPDFViewer 
-                    fileUrl={previewNote.githubUrl}
-                    className="w-full h-full border-none rounded-b-xl"
+                    pdfUrl={previewNote.githubUrl}
+                    fileName={previewNote.fileName || `${previewNote.title}.pdf`}
                   />
                 </div>
                 
@@ -8486,8 +8508,20 @@ const NoteHubStyleNotesDownload = () => {
               </div>
             </div>
 
-            {/* Right Side - User Profile */}
+            {/* Right Side - Theme Toggle & User Profile */}
             <div className="flex items-center space-x-4">
+              {/* Dark Theme Toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all duration-200"
+                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {darkMode ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
               
               {user ? (
                 <div className="flex items-center space-x-3">
@@ -8839,6 +8873,13 @@ const NoteHubStyleNotesDownload = () => {
           </div>
         </div>
       )}
+
+      {/* Video Modal */}
+      <VideoModal 
+        isOpen={videoModalOpen} 
+        onClose={() => setVideoModalOpen(false)} 
+        video={currentVideo} 
+      />
 
       <style jsx>{`
         .line-clamp-2 {

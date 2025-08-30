@@ -5,6 +5,30 @@ import { deviceTrackingService } from './src/services/deviceTrackingService';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Check for maintenance mode - redirect all traffic to coming soon page
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true';
+  
+  // Enable maintenance mode if either variable is true
+  if (isMaintenanceMode || isComingSoonMode) {
+    // Allow access to static files, API routes, and the home page (which shows coming soon)
+    if (
+      pathname.startsWith('/_next/') ||
+      pathname.startsWith('/api/') ||
+      pathname.includes('.') ||
+      pathname === '/' ||
+      pathname === '/beta-wishlist' ||
+      pathname === '/wishlist-users' ||
+      pathname.startsWith('/auth/') // Allow auth routes for wishlist functionality
+    ) {
+      // Allow these requests to proceed normally
+    } else {
+      // Redirect all other requests to home page (which will show coming soon)
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+  }
+
   // TODO: Temporarily disabled IP ban checking until collections are created
   // Check if IP is banned (for all requests except static files and some API routes)
   /*

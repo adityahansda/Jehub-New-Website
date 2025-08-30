@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { googleSheetsService } from '../../services/googleSheetsService';
+import { certificateService } from '../../services/certificateService';
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,107 +20,67 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let internId: string = '';
+  
   try {
-    let teamId: string;
-
     if (req.method === 'GET') {
-      teamId = req.query.teamId as string;
+      internId = req.query.internId as string;
     } else {
-      teamId = req.body.teamId;
+      internId = req.body.internId;
     }
 
-    if (!teamId) {
+    if (!internId) {
       return res.status(400).json({
-        error: 'Team ID is required',
+        error: 'Intern ID is required',
         isValid: false,
-        message: 'Please provide a Team ID to verify'
+        message: 'Please provide an Intern ID to verify'
       });
     }
 
-    // Trim and validate team ID format
-    teamId = teamId.trim();
+    // Trim and validate intern ID format
+    internId = internId.trim();
     
-    if (teamId.length === 0) {
+    if (internId.length === 0) {
       return res.status(400).json({
-        error: 'Invalid Team ID format',
+        error: 'Invalid Intern ID format',
         isValid: false,
-        message: 'Team ID cannot be empty'
+        message: 'Intern ID cannot be empty'
       });
     }
 
-    console.log(`Verifying certificate for Team ID: ${teamId}`);
-
-    // Verify the internship using Google Sheets service
-    const verificationResult = await googleSheetsService.verifyInternship(teamId);
-
-    // Add additional metadata if record exists
-    if (verificationResult.record) {
-      const record = verificationResult.record;
-      
-      // Generate download and preview URLs for documents
-      const documents = [];
-      
-      // Add offer letter if available
-      if (record.mergedDocUrlOfferLetter) {
-        documents.push({
-          type: 'Offer Letter',
-          url: record.mergedDocUrlOfferLetter,
-          downloadUrl: googleSheetsService.getDirectDownloadUrl(record.mergedDocUrlOfferLetter),
-          previewUrl: googleSheetsService.getPreviewUrl(record.mergedDocUrlOfferLetter),
-          status: record.documentMergeStatusOfferLetter,
-          linkText: record.linkToMergedDocOfferLetter
-        });
-      }
-      
-      // Add NDA if available
-      if (record.mergedDocUrlNda) {
-        documents.push({
-          type: 'NDA (Non-Disclosure Agreement)',
-          url: record.mergedDocUrlNda,
-          downloadUrl: googleSheetsService.getDirectDownloadUrl(record.mergedDocUrlNda),
-          previewUrl: googleSheetsService.getPreviewUrl(record.mergedDocUrlNda),
-          status: record.documentMergeStatusNda,
-          linkText: record.linkToMergedDocNda
-        });
-      }
-
-      // Add certificate URL if available
-      if (record.certificateUrl) {
-        documents.push({
-          type: 'Certificate',
-          url: record.certificateUrl,
-          downloadUrl: googleSheetsService.getDirectDownloadUrl(record.certificateUrl),
-          previewUrl: googleSheetsService.getPreviewUrl(record.certificateUrl),
-          status: 'Available',
-          linkText: 'Internship Certificate'
-        });
-      }
-
-      return res.status(200).json({
-        ...verificationResult,
-        record: {
-          ...record,
-          documents
-        },
-        verifiedAt: new Date().toISOString(),
-        teamIdSearched: teamId
-      });
-    }
-
-    return res.status(200).json({
-      ...verificationResult,
-      verifiedAt: new Date().toISOString(),
-      teamIdSearched: teamId
+    console.log(`Verifying certificate for Intern ID: ${internId}`);
+    console.log('Environment check:', {
+      databaseId: process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      collectionId: process.env.NEXT_PUBLIC_APPWRITE_INTERNSHIPS_COLLECTION_ID,
+      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
     });
 
+    // Verify the internship using Appwrite-based certificate service
+    const verificationResult = await certificateService.verifyInternship(internId);
+    
+    console.log('Verification result:', verificationResult);
+
+    return res.status(200).json(verificationResult);
+
   } catch (error) {
-    console.error('Certificate verification error:', error);
+    console.error('Certificate verification API error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorType = (error as any)?.type || 'Unknown';
+    const errorCode = (error as any)?.code || 'Unknown';
     
     return res.status(500).json({
       error: 'Internal server error',
       isValid: false,
-      message: 'An error occurred while verifying the certificate. Please try again later.',
-      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined
+      message: `API Error [${errorType}:${errorCode}]: ${errorMessage}`,
+      details: process.env.NODE_ENV === 'development' ? {
+        message: errorMessage,
+        type: errorType,
+        code: errorCode,
+        stack: error instanceof Error ? error.stack : undefined
+      } : undefined,
+      verifiedAt: new Date().toISOString(),
+      internIdSearched: internId || 'unknown'
     });
   }
 }

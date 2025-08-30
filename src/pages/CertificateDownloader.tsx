@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
@@ -59,6 +60,7 @@ interface DownloadResult {
 }
 
 const CertificateDownloader: React.FC = () => {
+  const router = useRouter();
   const [internId, setInternId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [downloadResult, setDownloadResult] = useState<DownloadResult | null>(null);
@@ -66,21 +68,29 @@ const CertificateDownloader: React.FC = () => {
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [downloadingDocument, setDownloadingDocument] = useState<string | null>(null);
+  const [showSearchAnimation, setShowSearchAnimation] = useState(false);
+  const [searchStep, setSearchStep] = useState(0);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!internId.trim()) {
-      setError('Please enter an Intern ID');
-      return;
+  // Effect to handle URL parameters
+  useEffect(() => {
+    if (router.isReady) {
+      const idFromUrl = router.query.id as string;
+      if (idFromUrl && idFromUrl.trim()) {
+        setInternId(idFromUrl.trim());
+        // Auto-search if ID is provided in URL
+        searchFromUrl(idFromUrl.trim());
+      }
     }
+  }, [router.isReady, router.query.id]);
 
+  // Function to search from URL parameter
+  const searchFromUrl = async (id: string) => {
     setIsLoading(true);
     setError(null);
     setDownloadResult(null);
 
     try {
-      const response = await fetch(`/api/certificate-downloads?internId=${encodeURIComponent(internId.trim())}`, {
+      const response = await fetch(`/api/verify-certificate?id=${encodeURIComponent(id)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -96,6 +106,77 @@ const CertificateDownloader: React.FC = () => {
       setDownloadResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while fetching documents');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!internId.trim()) {
+      setError('Please enter an Intern ID');
+      return;
+    }
+
+    // Start search animation
+    setShowSearchAnimation(true);
+    setSearchStep(0);
+    setIsLoading(true);
+    setError(null);
+    setDownloadResult(null);
+
+    try {
+      // Step 0: Connecting to database
+      setSearchStep(0);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Step 1: Making API call
+      setSearchStep(1);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Step 2: Validating during API call
+      setSearchStep(2);
+      const response = await fetch(`/api/verify-certificate?id=${encodeURIComponent(internId.trim())}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Step 3: Processing response
+      setSearchStep(3);
+      const data = await response.json();
+      await new Promise(resolve => setTimeout(resolve, 400));
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch documents');
+      }
+
+      // Check if search actually succeeded
+      if (!data.isValid) {
+        throw new Error(data.message || 'No documents found for this ID');
+      }
+
+      // Step 4: Success (only if actually valid)
+      setSearchStep(4);
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      setDownloadResult(data);
+      
+      // Close animation popup after showing success
+      setTimeout(() => {
+        setShowSearchAnimation(false);
+      }, 1000);
+    } catch (err) {
+      // Show error in popup before closing
+      setSearchStep(-1); // Error state
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching documents');
+      
+      // Keep popup open longer to show error
+      setTimeout(() => {
+        setShowSearchAnimation(false);
+      }, 3000);
     } finally {
       setIsLoading(false);
     }
@@ -191,79 +272,128 @@ const CertificateDownloader: React.FC = () => {
     }
   };
 
-  const DocumentCard: React.FC<{ document: Document }> = ({ document }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
-            <FileText className="h-5 w-5 text-blue-600" />
-            <h4 className="font-semibold text-gray-900">{document.type}</h4>
+  // Function to get document type icon
+  const getDocumentIcon = (type: string) => {
+    if (type.toLowerCase().includes('certificate')) {
+      return <Award className="h-5 w-5 text-blue-600" />;
+    } else if (type.toLowerCase().includes('letter')) {
+      return <Mail className="h-5 w-5 text-green-600" />;
+    } else if (type.toLowerCase().includes('nda')) {
+      return <Shield className="h-5 w-5 text-purple-600" />;
+    }
+    return <FileText className="h-5 w-5 text-gray-600" />;
+  };
+
+  // Function to generate thumbnail for certificates
+  const getCertificateThumbnail = (url: string, type: string): string => {
+    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (fileIdMatch && type.toLowerCase().includes('certificate')) {
+      const fileId = fileIdMatch[1];
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w300-h200`;
+    }
+    return '';
+  };
+
+  const DocumentCard: React.FC<{ document: Document }> = ({ document }) => {
+    const thumbnail = getCertificateThumbnail(document.url, document.type);
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+      >
+        <div className="p-4">
+          <div className="flex items-start space-x-4">
+            {/* Document Icon/Thumbnail */}
+            <div className="flex-shrink-0">
+              {thumbnail ? (
+                <div className="relative group cursor-pointer" onClick={() => handlePreview(document)}>
+                  <img
+                    src={thumbnail}
+                    alt={`${document.type} thumbnail`}
+                    className="w-16 h-12 object-cover rounded-lg border border-gray-200 group-hover:shadow-lg transition-shadow"
+                    onError={(e) => {
+                      // If thumbnail fails to load, show icon instead
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      (target.nextElementSibling as HTMLElement)!.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-16 h-12 bg-blue-50 rounded-lg border border-gray-200 items-center justify-center hidden">
+                    {getDocumentIcon(document.type)}
+                  </div>
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-all duration-200 flex items-center justify-center">
+                    <Eye className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-16 h-12 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center">
+                  {getDocumentIcon(document.type)}
+                </div>
+              )}
+            </div>
+            
+            {/* Document Info */}
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-gray-900 truncate">{document.type}</h4>
+              
+              {document.status && document.status !== 'Available' && (
+                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-2 ${
+                  document.status === 'Not Issued Yet' 
+                    ? 'bg-yellow-100 text-yellow-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {document.status === 'Not Issued Yet' ? '⏳' : '✅'} {document.status}
+                </div>
+              )}
+            </div>
+            
+            {/* Actions */}
+            <div className="flex items-center space-x-2">
+              {document.status === 'Not Issued Yet' ? (
+                <div className="text-xs text-gray-500 italic flex items-center space-x-1">
+                  <Shield className="h-3 w-3" />
+                  <span>Pending</span>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handlePreview(document)}
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    title="Preview Document"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDownload(document)}
+                    disabled={downloadingDocument === document.type || (!document.downloadUrl && !document.url)}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
+                    title="Download Document"
+                  >
+                    {downloadingDocument === document.type ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => window.open(document.url, '_blank')}
+                    className="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                    title="Open in New Tab"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          
-          {document.linkText && (
-            <p className="text-sm text-gray-600 mb-2">{document.linkText}</p>
-          )}
-          
-          {document.status && document.status !== 'Available' && (
-            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mb-3 ${
-              document.status === 'Not Issued Yet' 
-                ? 'bg-yellow-100 text-yellow-800' 
-                : 'bg-green-100 text-green-800'
-            }`}>
-              {document.status === 'Not Issued Yet' ? '⏳' : '✅'} {document.status}
-            </div>
-          )}
         </div>
-        
-        <div className="flex space-x-2">
-          {document.status === 'Not Issued Yet' ? (
-            <div className="flex items-center text-xs text-gray-500 italic">
-              🔒 Document not yet available
-            </div>
-          ) : (
-            <>
-              {document.previewUrl && (
-                <button
-                  onClick={() => handlePreview(document)}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                  title="Preview Document"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-              )}
-              
-              <button
-                onClick={() => handleDownload(document)}
-                disabled={downloadingDocument === document.type || (!document.downloadUrl && !document.url)}
-                className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
-                title="Download Document"
-              >
-                {downloadingDocument === document.type ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-              </button>
-              
-              {document.url && (
-                <button
-                  onClick={() => window.open(document.url, '_blank')}
-                  className="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
-                  title="Open in New Tab"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50">
@@ -571,6 +701,135 @@ const CertificateDownloader: React.FC = () => {
                     title={`Preview of ${previewDocument.type}`}
                     loading="lazy"
                   />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Animated Search Popup */}
+        <AnimatePresence>
+          {showSearchAnimation && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.8, opacity: 0, y: 20 }}
+                className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4"
+              >
+                <div className="text-center">
+                  {/* Header */}
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="relative">
+                      <FolderOpen className="h-16 w-16 text-green-600" />
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 border-4 border-green-200 border-t-green-600 rounded-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">Searching Documents</h3>
+                  
+                  {/* Progress Steps */}
+                  <div className="space-y-4 mb-6">
+                    {[
+                      { text: 'Connecting to database...', step: 0 },
+                      { text: 'Searching for documents...', step: 1 },
+                      { text: 'Validating access...', step: 2 },
+                      { text: 'Loading document list...', step: 3 },
+                      { text: 'Search complete!', step: 4 }
+                    ].map((item, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0.3, x: -10 }}
+                        animate={{ 
+                          opacity: searchStep >= item.step ? 1 : 0.3,
+                          x: searchStep >= item.step ? 0 : -10
+                        }}
+                        transition={{ duration: 0.3 }}
+                        className={`flex items-center space-x-3 text-left p-3 rounded-lg transition-colors ${
+                          searchStep >= item.step 
+                            ? 'bg-green-50 text-green-900' 
+                            : 'bg-gray-50 text-gray-500'
+                        }`}
+                      >
+                        {searchStep > item.step ? (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="flex-shrink-0"
+                          >
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          </motion.div>
+                        ) : searchStep === item.step ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="flex-shrink-0"
+                          >
+                            <Loader2 className="h-5 w-5 text-green-600" />
+                          </motion.div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                        )}
+                        <span className="text-sm font-medium">{item.text}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="bg-gray-200 rounded-full h-2 mb-4">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(searchStep / 4) * 100}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full"
+                    />
+                  </div>
+                  
+                  <p className="text-sm text-gray-600">
+                    Please wait while we search for your documents...
+                  </p>
+                  
+                  {/* Success Animation */}
+                  {searchStep === 4 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="mt-4"
+                    >
+                      <div className="flex items-center justify-center space-x-2 text-green-600">
+                        <CheckCircle className="h-6 w-6" />
+                        <span className="font-semibold">Search Complete!</span>
+                      </div>
+                    </motion.div>
+                  )}
+                  
+                  {/* Error Animation */}
+                  {searchStep === -1 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="mt-4"
+                    >
+                      <div className="flex items-center justify-center space-x-2 text-red-600 mb-3">
+                        <XCircle className="h-6 w-6" />
+                        <span className="font-semibold">Search Failed!</span>
+                      </div>
+                      {error && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-left">
+                          <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>

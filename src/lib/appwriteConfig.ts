@@ -17,6 +17,7 @@ export const appwriteConfig = {
     bannedDevices: process.env.NEXT_PUBLIC_APPWRITE_BANNED_DEVICES_COLLECTION_ID || 'banned_devices_collection',
     unbanRequests: process.env.NEXT_PUBLIC_APPWRITE_UNBAN_REQUESTS_COLLECTION_ID || 'unban_requests_collection',
     telegramMembers: process.env.NEXT_PUBLIC_APPWRITE_TELEGRAM_MEMBERS_COLLECTION_ID || 'telegram_members',
+    internships: process.env.NEXT_PUBLIC_APPWRITE_INTERNSHIPS_COLLECTION_ID || 'internships',
   },
   // GitHub configuration
   github: {

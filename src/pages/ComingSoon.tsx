@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   BookOpen,
   Mail,
@@ -230,53 +231,74 @@ const ComingSoon = () => {
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleEmailSubmit} className="space-y-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        Be the First to Know
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        Get early access and exclusive updates about
-                        JEHUB&apos;s launch
-                      </p>
-                    </div>
-                    
-                    {errorMessage && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                        {errorMessage}
+                  <>
+                    <form onSubmit={handleEmailSubmit} className="space-y-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                          Be the First to Know
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Get early access and exclusive updates about
+                          JEHUB&apos;s launch
+                        </p>
                       </div>
-                    )}
-                    
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email address"
-                        required
-                        disabled={isSubmitting}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                      {isSubmitting ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Subscribing...
+                      
+                      {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                          {errorMessage}
                         </div>
-                      ) : (
-                        'Notify Me at Launch'
                       )}
-                    </button>
-                    <p className="text-xs text-gray-500 text-center">
-                      No spam, unsubscribe anytime. We respect your privacy.
-                    </p>
-                  </form>
+                      
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email address"
+                          required
+                          disabled={isSubmitting}
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Subscribing...
+                          </div>
+                        ) : (
+                          'Notify Me at Launch'
+                        )}
+                      </button>
+                      <p className="text-xs text-gray-500 text-center">
+                        No spam, unsubscribe anytime. We respect your privacy.
+                      </p>
+                    </form>
+
+                    {/* Wishlist CTA */}
+                    <div className="relative mt-6">
+                      <div className="flex items-center my-4">
+                        <div className="flex-grow border-t border-gray-200"></div>
+                        <span className="mx-3 text-xs text-gray-500">or</span>
+                        <div className="flex-grow border-t border-gray-200"></div>
+                      </div>
+                      <div className="text-center">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">Join the Wishlist</h4>
+                        <p className="text-gray-600 text-sm mb-3">Secure your spot and get early access when we launch.</p>
+                        <Link
+                          href="/beta-wishlist"
+                          className="inline-flex w-full justify-center items-center bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        >
+                          Join Wishlist
+                        </Link>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
