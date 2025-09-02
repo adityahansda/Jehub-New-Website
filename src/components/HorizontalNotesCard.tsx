@@ -51,6 +51,8 @@ const HorizontalNotesCard: React.FC<HorizontalNotesCardProps> = ({
   user,
   formatFileSize
 }) => {
+  // Always show the actual note points for display, but use noteRequirements for download logic
+  const displayPoints = note.points || 0;
   const requiredPoints = noteRequirements?.points || note.points || 0;
   const isPointsRequired = requiredPoints > 0;
   const hasEnoughPoints = !isPointsRequired || !user || userPoints.availablePoints >= requiredPoints;
@@ -66,6 +68,7 @@ const HorizontalNotesCard: React.FC<HorizontalNotesCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -1 }}
+      onClick={() => onPreview(note)}
     >
       <div className="flex items-center p-4 gap-4">
         {/* Left side - Document Thumbnail */}
@@ -102,10 +105,15 @@ const HorizontalNotesCard: React.FC<HorizontalNotesCardProps> = ({
                 <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-medium">
                   {note.noteType === 'premium' ? 'Lecture notes' : 'Course'}
                 </span>
-                {isPointsRequired && (
+                {displayPoints > 0 && (
                   <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
                     <Coins className="h-3 w-3" />
-                    {requiredPoints} pts
+                    {displayPoints} pts
+                  </span>
+                )}
+                {displayPoints === 0 && (
+                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-medium">
+                    Free
                   </span>
                 )}
               </div>

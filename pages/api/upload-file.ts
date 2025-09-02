@@ -20,14 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       keepExtensions: true,
       maxFileSize: 100 * 1024 * 1024, // 100MB
       filter: ({ mimetype }) => {
-        return mimetype && [
+        return !!(mimetype && [
           'application/pdf',
           'application/msword',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'application/vnd.ms-powerpoint',
           'application/vnd.openxmlformats-officedocument.presentationml.presentation',
           'text/plain'
-        ].includes(mimetype);
+        ].includes(mimetype));
       }
     });
 

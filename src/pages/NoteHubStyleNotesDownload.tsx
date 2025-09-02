@@ -5228,8 +5228,6 @@ const NoteHubStyleNotesDownload = () => {
           }
         };
         
-        const [selectedBundles, setSelectedBundles] = useState<string[]>([]);
-        
         const handleBulkDelete = async () => {
           if (selectedBundles.length === 0) {
             showWarning('Please select bundles to delete.');

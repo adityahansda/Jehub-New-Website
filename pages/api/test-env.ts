@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         environment: envCheck,
         database: {
           name: database.name,
-          documentsTotal: database.documentsTotal
+          id: database.$id
         },
         collection: {
           name: collection.name,
