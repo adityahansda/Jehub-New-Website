@@ -2,7 +2,7 @@ import { TeamMember, CoreTeamMember } from '../types/team';
 
 export const coreTeam: CoreTeamMember[] = [
   {
-    name: 'Aditya Hansda',
+    name: 'Aditya',
     role: 'Founder & CEO',
     education: 'Diploma in Computer Science Engineering, JUT',
     specialization: 'Full-Stack Development & Community Building',
@@ -15,7 +15,7 @@ export const coreTeam: CoreTeamMember[] = [
     }
   },
   {
-    name: 'Gourav Kumar Singh',
+    name: 'Gourav',
     role: 'Executive Director',
     education: 'Government Polytechnic Khutri, Bokaro - Automobile Engineering',
     specialization: 'Community Engagement & Student Relations',
@@ -28,7 +28,7 @@ export const coreTeam: CoreTeamMember[] = [
     }
   },
   {
-    name: 'Baby Kumari',
+    name: 'Baby',
     role: 'Developer Team Head',
     education: 'Guru Gobind Singh Educational Society\'s Technical Campus - CSE',
     specialization: 'Website Development & Technical Management',
@@ -57,136 +57,81 @@ export const coreTeam: CoreTeamMember[] = [
 
 export const allJehubTeam: TeamMember[] = [
   {
-    name: 'Rahul Sonkar',
-    role: 'Group Moderator',
-    education: 'Guru Gobind Singh Education Society\'s Technical Campus',
-    specialization: 'Community Management & Moderation',
-    bio: 'Maintains order and facilitates healthy discussions within the JEHUB community. Experience: JEHUB - Group Moderator',
-    image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Community Team',
-    working: 1,
-    xp: 2850
-  },
-  {
-    name: 'Swarnjeet Manglam',
-    role: 'Notes Coordinator',
-    education: 'Government Polytechnic Ranchi - Civil Engineering',
-    specialization: 'Academic Resources & Notes Management',
-    bio: 'Coordinates and manages academic notes and resources for students across different branches. Experience: JEHUB - Notes Coordinator',
-    image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Academic Team',
-    working: 0,
-    xp: 1950
-  },
-  {
-    name: 'Harshita Kiran',
-    role: 'Website Management',
-    education: 'Ranchi Women\'s College - Computer Application',
-    specialization: 'Web Development & UI/UX Design',
-    bio: 'Manages website functionality and creates user-friendly interfaces for better student experience. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Development Team',
-    working: 1,
-    xp: 3200
-  },
-  {
-    name: 'Prishu Kumar',
-    role: 'Website Management',
-    education: 'Usha Martin University - BCA',
-    specialization: 'Full Stack Development',
-    bio: 'Contributes to website development and maintenance, ensuring smooth platform operations. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Development Team',
-    working: 0,
-    xp: 2100
-  },
-  {
-    name: 'Krishnakant Kumar',
-    role: 'Website Management',
-    education: 'Central University of Jharkhand - CSE',
-    specialization: 'Full Stack Development & Backend Systems',
-    bio: 'Experienced full-stack developer managing complex web applications and database systems. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1181288/pexels-photo-1181288.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Development Team',
-    working: 1,
-    xp: 3450
-  },
-  {
-    name: 'Sagar Kumar',
-    role: 'Updates & Announcement Manager',
-    education: 'Government Polytechnic College Adityapur - CSE',
-    specialization: 'Communication & Information Management',
-    bio: 'Manages official updates and announcements to keep the community informed about important events. Experience: JEHUB - Updates & Announcement Manager',
-    image: 'https://images.pexels.com/photos/1181346/pexels-photo-1181346.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Communication Team',
-    working: 0,
-    xp: 1650
-  },
-  {
-    name: 'Suryansh Sinha',
-    role: 'Developer',
-    education: 'Government Polytechnic Dhanbad - CSE',
-    specialization: 'Student Mentorship & Support',
-    bio: 'Passionate about software development and creating innovative solutions for the JEHUB platform. Experience: JEHUB - Developer',
-    image: 'https://images.pexels.com/photos/1181563/pexels-photo-1181563.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Support Team',
-    working: 1,
-    xp: 2650
-  },
-  {
-    name: 'Laxman Kumar',
-    role: 'Website Management',
-    education: 'Government Polytechnic Bhaga - Final Year',
-    specialization: 'Web Development & Technical Support',
-    bio: 'Dedicated to enhancing technical skills while helping fellow students through web development. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1181412/pexels-photo-1181412.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Development Team',
-    working: 0,
-    xp: 1450
-  },
-  {
-    name: 'Rajshekhar Mandal',
+    name: 'Rajshekhar',
     role: 'Updates & Announcement Manager',
     education: 'Government Polytechnic Ranchi - Electrical Engineering',
     specialization: 'Information Dissemination & Group Administration',
-    bio: 'Experienced in managing official communications and maintaining group regulations. Experience: JEHUB - Updates & Announcement Manager',
-    image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
+    bio: 'Top performer managing official communications and maintaining group regulations. Experience: JEHUB - Updates & Announcement Manager',
+    image: 'https://media.licdn.com/dms/image/v2/D4D35AQF-cJ0r6ghoxw/profile-framedphoto-shrink_400_400/B4DZjGMJ7sGQAc-/0/1755671732352?e=1757408400&v=beta&t=hzqB-cxMNipstQR3iN_LpPVeibsQ8pSGYYCcI5JD2pU',
     department: 'Communication Team',
     working: 1,
-    xp: 2950
+    xp: 409
   },
   {
-    name: 'Manish Kumar',
+    name: 'Shruti',
+    role: 'Website Developer',
+    education: 'Computer Science Engineering',
+    specialization: 'Web Development & UI/UX Design',
+    bio: 'Talented website developer creating exceptional user experiences and innovative solutions. Experience: JEHUB - Website Developer',
+    image: 'https://media.licdn.com/dms/image/v2/D4E35AQERZAZgiKVbgA/profile-framedphoto-shrink_400_400/B4EZfA0iR6HIAk-/0/1751286687155?e=1757408400&v=beta&t=4T578z6GiCklWrpJJTVLXfF1BUOQCihj7iRmaMPHSNs',
+    department: 'Development Team',
+    working: 1,
+    xp: 362
+  },
+  {
+    name: 'Laxman',
+    role: 'Website Developer',
+    education: 'Government Polytechnic Bhaga - Final Year',
+    specialization: 'Web Development & Technical Support',
+    bio: 'Dedicated website developer enhancing technical skills while helping fellow students through web development. Experience: JEHUB - Website Developer',
+    image: 'https://media.licdn.com/dms/image/v2/D5603AQGTK0DnO-agqw/profile-displayphoto-scale_400_400/B56ZengQ69G0Ag-/0/1750861944727?e=1759968000&v=beta&t=M1PvXDmCooeq5pv3VeOJmqBIsyuOnuEhaWZypqRudUc',
+    department: 'Development Team',
+    working: 1,
+    xp: 330
+  },
+  {
+    name: 'Rupanjay',
+    role: 'Website Developer',
+    education: 'Jharkhand Rai University - Computer Science',
+    specialization: 'Web Development & Project Management',
+    bio: 'Passionate website developer working on real-world projects and contributing to community development. Experience: JEHUB - Website Developer',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541',
+    department: 'Development Team',
+    working: 1,
+    xp: 321
+  },
+  {
+    name: 'Manish',
     role: 'Social Media Coordinator',
     education: 'Government Polytechnic Dumka - Mechanical Engineering',
     specialization: 'Social Media Management & Digital Marketing',
-    bio: 'Manages JEHUB\'s social media presence and creates engaging content for the community. Experience: JEHUB - Social Media Coordinator',
-    image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
+    bio: 'Expert social media coordinator managing JEHUB\'s online presence and creating engaging content for the community. Experience: JEHUB - Social Media Coordinator',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541',
     department: 'Marketing Team',
-    working: 0,
-    xp: 1800
-  },
-  {
-    name: 'Rupanjay Singh',
-    role: 'Website Management',
-    education: 'Jharkhand Rai University - Computer Science',
-    specialization: 'Web Development & Project Management',
-    bio: 'Passionate about working on real-world projects and contributing to community development. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
-    department: 'Development Team',
     working: 1,
-    xp: 3100
+    xp: 213
   },
   {
-    name: 'Ujjwal Kumar Mishra',
-    role: 'Website Management',
+    name: 'Ujjwal',
+    role: 'Website Developer',
     education: 'Government Polytechnic Dhanbad - CSE',
     specialization: 'Web Development & Software Engineering',
-    bio: 'Focused on gaining real-world project experience and contributing to platform development. Experience: JEHUB - Website Management',
-    image: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop',
+    bio: 'Focused website developer gaining real-world project experience and contributing to platform development. Experience: JEHUB - Website Developer',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541',
     department: 'Development Team',
     working: 1,
-    xp: 2750
+    xp: 179
+  },
+  {
+    name: 'Suryansh',
+    role: 'Developer',
+    education: 'Government Polytechnic Dhanbad - CSE',
+    specialization: 'Software Development & Innovation',
+    bio: 'Passionate developer creating innovative solutions for the JEHUB platform and contributing to community growth. Experience: JEHUB - Developer',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541',
+    department: 'Development Team',
+    working: 1,
+    xp: 134
   }
 ];
 
