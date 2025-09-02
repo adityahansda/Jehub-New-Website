@@ -32,16 +32,13 @@ export const uploadWithFallback = async (file: File, path: string): Promise<Uplo
       console.warn('GitHub upload failed:', githubError.message);
     }
 
-    // If GitHub fails, use local storage simulation
-    // In a real scenario, you would upload to your own server or another service
-    console.log('Using local upload simulation...');
-    const localUrl = await simulateLocalUpload(file, path);
-    console.log('Local upload simulation complete, returning mock URL:', localUrl);
-    return {
-      success: true,
-      url: localUrl,
-      method: 'local'
-    };
+    // If GitHub fails, use fallback
+    console.log('GitHub upload failed, using fallback...');
+    throw new Error('GitHub upload is required but failed. Please configure GitHub credentials properly.');
+    
+    // Uncomment below if you want to use local fallback
+    // const localUrl = await uploadToLocalServer(file, path);
+    // return { success: true, url: localUrl, method: 'local' };
 
   } catch (error: any) {
     return {
@@ -51,16 +48,32 @@ export const uploadWithFallback = async (file: File, path: string): Promise<Uplo
   }
 };
 
-// Simulate local upload (replace with actual server upload in production)
-const simulateLocalUpload = async (file: File, path: string): Promise<string> => {
-  return new Promise((resolve) => {
-    // Simulate upload delay
-    setTimeout(() => {
-      // Generate a mock URL (in production, this would be your actual file URL)
-      const mockUrl = `https://mockcdn.jehub.com/${path}`;
-      resolve(mockUrl);
-    }, 2000);
+// Upload file to local server (fallback when GitHub is not available)
+const uploadToLocalServer = async (file: File, path: string): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('filePath', path);
+
+  const response = await fetch('/api/upload-file', {
+    method: 'POST',
+    body: formData,
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'File upload failed');
+  }
+
+  const result = await response.json();
+  
+  // For production, use the production domain
+  if (result.url.includes('localhost')) {
+    // Replace localhost with production domain
+    const productionUrl = result.url.replace('http://localhost:3000', 'https://www.jehub.vercel.app');
+    return productionUrl;
+  }
+  
+  return result.url;
 };
 
 // Check if uploads are working

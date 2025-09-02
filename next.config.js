@@ -3,36 +3,6 @@ const nextConfig = {
   // Enable strict mode for better development experience
   reactStrictMode: true,
 
-  // Security Headers
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://api.dicebear.com https://ui-avatars.com https://accounts.google.com https://www.googleapis.com https://googleapis.com https://appwrite.io https://*.appwrite.io https://www.google-analytics.com https://github.com https://api.github.com https://raw.githubusercontent.com https://api.emailjs.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://accounts.google.com"
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
-          }
-        ]
-      }
-    ];
-  },
   
   // Allow cross-origin requests from specific origins in development
   allowedDevOrigins: ['10.67.121.140'],
@@ -157,7 +127,7 @@ const nextConfig = {
     const isProduction = process.env.NODE_ENV === 'production';
     
     const cspValue = isProduction 
-      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com blob:; worker-src 'self' blob: data: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.dicebear.com https://ui-avatars.com https://accounts.google.com https://www.googleapis.com https://googleapis.com https://appwrite.io https://*.appwrite.io https://www.google-analytics.com https://github.com https://api.github.com https://raw.githubusercontent.com https://api.emailjs.com https://cdnjs.cloudflare.com; frame-src 'self' https://accounts.google.com https://docs.google.com https://drive.google.com https://mozilla.github.io https://raw.githubusercontent.com; object-src 'self' https://raw.githubusercontent.com; base-uri 'self'; form-action 'self' https://accounts.google.com;"
+      ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://clientstream.launchdarkly.com https://stream.launchdarkly.com https://events.launchdarkly.com https://mobile.launchdarkly.com https://app.launchdarkly.com https://reader-api.readwise.io https://readwise.io https://api.read.ai https://api.readai.co https://read.ai blob:; worker-src 'self' blob: data: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.dicebear.com https://ui-avatars.com https://accounts.google.com https://www.googleapis.com https://googleapis.com https://appwrite.io https://*.appwrite.io https://www.google-analytics.com https://github.com https://api.github.com https://raw.githubusercontent.com https://api.emailjs.com https://cdnjs.cloudflare.com https://clientstream.launchdarkly.com https://stream.launchdarkly.com https://events.launchdarkly.com https://mobile.launchdarkly.com https://app.launchdarkly.com https://reader-api.readwise.io https://readwise.io https://api.read.ai https://api.readai.co https://read.ai wss://clientstream.launchdarkly.com wss://stream.launchdarkly.com; frame-src 'self' https://accounts.google.com https://docs.google.com https://drive.google.com https://mozilla.github.io https://raw.githubusercontent.com; object-src 'self' https://raw.githubusercontent.com; base-uri 'self'; form-action 'self' https://accounts.google.com;"
       : "default-src 'self' 'unsafe-eval' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob: data:; worker-src 'self' blob: data: https:; style-src 'self' 'unsafe-inline' https:; font-src 'self' https: data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: ws:; frame-src 'self' https:; object-src 'self' https:; base-uri 'self'; form-action 'self' https:;";
 
     return [

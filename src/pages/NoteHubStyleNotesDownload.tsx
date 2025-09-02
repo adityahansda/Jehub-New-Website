@@ -686,8 +686,14 @@ const NoteHubStyleNotesDownload = () => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
-    // Check if user is authenticated
-    if (!user) {
+    // Check download requirements
+    const requirement = noteRequirements[noteId];
+    const requiredPoints = requirement?.points || note.points || 0;
+    const isPointsRequired = requiredPoints > 0;
+    const isFreeNote = requiredPoints === 0;
+
+    // For free notes (0 points), allow download without authentication
+    if (!isFreeNote && !user) {
       toast.error('Please sign in to download notes.', {
         position: 'top-right',
         autoClose: 3000,
@@ -704,11 +710,6 @@ const NoteHubStyleNotesDownload = () => {
       }, 3000);
       return;
     }
-
-    // Check download requirements
-    const requirement = noteRequirements[noteId];
-    const requiredPoints = requirement?.points || note.points || 0;
-    const isPointsRequired = requiredPoints > 0;
 
     // If points are required, check if user has enough points
     if (isPointsRequired && userPoints.availablePoints < requiredPoints) {
@@ -1022,7 +1023,7 @@ const NoteHubStyleNotesDownload = () => {
 
   const handleViewPDF = (note: Note) => {
     setPreviewNote(note);
-    handlePageChange('note-preview', `Preview: ${note.title}`);
+    handlePageChangeWithNoteId('note-preview', `Preview: ${note.title}`, note.id);
   };
 
   const handleClosePreview = () => {
@@ -1049,6 +1050,19 @@ const NoteHubStyleNotesDownload = () => {
       router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true });
     } catch (e) {
       console.warn('Failed to update URL parameter for view:', e);
+    }
+  };
+
+  const handlePageChangeWithNoteId = (pageId: string, title: string, noteId: string) => {
+    setCurrentPage(pageId);
+    setPageTitle(title);
+
+    // Update the URL query parameter with note ID
+    try {
+      const nextQuery = { ...router.query, view: pageId, noteId } as Record<string, any>;
+      router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true });
+    } catch (e) {
+      console.warn('Failed to update URL parameter with note ID:', e);
     }
   };
 
@@ -1095,6 +1109,25 @@ const NoteHubStyleNotesDownload = () => {
     setUploadProgress(0);
     
     try {
+      // Validate all required fields
+      const requiredFields = {
+        title: uploadFormData.title,
+        branch: uploadFormData.branch,
+        semester: uploadFormData.semester,
+        subject: uploadFormData.subject,
+        description: uploadFormData.description,
+        authorName: uploadFormData.authorName,
+        degree: uploadFormData.degree
+      };
+      
+      const emptyFields = Object.entries(requiredFields)
+        .filter(([key, value]) => !value || value.trim() === '')
+        .map(([key]) => key);
+      
+      if (emptyFields.length > 0) {
+        throw new Error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
+      }
+      
       // Simulate upload progress
       let progress = 0;
       const progressInterval = setInterval(() => {
@@ -1105,29 +1138,49 @@ const NoteHubStyleNotesDownload = () => {
         setUploadProgress(progress);
       }, 200);
       
+      // Step 1: Upload file to GitHub/storage service
+      const fileExtension = uploadFormData.file.name.split('.').pop();
+      const sanitizedTitle = uploadFormData.title.replace(/\s+/g, '_');
+      const githubPath = `notes/${uploadFormData.branch}/${uploadFormData.semester}/${sanitizedTitle}.${fileExtension}`;
+      
+      // Use the same upload service as the other form
+      const { uploadWithFallback } = await import('../lib/uploadService');
+      const uploadResult = await uploadWithFallback(uploadFormData.file, githubPath);
+      
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'File upload failed');
+      }
+      
+      const githubUrl = uploadResult.url!;
+      
       // Get user's IP
       const ipResponse = await fetch('/api/ip');
       const { ip } = await ipResponse.json();
       
-      // Prepare form data for upload
-      const formData = new FormData();
-      formData.append('file', uploadFormData.file);
-      formData.append('title', uploadFormData.title);
-      formData.append('branch', uploadFormData.branch);
-      formData.append('semester', uploadFormData.semester);
-      formData.append('subject', uploadFormData.subject);
-      formData.append('description', uploadFormData.description);
-      formData.append('tags', uploadFormData.tags);
-      formData.append('authorName', uploadFormData.authorName);
-      formData.append('degree', uploadFormData.degree);
-      formData.append('noteType', uploadFormData.noteType);
-      formData.append('points', uploadFormData.points.toString());
-      formData.append('userIp', ip);
+      // Step 2: Save metadata to database
+      const notesData = {
+        title: uploadFormData.title,
+        branch: uploadFormData.branch,
+        semester: uploadFormData.semester,
+        subject: uploadFormData.subject,
+        description: uploadFormData.description,
+        tags: uploadFormData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        authorName: uploadFormData.authorName,
+        githubUrl,
+        fileName: uploadFormData.file.name,
+        fileSize: uploadFormData.file.size,
+        noteType: uploadFormData.noteType,
+        points: uploadFormData.points,
+        userIp: ip,
+        degree: uploadFormData.degree
+      };
       
-      // Upload via existing API
       const response = await fetch('/api/notes-upload', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(notesData),
       });
       
       clearInterval(progressInterval);
@@ -1757,18 +1810,40 @@ const NoteHubStyleNotesDownload = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Points *</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Points Required *</label>
                         <input
                           type="number"
                           required
-                          min="1"
+                          min="0"
                           max="1000"
+                          step="1"
                           value={uploadFormData.points}
-                          onChange={(e) => setUploadFormData({ ...uploadFormData, points: parseInt(e.target.value, 10) || 50 })}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value, 10);
+                            setUploadFormData({ 
+                              ...uploadFormData, 
+                              points: isNaN(value) || value < 0 ? 0 : Math.min(value, 1000)
+                            });
+                          }}
                           className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                          placeholder="0"
                           disabled={isUploading}
                         />
-                        <p className="text-xs text-slate-400 mt-1">Points required to download (1-1000)</p>
+                        <div className="mt-2 space-y-1">
+                          <p className="text-xs text-slate-400">Points required to download (0-1000)</p>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              uploadFormData.points === 0 
+                                ? 'bg-green-500/20 text-green-300 border border-green-400/30'
+                                : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+                            }`}>
+                              {uploadFormData.points === 0 ? '🆓 FREE NOTE' : `💎 ${uploadFormData.points} POINTS`}
+                            </span>
+                            {uploadFormData.points === 0 && (
+                              <span className="text-xs text-green-400">• No authentication required</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                     

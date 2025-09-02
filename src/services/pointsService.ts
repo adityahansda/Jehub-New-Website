@@ -550,12 +550,31 @@ export class PointsService {
       await this.addPoints(userId, userEmail, uploadPoints, 'upload_bonus',
         `Upload bonus for: ${noteTitle}`, { noteId });
 
-      // Update notes uploaded count
-      const user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
+      // Update notes uploaded count - with user ID fallback
+      let user;
+      try {
+        user = await databases.getDocument(DATABASE_ID, USERS_COLLECTION_ID, userId);
+      } catch (error) {
+        console.warn(`User document not found with ID ${userId}, trying by email...`);
+        // If user ID doesn't work, try to find user by email
+        const userResponse = await databases.listDocuments(
+          DATABASE_ID,
+          USERS_COLLECTION_ID,
+          [Query.equal('email', userEmail)]
+        );
+
+        if (userResponse.documents.length === 0) {
+          throw new Error(`User not found with email: ${userEmail}`);
+        }
+
+        user = userResponse.documents[0];
+        console.log(`Found user by email with correct ID: ${user.$id}`);
+      }
+
       await databases.updateDocument(
         DATABASE_ID,
         USERS_COLLECTION_ID,
-        userId,
+        user.$id, // Use the correct document ID
         {
           notesUploaded: (user.notesUploaded || 0) + 1
         }

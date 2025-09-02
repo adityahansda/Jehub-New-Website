@@ -21,7 +21,7 @@ const NotesUpload = () => {
     authorName: '',
     degree: '',
     noteType: 'free', // Default to free
-    points: 50,
+    points: 0, // Default to 0 for free notes
     file: null as File | null
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,8 +79,30 @@ const NotesUpload = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate file first
     if (!formData.file) {
       setError('Please select a file to upload');
+      return;
+    }
+
+    // Validate all required fields before submission
+    const requiredFields = {
+      title: formData.title,
+      branch: formData.branch, 
+      semester: formData.semester,
+      subject: formData.subject,
+      description: formData.description,
+      authorName: formData.authorName,
+      degree: formData.degree
+    };
+
+    const emptyFields = Object.entries(requiredFields)
+      .filter(([key, value]) => !value || value.trim() === '')
+      .map(([key]) => key);
+
+    if (emptyFields.length > 0) {
+      setError(`Please fill in all required fields: ${emptyFields.join(', ')}`);
       return;
     }
 
@@ -210,7 +232,7 @@ const NotesUpload = () => {
         authorName: '',
         degree: '',
         noteType: 'free',
-        points: 50,
+        points: 0, // Default to 0 for free notes
         file: null
       });
 
@@ -502,7 +524,14 @@ const NotesUpload = () => {
                         name="noteType"
                         value="free"
                         checked={formData.noteType === 'free'}
-                        onChange={(e) => setFormData({ ...formData, noteType: e.target.value as 'free' | 'premium' })}
+                        onChange={(e) => {
+                          const newNoteType = e.target.value as 'free' | 'premium';
+                          setFormData({ 
+                            ...formData, 
+                            noteType: newNoteType,
+                            points: newNoteType === 'free' ? 0 : (formData.points === 0 ? 1 : formData.points)
+                          });
+                        }}
                         className="mr-2"
                       />
                       <span className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
@@ -515,7 +544,14 @@ const NotesUpload = () => {
                         name="noteType"
                         value="premium"
                         checked={formData.noteType === 'premium'}
-                        onChange={(e) => setFormData({ ...formData, noteType: e.target.value as 'free' | 'premium' })}
+                        onChange={(e) => {
+                          const newNoteType = e.target.value as 'free' | 'premium';
+                          setFormData({ 
+                            ...formData, 
+                            noteType: newNoteType,
+                            points: newNoteType === 'free' ? 0 : (formData.points === 0 ? 1 : formData.points)
+                          });
+                        }}
                         className="mr-2"
                       />
                       <span className="flex items-center bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
@@ -551,16 +587,34 @@ const NotesUpload = () => {
                     type="number"
                     id="points"
                     required
-                    min="1"
+                    min="0"
                     max="1000"
                     value={formData.points}
-                    onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value, 10) || 50 })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === '' ? 0 : parseInt(value, 10);
+                      setFormData({ ...formData, points: isNaN(numValue) ? 0 : numValue });
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter points for this upload (1-1000)"
+                    placeholder="Enter points for this upload (0-1000)"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Set points between 1-1000. Higher quality notes deserve more points!
+                    Set points between 0-1000. Use 0 for free notes, higher points for premium content!
                   </p>
+                  {formData.points === 0 && (
+                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-xs text-green-700 font-medium flex items-center">
+                        🆓 <span className="ml-1">This note will be FREE to access and download for everyone!</span>
+                      </p>
+                    </div>
+                  )}
+                  {formData.noteType === 'premium' && formData.points > 0 && (
+                    <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                      <p className="text-xs text-orange-700 font-medium flex items-center">
+                        ⭐ <span className="ml-1">This premium note requires {formData.points} points to download.</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
