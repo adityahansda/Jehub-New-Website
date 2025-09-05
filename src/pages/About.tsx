@@ -1,9 +1,30 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Users, BookOpen, Star, Globe, Heart, Shield, Mail, Phone, MapPin, Target, Award, Zap, TrendingUp, Calendar, GraduationCap, MessageCircle, Code, Palette, PenTool, Megaphone, Github, Linkedin, Twitter, Instagram, Building, CheckCircle, ArrowRight, Sparkles, Lightbulb, Rocket, Network, FileText, UserCheck, Headphones, Monitor, Briefcase, School, Clock, ChevronRight } from 'lucide-react';
+import { Users, BookOpen, Star, Globe, Heart, Shield, Mail, Phone, MapPin, Target, Award, Zap, TrendingUp, Calendar, GraduationCap, MessageCircle, Code, Palette, PenTool, Megaphone, Github, Linkedin, Twitter, Instagram, Building, CheckCircle, ArrowRight, Sparkles, Lightbulb, Rocket, Network, FileText, UserCheck, Headphones, Monitor, Briefcase, School, Clock, ChevronRight, Crown, User } from 'lucide-react';
 import { coreTeam } from '../data/teamData';
 import { emailService } from '../services/emailService';
+
+// Custom styles for founder card animations
+const customStyles = `
+  @keyframes founder-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(147, 51, 234, 0.4); }
+  }
+  
+  .founder-card {
+    animation: founder-glow 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  .float-animation {
+    animation: float 3s ease-in-out infinite;
+  }
+`;
 
 const About = () => {
   const [formData, setFormData] = React.useState({
@@ -127,8 +148,10 @@ const About = () => {
 
 
   return (
-    <div className="min-h-screen pt-20 pb-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <>
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+      <div className="min-h-screen pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-3xl -z-10 opacity-60"></div>
@@ -140,10 +163,10 @@ const About = () => {
               Introduction to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">JEHUB</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed mb-8">
-              JEHUB is a growing, student-led initiative dedicated to empowering learners across India through collaboration, 
-              community, and hands-on experience. Built by and for students, JEHUB stands out as a reliable 
-              platform where knowledge meets real-world relevance. What started in Jharkhand is now expanding to become a 
-              thriving space where learners from all over India grow, share, and lead - together.
+              JEHUB is more than just a platform - it's a vibrant community dedicated to empowering learners across India through collaboration, 
+              mentorship, and hands-on experience. Built by students and supported by passionate professionals, JEHUB stands out as a reliable 
+              ecosystem where knowledge meets real-world relevance. What started in Jharkhand is now expanding nationwide, creating a 
+              thriving space where learners, educators, and industry professionals come together to grow, share, and lead.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 rounded-full">
@@ -251,13 +274,13 @@ const About = () => {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Who We Serve
+              Who We Serve & Welcome
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              JEHUB is built with a deep understanding of our audience and their unique needs
+              JEHUB is built with a deep understanding of our diverse community and their unique needs
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <GraduationCap className="h-8 w-8 text-white" />
@@ -284,6 +307,111 @@ const About = () => {
               <p className="text-gray-600 text-center leading-relaxed">
                 Students who prefer a free, transparent, and peer-supported environment over typical paid platforms.
               </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Crown className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Working Professionals</h3>
+              <p className="text-gray-600 text-center leading-relaxed">
+                Industry experts and professionals passionate about mentoring and sharing knowledge with the next generation.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Professional Contributors Section */}
+        <div className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 rounded-3xl p-8 sm:p-12 mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Join Our Community as a Contributor
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
+              JEHUB welcomes talented professionals and passionate individuals who believe in giving back to the student community. 
+              If you have expertise and are passionate about guiding students free of cost, we invite you to join our mission.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900">For Professional Contributors</h3>
+                  <p className="text-gray-600">Share your expertise and make a difference</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Conduct free educational sessions and workshops for students</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Mentor students in your area of expertise and industry knowledge</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Create valuable content and resources to help students learn and grow</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Build meaningful connections with the next generation of professionals</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
+                  <Star className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900">For Talented Individuals</h3>
+                  <p className="text-gray-600">Showcase your unique skills and talents</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Contribute your unique talents and skills to help the community grow</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Collaborate on projects that make a real impact on student learning</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Gain recognition for your contributions and build your professional network</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <p className="text-gray-700">Be part of a community that values innovation, creativity, and knowledge sharing</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 inline-block">
+              <h4 className="text-xl font-semibold text-gray-900 mb-4">Ready to Make a Difference?</h4>
+              <p className="text-gray-600 mb-6 max-w-2xl">
+                Join thousands of professionals and talented individuals who are already contributing to JEHUB's mission 
+                of empowering students across India. Your expertise and passion can help shape the future of education.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link href="/join-team" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-full font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Heart className="h-5 w-5" />
+                  Join as Contributor
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a href="#contact" className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-full font-medium hover:border-gray-400 hover:bg-gray-50 transition-all duration-300">
+                  <MessageCircle className="h-5 w-5" />
+                  Get in Touch
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -345,60 +473,90 @@ const About = () => {
           </div>
         </div>
 
-        {/* Core Team Section */}
+        {/* Team Preview Section */}
         <div className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Core Team
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              The founding members who started JEHUB and continue to lead its growth across Indian student communities
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {coreTeam.map((member, index) => (
-              <div key={index} className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 text-center hover:shadow-2xl hover:border-blue-200 transition-all duration-300 group">
-                <div className="relative mb-6">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    width={120}
-                    height={120}
-                    className="w-32 h-32 rounded-full mx-auto border-4 border-blue-200 shadow-lg group-hover:border-blue-300 transition-all duration-300"
-                  />
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    {member.name === 'Aditya Hansda' ? 'Founder/CEO' : member.role.split(' ')[0]}
+          <div className="bg-gray-900 rounded-3xl p-8 lg:p-16 shadow-2xl border border-gray-800">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+                Meet Our Team
+              </h2>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                The dedicated individuals working together to build JEHUB as India's most trusted student community platform.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10">
+              {/* Team Member Cards */}
+              {coreTeam.slice(0, 4).map((member, index) => {
+                const gradients = [
+                  'from-blue-500 to-purple-500',
+                  'from-green-500 to-teal-500', 
+                  'from-purple-500 to-pink-500',
+                  'from-orange-500 to-red-500'
+                ];
+                
+                return (
+                  <div key={index} className="text-center group">
+                    {/* Profile Image with Circular Background */}
+                    <div className="relative mb-6 mx-auto w-fit">
+                      {/* Gradient Background Circle */}
+                      <div className={`absolute inset-0 bg-gradient-to-r ${gradients[index]} rounded-full w-40 h-40 blur-sm opacity-30 group-hover:opacity-50 transition-all duration-300`}></div>
+                      {/* Secondary Background Circle */}
+                      <div className={`absolute inset-2 bg-gradient-to-r ${gradients[index]} rounded-full w-36 h-36 opacity-20 group-hover:opacity-40 transition-all duration-300`}></div>
+                      {/* Circular Image Container */}
+                      <div className="relative z-10 flex items-center justify-center w-40 h-40">
+                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                          <Image
+                            src={member.image}
+                            alt={member.name}
+                            width={128}
+                            height={128}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Member Info */}
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-bold text-white">{member.name}</h3>
+                      <p className="text-gray-400 font-medium">{member.role}</p>
+                      <p className="text-gray-300 text-sm leading-relaxed px-2">
+                        {member.bio}
+                      </p>
+                      
+                      {/* Social Links */}
+                      <div className="flex justify-center gap-3 pt-4">
+                        {member.social.github && member.social.github !== '#' && (
+                          <a href={member.social.github} target="_blank" rel="noopener noreferrer" 
+                             className="w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <Github className="h-4 w-4 text-gray-400 hover:text-white" />
+                          </a>
+                        )}
+                        {member.social.linkedin && member.social.linkedin !== '#' && (
+                          <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer"
+                             className="w-8 h-8 bg-gray-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <Linkedin className="h-4 w-4 text-gray-400 hover:text-white" />
+                          </a>
+                        )}
+                        {member.social.twitter && member.social.twitter !== '#' && (
+                          <a href={member.social.twitter} target="_blank" rel="noopener noreferrer"
+                             className="w-8 h-8 bg-gray-800 hover:bg-sky-500 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <Twitter className="h-4 w-4 text-gray-400 hover:text-white" />
+                          </a>
+                        )}
+                        {member.social.instagram && (
+                          <a href={member.social.instagram} target="_blank" rel="noopener noreferrer"
+                             className="w-8 h-8 bg-gray-800 hover:bg-pink-600 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <Instagram className="h-4 w-4 text-gray-400 hover:text-white" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{member.name}</h3>
-                <p className="text-blue-600 font-semibold mb-2">{member.role}</p>
-                <p className="text-sm text-gray-500 mb-2">{member.education}</p>
-                <p className="text-xs text-purple-600 font-medium mb-4">{member.specialization}</p>
-                <p className="text-gray-600 text-sm mb-6 leading-relaxed">{member.bio}</p>
-                <div className="flex justify-center space-x-4">
-                  {member.social.github && (
-                    <a href={member.social.github} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-800 hover:text-white transition-all duration-300">
-                      <Github className="h-5 w-5" />
-                    </a>
-                  )}
-                  {member.social.linkedin && (
-                    <a href={member.social.linkedin} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
-                      <Linkedin className="h-5 w-5" />
-                    </a>
-                  )}
-                  {member.social.twitter && (
-                    <a href={member.social.twitter} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-400 hover:text-white transition-all duration-300">
-                      <Twitter className="h-5 w-5" />
-                    </a>
-                  )}
-                  {member.social.instagram && (
-                    <a href={member.social.instagram} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition-all duration-300">
-                      <Instagram className="h-5 w-5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </div>
         
@@ -610,6 +768,134 @@ const About = () => {
           </div>
         </div>
 
+        {/* Community vs Platform Section */}
+        <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-teal-50 rounded-3xl p-8 sm:p-12 mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+              More Than a Platform - We Are a <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-600">Community</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-8">
+              JEHUB is not just another online platform. We are a thriving community of passionate learners, dedicated mentors, 
+              and industry professionals united by a shared mission of educational empowerment and knowledge sharing.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Community-First Approach</h3>
+                  <p className="text-gray-700">We prioritize genuine human connections, peer-to-peer learning, and collaborative growth over typical transactional platform experiences.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Organic Growth</h3>
+                  <p className="text-gray-700">Our community has grown organically through word-of-mouth, genuine value creation, and authentic relationships built over time.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-3 h-3 bg-gradient-to-r from-teal-500 to-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Values-Driven Mission</h3>
+                  <p className="text-gray-700">Every decision we make is guided by our core values of accessibility, inclusivity, quality education, and community empowerment.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3">What Makes Us Different</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-gray-700">Free access to all resources and mentorship</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-gray-700">Student-centric content and curriculum alignment</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-gray-700">Real industry professionals as mentors</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-gray-700">Focus on practical, hands-on learning</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <p className="text-gray-700">Transparent operations and community governance</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Upcoming Website Launch Section */}
+        <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-600 text-white rounded-3xl p-8 sm:p-12 mb-16 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
+                <Rocket className="h-10 w-10 text-white" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-6">Exciting Update: Website Launch Coming Soon!</h2>
+              <p className="text-xl text-purple-100 max-w-4xl mx-auto mb-8">
+                Our community is evolving! While we've been thriving as a close-knit community through various channels, 
+                we're now launching our comprehensive website to better serve students across Jharkhand and beyond.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MapPin className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Enhanced Connectivity</h3>
+                <p className="text-purple-100 leading-relaxed">
+                  Connect students from Jharkhand with peers from other states, creating a truly pan-India educational network.
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Monitor className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Digital Hub</h3>
+                <p className="text-purple-100 leading-relaxed">
+                  A centralized platform featuring all resources, events, mentorship programs, and community activities in one place.
+                </p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Expanded Reach</h3>
+                <p className="text-purple-100 leading-relaxed">
+                  Opening doors for more students, professionals, and educational institutions to join our growing community.
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-center mt-12">
+              <div className="inline-flex items-center gap-4 bg-white/10 backdrop-blur-sm px-8 py-4 rounded-full">
+                <Clock className="h-6 w-6 text-white" />
+                <span className="text-lg font-semibold">Launch Timeline: Coming Very Soon</span>
+              </div>
+              <p className="text-purple-100 mt-4 max-w-2xl mx-auto">
+                Stay tuned for the official launch announcement. Our website will maintain the same community values 
+                while providing enhanced tools and features for better learning experiences.
+              </p>
+            </div>
+          </div>
+        </div>
+        
         {/* Community Impact Section */}
         <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-3xl p-8 sm:p-12 mb-16">
           <div className="text-center mb-8">
@@ -647,7 +933,7 @@ const About = () => {
         </div>
 
         {/* Contact Section */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-xl border border-gray-200 p-8 sm:p-12">
+        <div id="contact" className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-xl border border-gray-200 p-8 sm:p-12">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -788,8 +1074,9 @@ const About = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
