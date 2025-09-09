@@ -228,13 +228,13 @@ const WishlistRegistration: React.FC = () => {
     }
   };
 
-  // Pre-fill form with user data if available
+  // Pre-fill form with user data if available (name only, not email)
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
         ...prev,
         name: user.name || "",
-        email: user.email || "",
+        // Removed email auto-fill - users must enter it manually
       }));
     } else {
       // Clear form when user logs out
@@ -735,7 +735,7 @@ const WishlistRegistration: React.FC = () => {
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-300 mb-2"
                   >
-                    {fieldLabels.email} * {user ? '(Auto-filled from your account)' : '(Will be set from your account after login)'}
+                    {fieldLabels.email} *
                   </label>
                   <input
                     type="email"
@@ -744,24 +744,15 @@ const WishlistRegistration: React.FC = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
-                    readOnly={!!user}
-                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 placeholder-gray-400 ${
-                      user 
-                        ? 'bg-gray-600 border border-gray-500 text-gray-300 cursor-not-allowed'
-                        : 'bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                    }`}
-                    placeholder={user ? "your.email@example.com" : "Enter your email address"}
+                    readOnly={false}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                    placeholder="Enter your email address"
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    {user 
-                      ? 'This email is automatically set from your authenticated account and cannot be changed.'
-                      : 'Enter your email address. Make sure it is a valid email format.'
-                    }
-                    {!user && (
-                      <span className="block mt-1 text-blue-400">
-                        💡 Enter a valid email address (e.g., user@example.com)
-                      </span>
-                    )}
+                    Enter your email address. Make sure it is a valid email format.
+                    <span className="block mt-1 text-blue-400">
+                      💡 Enter a valid email address (e.g., user@example.com)
+                    </span>
                   </p>
                 </div>
 
