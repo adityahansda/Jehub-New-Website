@@ -131,7 +131,7 @@ const SignUp: React.FC = () => {
             setIsRegistrationBlocked(true);
             // Show alert and redirect to login after delay
             setTimeout(() => {
-              alert('New user registration is currently disabled. Only existing users can access the platform. If you believe this is an error, please contact support.');
+              setError('New user registration is currently disabled. Only existing users can access the platform. If you believe this is an error, please contact support.');
               router.push('/login');
             }, 1000);
           } else {
@@ -215,7 +215,7 @@ const SignUp: React.FC = () => {
         console.log('Referral validation result:', validation);
 
         if (!validation.isValid) {
-          alert(validation.message);
+          setError(validation.message);
           setLoading(false);
           return;
         }
@@ -305,6 +305,9 @@ const SignUp: React.FC = () => {
       // Force refresh auth context to update all user state
       await forceRefreshAuth();
       console.log('Auth context fully refreshed');
+      
+      // Wait a bit longer to ensure all state updates are complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Show success message with points information
       const toastMessage = referralCode 
@@ -315,10 +318,18 @@ const SignUp: React.FC = () => {
       setSuccessMessage(toastMessage);
       setShowSuccessToast(true);
 
+      // Clear any existing auth error params from URL to prevent confusion
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete('error');
+      currentUrl.searchParams.delete('email');
+      
+      // Update browser history to clean URL
+      window.history.replaceState({}, '', currentUrl.toString());
+
       // Redirect to home page after a short delay to show the toast
       setTimeout(() => {
         console.log('Redirecting to home page...');
-        router.push('/');
+        router.replace('/');
       }, 3000);
 
     } catch (error: any) {

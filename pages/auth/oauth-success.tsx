@@ -286,18 +286,20 @@ const OAuthSuccess: React.FC = () => {
           await forceRefreshAuth();
           
           // Small delay to ensure state is updated
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Respect redirect param; default to home. If profile is incomplete, send to signup.
-          const redirectParam = new URL(window.location.href).searchParams.get('redirect') || '/';
-          try {
-            const target = redirectParam;
-            // We don't import context here; assume forceRefreshAuth updated client state
-            // Navigate to redirect target (even if signup later enforces completion)
-            router.replace(target);
-          } catch {
-            router.replace('/');
-          }
+          // Clear any error parameters from URL to prevent confusion
+          const currentUrl = new URL(window.location.href);
+          const redirectParam = currentUrl.searchParams.get('redirect') || '/';
+          
+          // Clean URL of OAuth params before redirecting
+          currentUrl.searchParams.delete('userId');
+          currentUrl.searchParams.delete('secret');
+          currentUrl.searchParams.delete('success');
+          currentUrl.searchParams.delete('code');
+          
+          addDebug(`Redirecting registered user to: ${redirectParam}`);
+          router.replace(redirectParam);
         } else {
           console.log('OAuth Success: User not registered, creating user profile...');
           addDebug('User not registered, attempting to create user profile');

@@ -123,18 +123,18 @@ const Login = () => {
       const redirectTo = router.query.redirect as string;
       if (redirectTo) {
         console.log('Redirecting to:', redirectTo);
-        router.push(redirectTo);
+        router.replace(redirectTo);
       } else {
-        router.push('/');
+        router.replace('/');
       }
       return;
     } else if (user && isVerified && !userProfile?.isProfileComplete) {
       console.log('User authenticated but profile incomplete, redirecting to signup');
-      router.push('/auth/signup');
+      router.replace('/auth/signup');
       return;
     } else if (user && !isVerified) {
       console.log('User authenticated but not verified in database, redirecting to signup');
-      router.push('/auth/signup');
+      router.replace('/auth/signup');
       return;
     }
   }, [user, isVerified, userProfile, router]);

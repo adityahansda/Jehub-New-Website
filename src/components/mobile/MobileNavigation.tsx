@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { 
   Menu,
   X,
-  Home
+  Home,
+  Users,
+  Heart
 } from 'lucide-react';
 
 const MobileNavigation = () => {
@@ -15,6 +17,7 @@ const MobileNavigation = () => {
 
   const navItems = [
     { href: '/', label: 'Home' },
+    { href: '/beta-wishlist', label: 'Wishlist' },
     { href: '/notes-download', label: 'Notes Download' },
     { href: '/notifications', label: 'Notifications' },
     { href: '/exam-updates', label: 'Exam Updates' },
