@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { google } from 'googleapis';
-import { pointsService } from '../../src/services/pointsService';
-import { Databases, Query } from 'node-appwrite';
 import { serverDatabases as databases } from '../../src/lib/appwrite-server';
 import { appwriteConfig } from '../../src/lib/appwriteConfig';
+import { ID, Query } from 'node-appwrite';
+import { pointsService } from '../../src/services/pointsService';
 
 // Simple authentication check function
 const checkAuthentication = (req: NextApiRequest): { isAuthenticated: boolean; userEmail?: string } => {
@@ -26,27 +25,6 @@ const checkAuthentication = (req: NextApiRequest): { isAuthenticated: boolean; u
   }
 };
 
-// Google Sheets configuration
-const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_WISHLIST_ID || 'your-spreadsheet-id-here';
-const SHEET_NAME = 'Sheet1';
-
-// Google Sheets API setup
-async function getGoogleSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      type: "service_account",
-      project_id: process.env.GOOGLE_PROJECT_ID,
-      private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      client_email: process.env.GOOGLE_CLIENT_EMAIL,
-      client_id: process.env.GOOGLE_CLIENT_ID
-    },
-    scopes: ['https://www.googleapis.com/auth/spreadsheets']
-  });
-
-  return google.sheets({ version: 'v4', auth });
-}
-
 interface WishlistEntry {
   name: string;
   branch: string;
@@ -60,168 +38,7 @@ interface WishlistEntry {
   status?: string;
 }
 
-// Check if email already exists in the sheet
-async function checkEmailExists(sheets: any, email: string): Promise<boolean> {
-  try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!F:F`, // Column F contains emails (after adding degree)
-    });
-
-    const rows = response.data.values || [];
-    return rows.some((row: string[]) => row[0]?.toLowerCase() === email.toLowerCase());
-  } catch (error) {
-    console.error('Error checking email existence:', error);
-    return false;
-  }
-}
-
-// Check if Telegram ID already exists in the sheet
-async function checkTelegramIdExists(sheets: any, telegramId: string): Promise<{ exists: boolean; existingUserData?: any }> {
-  try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:L`, // Get all data to find the existing user
-    });
-
-    const rows = response.data.values || [];
-    if (rows.length <= 1) return { exists: false }; // No data rows (only headers)
-    
-    // Clean the input telegram ID for comparison
-    const cleanInputId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
-    
-    // Check all rows (skip header)
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const existingTelegramId = row[6] || ''; // Column G contains Telegram IDs
-      
-      // Clean the existing ID for comparison
-      const cleanExistingId = existingTelegramId.startsWith('@') 
-        ? existingTelegramId.substring(1) 
-        : existingTelegramId;
-      
-      if (cleanExistingId.toLowerCase() === cleanInputId.toLowerCase()) {
-        return {
-          exists: true,
-          existingUserData: {
-            name: row[0] || '',
-            email: row[5] || '',
-            telegramId: existingTelegramId,
-            collegeName: row[4] || '',
-            createdAt: row[8] || ''
-          }
-        };
-      }
-    }
-    
-    return { exists: false };
-  } catch (error) {
-    console.error('Error checking Telegram ID existence:', error);
-    return { exists: false };
-  }
-}
-
-// Add data to Google Sheets
-async function addToSheet(sheets: any, data: WishlistEntry): Promise<void> {
-  // First, ensure the sheet has headers
-  try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A1:L1`,
-    });
-
-    if (!response.data.values || response.data.values.length === 0) {
-      // Add headers if they don't exist
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME}!A1:L1`,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden']]
-        }
-      });
-    } else {
-      // Check if headers need to be updated (if degree column is missing)
-      const currentHeaders = response.data.values[0] || [];
-      const expectedHeaders = ['Name', 'Branch', 'Years of Study', 'Degree', 'College Name', 'Email', 'Telegram ID', 'Referral Code', 'Created At', 'Status', 'Premium User', 'Hidden'];
-
-      if (currentHeaders.length < expectedHeaders.length || !currentHeaders.includes('Degree')) {
-        console.log('Updating headers to include Degree column...');
-        await sheets.spreadsheets.values.update({
-          spreadsheetId: SPREADSHEET_ID,
-          range: `${SHEET_NAME}!A1:L1`,
-          valueInputOption: 'RAW',
-          requestBody: {
-            values: [expectedHeaders]
-          }
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error setting up headers:', error);
-  }
-
-  // Add the new row
-  const rowData = [
-    data.name,
-    data.branch,
-    data.yearsOfStudy,
-    data.degree,
-    data.collegeName,
-    data.email,
-    data.telegramId,
-    data.referCode || '',
-    data.createdAt,
-    data.status || 'pending',
-    'false', // Default premium status to false
-    'false' // Default hidden status to false
-  ];
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:L`,
-    valueInputOption: 'RAW',
-    requestBody: {
-      values: [rowData]
-    }
-  });
-}
-
-// Get all entries from Google Sheets
-async function getAllEntries(sheets: any): Promise<any[]> {
-  try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:L`,
-    });
-
-    const rows = response.data.values || [];
-    if (rows.length === 0) return [];
-
-    // Skip header row and convert to objects
-    const headers = rows[0];
-    return rows.slice(1).map((row: string[], index: number) => ({
-      id: index + 2, // Row number in sheet (starting from 2 due to header)
-      name: row[0] || '',
-      branch: row[1] || '',
-      yearsOfStudy: row[2] || '',
-      degree: row[3] || '',
-      collegeName: row[4] || '',
-      email: row[5] || '',
-      telegramId: row[6] || '',
-      hidden: (row[11] || 'false').toLowerCase() === 'true',
-      referCode: row[7] || '',
-      createdAt: row[8] || '',
-      status: row[9] || 'pending',
-      isPremium: (row[10] || 'false').toLowerCase() === 'true'
-    }));
-  } catch (error) {
-    console.error('Error getting all entries:', error);
-    return [];
-  }
-}
-
-// Add verification function
+// Telegram verification function
 async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boolean; message: string }> {
   try {
     // Clean the telegram ID (remove @ if present)
@@ -241,7 +58,7 @@ async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boo
     console.log('Using collection ID:', collections.telegramMembers);
 
     try {
-      // Direct database query instead of HTTP request
+      // Direct database query to check telegram members
       const response = await databases.listDocuments(
         databaseId,
         collections.telegramMembers,
@@ -310,7 +127,6 @@ async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boo
         console.log('Telegram members collection not found - using fallback verification');
         
         // FALLBACK: Allow users to proceed if they have a valid looking Telegram username
-        // This is a temporary solution until the Telegram bot is set up properly
         console.log('Using fallback verification for user:', cleanTelegramId);
         return {
           isVerified: true,
@@ -344,7 +160,6 @@ async function verifyTelegramUser(telegramId: string): Promise<{ isVerified: boo
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     // Authentication is optional for beta registration
-    // Users can register without signing in
     const { isAuthenticated, userEmail } = checkAuthentication(req);
 
     try {
@@ -380,7 +195,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'The email address in the form must match your authenticated account email.'
         });
       }
-      // Allow all users to register, but still verify Telegram membership
+
+      const { databaseId, collections } = appwriteConfig;
+
+      // Check if email already exists in Appwrite
+      try {
+        const existingEmailEntries = await databases.listDocuments(
+          databaseId,
+          collections.betaWishlist,
+          [Query.equal('email', email.toLowerCase().trim())]
+        );
+
+        if (existingEmailEntries.total > 0) {
+          return res.status(409).json({ 
+            error: 'You have already registered for the wishlist with this email address. Please use a different email or contact support if you need assistance.',
+            type: 'email_exists'
+          });
+        }
+      } catch (error) {
+        console.log('Error checking existing email entries:', error);
+        // Continue if there's an error - don't block registration
+      }
+
+      // Check if Telegram ID already exists in Appwrite
+      const cleanTelegramId = telegramId.startsWith('@') ? telegramId.substring(1) : telegramId;
+      try {
+        const existingTelegramEntries = await databases.listDocuments(
+          databaseId,
+          collections.betaWishlist,
+          [Query.equal('telegramId', cleanTelegramId)]
+        );
+
+        if (existingTelegramEntries.total > 0) {
+          const existingUser = existingTelegramEntries.documents[0];
+          return res.status(409).json({ 
+            error: `This Telegram username (@${telegramId}) is already registered by ${existingUser.name} (${existingUser.email}). Each Telegram account can only be used once for beta registration.`,
+            type: 'telegram_exists',
+            existingUser: {
+              name: existingUser.name,
+              email: existingUser.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Partially hide email for privacy
+              collegeName: existingUser.collegeName,
+              registrationDate: existingUser.createdAt ? new Date(existingUser.createdAt).toLocaleDateString() : 'Unknown'
+            }
+          });
+        }
+      } catch (error) {
+        console.log('Error checking existing telegram entries:', error);
+        // Continue if there's an error - don't block registration
+      }
+
+      // Telegram verification (informational only, doesn't block registration)
       console.log('=== TELEGRAM VERIFICATION (INFORMATIONAL) ===');
       console.log('Checking Telegram verification for user:', telegramId);
       
@@ -399,34 +263,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch (verificationError: any) {
         console.log('Telegram verification check failed (allowing registration):', verificationError.message);
         telegramVerificationMessage = 'Verification check failed, but registration allowed';
-      }
-
-      // Initialize Google Sheets client
-      const sheets = await getGoogleSheetsClient();
-
-      // Check if email already exists
-      const emailExists = await checkEmailExists(sheets, email);
-      if (emailExists) {
-        return res.status(409).json({ 
-          error: 'You have already registered for the wishlist with this email address. Please use a different email or contact support if you need assistance.',
-          type: 'email_exists'
-        });
-      }
-
-      // Check if Telegram ID already exists
-      const telegramCheck = await checkTelegramIdExists(sheets, telegramId);
-      if (telegramCheck.exists) {
-        const existingUser = telegramCheck.existingUserData;
-        return res.status(409).json({ 
-          error: `This Telegram username (@${telegramId}) is already registered by ${existingUser.name} (${existingUser.email}). Each Telegram account can only be used once for beta registration.`,
-          type: 'telegram_exists',
-          existingUser: {
-            name: existingUser.name,
-            email: existingUser.email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Partially hide email for privacy
-            collegeName: existingUser.collegeName,
-            registrationDate: existingUser.createdAt ? new Date(existingUser.createdAt).toLocaleDateString() : 'Unknown'
-          }
-        });
       }
 
       // Validate referral code if provided
@@ -477,26 +313,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      // Create wishlist entry
-      const wishlistEntry: WishlistEntry = {
-        name: name.trim(),
-        branch: branch.trim(),
-        yearsOfStudy: yearsOfStudy.trim(),
-        degree: degree.trim(),
-        collegeName: collegeName.trim(),
-        email: email.toLowerCase().trim(),
-        telegramId: telegramId.trim(),
-        referCode: referCode ? referCode.trim() : '',
-        createdAt: new Date().toISOString(),
-        status: 'pending'
-      };
+      // Create wishlist entry in Appwrite
+      const wishlistEntry = await databases.createDocument(
+        databaseId,
+        collections.betaWishlist,
+        ID.unique(),
+        {
+          name: name.trim(),
+          branch: branch.trim(),
+          yearsOfStudy: yearsOfStudy.trim(),
+          degree: degree.trim(),
+          collegeName: collegeName.trim(),
+          email: email.toLowerCase().trim(),
+          telegramId: cleanTelegramId,
+          referCode: referCode ? referCode.trim() : '',
+          createdAt: new Date().toISOString(),
+          joinedAt: new Date().toISOString(), // Required field
+          status: 'pending',
+          isPremium: false,
+          hidden: false
+        }
+      );
 
-      // Add to Google Sheets
-      await addToSheet(sheets, wishlistEntry);
+      console.log('✅ Beta wishlist entry created successfully in Appwrite:', wishlistEntry.$id);
 
       // Create success response with referral information
       let successMessage = 'Successfully registered for beta wishlist!';
       const responseData: any = {
+        id: wishlistEntry.$id,
         name: wishlistEntry.name,
         email: wishlistEntry.email,
         collegeName: wishlistEntry.collegeName
@@ -523,7 +367,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       res.status(201).json({
         message: successMessage,
-        data: responseData
+        data: responseData,
+        telegramVerification: telegramVerificationMessage
       });
 
     } catch (error: any) {
@@ -533,46 +378,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         details: error.message
       });
     }
-  } else if (req.method === 'PUT') {
-    // Toggle user hidden status based on email verification
-    const { email, hide, userId } = req.body;
-    if (!email || typeof hide !== 'boolean' || typeof userId !== 'number') {
-      return res.status(400).json({ error: 'Invalid request payload' });
-    }
-
-    try {
-      const sheets = await getGoogleSheetsClient();
-      const entries = await getAllEntries(sheets);
-
-      const userEntry = entries.find(entry => entry.id === userId && entry.email.toLowerCase() === email.toLowerCase());
-
-      if (!userEntry) {
-        return res.status(404).json({ error: 'User not found or email does not match' });
-      }
-
-      const newValue = hide ? 'true' : 'false';
-      const updateRange = `${SHEET_NAME}!L${userEntry.id}`;
-
-      await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
-        range: updateRange,
-        valueInputOption: 'RAW',
-        requestBody: { values: [[newValue]] }
-      });
-
-      res.status(200).json({ message: `User visibility successfully ${hide ? 'hidden' : 'unhidden'}` });
-    } catch (error: any) {
-      console.error('Error toggling user hidden status:', error);
-      res.status(500).json({ error: 'Failed to update user hidden status', details: error.message });
-    }
   } else if (req.method === 'GET') {
-    // Get all wishlist entries (for admin use)
+    // Get all wishlist entries from Appwrite (for admin use)
     try {
-      const sheets = await getGoogleSheetsClient();
-      const entries = await getAllEntries(sheets);
+      const { databaseId, collections } = appwriteConfig;
+      
+      console.log('🔍 Fetching wishlist entries from Appwrite...');
+      const startTime = Date.now();
+      
+      const entries = await databases.listDocuments(
+        databaseId,
+        collections.betaWishlist,
+        [Query.orderDesc('$createdAt'), Query.limit(1000)]
+      );
+      
+      const fetchTime = Date.now() - startTime;
+      console.log(`✅ Fetched ${entries.total} entries in ${fetchTime}ms`);
+      
+      // Add response headers for better performance
+      res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
+      res.setHeader('Content-Type', 'application/json');
+
+      // Transform entries to match expected format
+      const transformedEntries = entries.documents.map((entry: any) => ({
+        id: entry.$id,
+        name: entry.name || '',
+        branch: entry.branch || '',
+        yearsOfStudy: entry.yearsOfStudy || '',
+        degree: entry.degree || '',
+        collegeName: entry.collegeName || '',
+        email: entry.email || '',
+        telegramId: entry.telegramId || '',
+        referCode: entry.referCode || '',
+        createdAt: entry.createdAt || entry.$createdAt,
+        status: entry.status || 'pending',
+        isPremium: entry.isPremium || false,
+        hidden: entry.hidden || false
+      }));
 
       // Group entries by college name
-      const entriesByCollege = entries.reduce((acc: any, entry: any) => {
+      const entriesByCollege = transformedEntries.reduce((acc: any, entry: any) => {
         const collegeName = entry.collegeName;
         if (!acc[collegeName]) {
           acc[collegeName] = [];
@@ -589,13 +434,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }));
 
       res.status(200).json({
-        total: entries.length,
-        entries: entries, // Add entries array for list view
+        total: transformedEntries.length,
+        entries: transformedEntries,
         entriesByCollege,
-        collegeSummary, // Add collegeSummary for college view
-        totalCount: entries.length, // Add totalCount for stats
+        collegeSummary,
+        totalCount: transformedEntries.length,
         summary: {
-          totalEntries: entries.length,
+          totalEntries: transformedEntries.length,
           collegeCount: Object.keys(entriesByCollege).length,
           colleges: Object.keys(entriesByCollege).sort()
         }
@@ -607,6 +452,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: 'Failed to fetch wishlist entries',
         details: error.message
       });
+    }
+  } else if (req.method === 'PUT') {
+    // Update user visibility in Appwrite
+    const { email, hide, userId } = req.body;
+    if (!email || typeof hide !== 'boolean' || !userId) {
+      return res.status(400).json({ error: 'Invalid request payload' });
+    }
+
+    try {
+      const { databaseId, collections } = appwriteConfig;
+      
+      // Find the user by email and ID
+      const userEntries = await databases.listDocuments(
+        databaseId,
+        collections.betaWishlist,
+        [
+          Query.equal('email', email.toLowerCase()),
+          Query.equal('$id', userId)
+        ]
+      );
+
+      if (userEntries.total === 0) {
+        return res.status(404).json({ error: 'User not found or email does not match' });
+      }
+
+      const userEntry = userEntries.documents[0];
+
+      // Update the hidden status
+      await databases.updateDocument(
+        databaseId,
+        collections.betaWishlist,
+        userEntry.$id,
+        {
+          hidden: hide
+        }
+      );
+
+      res.status(200).json({ message: `User visibility successfully ${hide ? 'hidden' : 'unhidden'}` });
+    } catch (error: any) {
+      console.error('Error toggling user hidden status:', error);
+      res.status(500).json({ error: 'Failed to update user hidden status', details: error.message });
     }
   } else {
     res.setHeader('Allow', ['POST', 'GET', 'PUT']);

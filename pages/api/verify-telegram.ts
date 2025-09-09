@@ -3,7 +3,32 @@ import { Query } from 'node-appwrite';
 import { serverDatabases } from '../../src/lib/appwrite-server';
 import { appwriteConfig } from '../../src/lib/appwriteConfig';
 
-// Simple role check function
+// Authentication check function - more permissive for beta wishlist
+const checkAuthentication = (req: NextApiRequest): { isAuthenticated: boolean; userEmail?: string; userRole?: string } => {
+  try {
+    // Get user cookie
+    const userCookie = req.cookies.user;
+    if (!userCookie) {
+      return { isAuthenticated: false };
+    }
+
+    const userData = JSON.parse(decodeURIComponent(userCookie));
+    if (!userData.email) {
+      return { isAuthenticated: false };
+    }
+
+    return { 
+      isAuthenticated: true, 
+      userEmail: userData.email,
+      userRole: userData.role || 'user'
+    };
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return { isAuthenticated: false };
+  }
+};
+
+// Role check function for admin-level access
 const checkUserRole = (req: NextApiRequest): { hasAccess: boolean; userRole?: string } => {
   try {
     // Get user cookie
@@ -49,15 +74,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Check user role for access control
-  const { hasAccess, userRole } = checkUserRole(req);
+  // Authentication is optional for beta registration - anyone can verify Telegram membership
+  const { isAuthenticated, userEmail, userRole } = checkAuthentication(req);
   
-  if (!hasAccess) {
-    console.log(`Access denied for user role: ${userRole}`);
-    return res.status(403).json({ 
-      error: 'Access denied', 
-      message: 'You do not have permission to access this resource. Required roles: admin, manager, intern, or team.' 
-    });
+  if (isAuthenticated) {
+    console.log(`Telegram verification requested by authenticated user: ${userEmail} (role: ${userRole})`);
+    
+    // Optional: Add extra validation for admin-level access
+    const { hasAccess } = checkUserRole(req);
+    if (!hasAccess && userRole !== 'user') {
+      // If user has a role but it's not in allowed roles, log it but don't block beta users
+      console.log(`Note: User ${userEmail} has role '${userRole}' which is not in admin roles, but allowing for beta verification`);
+    }
+  } else {
+    console.log('Telegram verification requested by unauthenticated user (allowed for beta registration)');
   }
 
   const { username } = req.query;

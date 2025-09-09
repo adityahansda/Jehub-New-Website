@@ -22,17 +22,34 @@ import {
   ChevronUp,
   List,
   Grid3X3,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Shield,
+  Settings,
+  Edit,
+  Save,
+  X,
+  UserCheck,
+  UserX,
+  AlertTriangle,
+  Eye,
+  Mail,
+  User,
+  MapPin
 } from 'lucide-react';
 
 interface WishlistUser {
+  id?: string;
   name: string;
+  email?: string;
+  telegramId?: string;
   status?: string;
   isPremium?: boolean;
   collegeName?: string;
   branch?: string;
   degree?: string;
   yearsOfStudy?: string;
+  createdAt?: string;
+  hidden?: boolean;
 }
 
 interface CollegeSummary {
@@ -53,12 +70,46 @@ const WishlistUsers: React.FC = () => {
   const [userReferralCode, setUserReferralCode] = useState<string>('');
   const [showReferralSection, setShowReferralSection] = useState(false);
   const [referralMessage, setReferralMessage] = useState('');
+  const [selectedUser, setSelectedUser] = useState<WishlistUser | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { user } = useAuth();
 
   useEffect(() => {
     fetchWishlistData();
+    checkAdminRole();
   }, []);
+
+  // Check if user has admin role
+  const checkAdminRole = async () => {
+    if (user?.email) {
+      try {
+        const profile = await userService.getUserProfile(user.email);
+        console.log('User profile:', profile);
+        setUserProfile(profile);
+        const adminRoles = ['admin', 'manager', 'intern'];
+        const hasAdminRole = adminRoles.includes(profile?.role?.toLowerCase() || '');
+        console.log('Admin role check:', {
+          userEmail: user.email,
+          userRole: profile?.role,
+          hasAdminRole,
+          adminRoles
+        });
+        
+        setIsAdmin(hasAdminRole);
+        
+      } catch (error) {
+        console.error('Error checking admin role:', error);
+        setIsAdmin(false);
+      }
+    } else {
+      console.log('No authenticated user - admin access denied');
+      setIsAdmin(false);
+    }
+  };
 
   // Fetch user's referral code if logged in
   useEffect(() => {
@@ -106,15 +157,87 @@ const WishlistUsers: React.FC = () => {
   const fetchWishlistData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/beta-wishlist-sheets');
+      setError('');
+      
+      // Use Appwrite API which is faster and more reliable
+      const response = await axios.get('/api/beta-wishlist-appwrite', {
+        timeout: 10000 // 10 second timeout
+      });
+      
+      console.log('Wishlist data loaded:', {
+        total: response.data.total,
+        entries: response.data.entries?.length || 0,
+        colleges: response.data.collegeSummary?.length || 0
+      });
+      
       setUsers(response.data.entries || []);
       setCollegeSummary(response.data.collegeSummary || []);
-      setTotalCount(response.data.totalCount || 0);
+      setTotalCount(response.data.totalCount || response.data.total || 0);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch wishlist data');
+      console.error('Error fetching wishlist data:', err);
+      const errorMessage = err.code === 'ECONNABORTED' 
+        ? 'Request timed out. Please try again.' 
+        : err.response?.data?.error || 'Failed to fetch wishlist data. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Admin function to update user status
+  const updateUserStatus = async (user: WishlistUser, newStatus: string) => {
+    if (!isAdmin || !user.id) {
+      console.error('Unauthorized or invalid user. Admin:', isAdmin, 'User ID:', user.id);
+      alert('Cannot update user: Missing user ID or insufficient permissions');
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      
+      console.log(`Updating user ${user.name} (ID: ${user.id}) status to ${newStatus}`);
+      
+      const response = await axios.post('/api/admin/update-user-status', {
+        userId: user.id,
+        status: newStatus
+      });
+
+      if (response.data.success) {
+        // Update the user in local state - use lowercase status for consistency
+        const updatedStatus = newStatus.toLowerCase();
+        setUsers(prevUsers => 
+          prevUsers.map(u => 
+            u.id === user.id ? { ...u, status: updatedStatus } : u
+          )
+        );
+        
+        // Update college summary as well
+        setCollegeSummary(prevSummary => 
+          prevSummary.map(college => ({
+            ...college,
+            users: college.users.map(u => 
+              u.id === user.id ? { ...u, status: updatedStatus } : u
+            )
+          }))
+        );
+        
+        console.log(`User ${user.name} status updated to ${newStatus}`);
+        alert(`Successfully updated ${user.name}'s status to ${newStatus}`);
+      }
+    } catch (error: any) {
+      console.error('Error updating user status:', error);
+      alert(`Error updating user status: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Admin function to view user details
+  const viewUserDetails = (user: WishlistUser) => {
+    if (!isAdmin) return;
+    
+    setSelectedUser(user);
+    setShowUserModal(true);
   };
 
   const filteredUsers = users.filter(user => 
@@ -362,26 +485,40 @@ const WishlistUsers: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Toggle View Mode */}
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => setViewMode('users')}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition ${
-                      viewMode === 'users' ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'
-                    }`}
-                  >
-                    <List className="h-4 w-4" />
-                    <span>All Users</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('colleges')}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition ${
-                      viewMode === 'colleges' ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'
-                    }`}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                    <span>Colleges</span>
-                  </button>
+                {/* Toggle View Mode and Admin Controls */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => setViewMode('users')}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition ${
+                        viewMode === 'users' ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <List className="h-4 w-4" />
+                      <span>All Users</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('colleges')}
+                      className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm focus:outline-none transition ${
+                        viewMode === 'colleges' ? 'bg-white/20 text-white' : 'text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                      <span>Colleges</span>
+                    </button>
+                  </div>
+                  
+                  {/* Admin Menu Button - Only visible to admin users */}
+                  {isAdmin && (
+                    <div className="flex items-center border-l border-white/20 pl-4">
+                      <div className="bg-gradient-to-r from-red-600/20 to-purple-600/20 border border-red-500/30 rounded-lg px-3 py-2">
+                        <div className="flex items-center space-x-2 text-red-300">
+                          <Shield className="h-4 w-4" />
+                          <span className="text-xs font-semibold">ADMIN PANEL</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -473,6 +610,89 @@ const WishlistUsers: React.FC = () => {
                                   </div>
                                 </div>
                               )}
+                              
+                              {/* Admin Controls - Only visible to admin users */}
+                              {isAdmin && (
+                                <div className="border-t border-white/10 pt-4 mt-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="text-xs text-gray-400 flex items-center space-x-2">
+                                      <Shield className="h-3 w-3" />
+                                      <span>Admin Actions</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      {/* View Details Button */}
+                                      <motion.button
+                                        onClick={() => viewUserDetails(user)}
+                                        className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 rounded-lg text-xs transition-colors duration-200"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        disabled={isUpdating}
+                                      >
+                                        <Eye className="h-3 w-3" />
+                                        <span>View</span>
+                                      </motion.button>
+                                      
+                                      {/* Debug Info */}
+                                      {isAdmin && (
+                                        <div className="text-xs text-gray-500 mb-2">
+                                          ID: {user.id || 'No ID'} | Status: {user.status || 'No status'}
+                                        </div>
+                                      )}
+                                      
+                                      {/* Approve Button - Only if not already selected */}
+                                      {user.status?.toLowerCase() !== 'selected' && (
+                                        <motion.button
+                                          onClick={() => updateUserStatus(user, 'Selected')}
+                                          className="flex items-center space-x-1 px-3 py-1.5 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 rounded-lg text-xs transition-colors duration-200"
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          disabled={isUpdating}
+                                        >
+                                          <UserCheck className="h-3 w-3" />
+                                          <span>Approve</span>
+                                        </motion.button>
+                                      )}
+                                      
+                                      {/* Reject Button - Only if not already rejected */}
+                                      {user.status?.toLowerCase() !== 'rejected' && (
+                                        <motion.button
+                                          onClick={() => updateUserStatus(user, 'Rejected')}
+                                          className="flex items-center space-x-1 px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-300 rounded-lg text-xs transition-colors duration-200"
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          disabled={isUpdating}
+                                        >
+                                          <UserX className="h-3 w-3" />
+                                          <span>Reject</span>
+                                        </motion.button>
+                                      )}
+                                      
+                                      {/* Reset to Pending Button - Only if already approved/rejected */}
+                                      {(user.status?.toLowerCase() === 'selected' || user.status?.toLowerCase() === 'rejected') && (
+                                        <motion.button
+                                          onClick={() => updateUserStatus(user, 'Pending')}
+                                          className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 text-yellow-300 rounded-lg text-xs transition-colors duration-200"
+                                          whileHover={{ scale: 1.05 }}
+                                          whileTap={{ scale: 0.95 }}
+                                          disabled={isUpdating}
+                                        >
+                                          <Clock className="h-3 w-3" />
+                                          <span>Reset</span>
+                                        </motion.button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {isUpdating && (
+                                    <div className="mt-2 flex items-center justify-center">
+                                      <div className="flex items-center space-x-2 text-xs text-blue-400">
+                                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-400 border-t-transparent"></div>
+                                        <span>Updating...</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </motion.div>
                         ))}
@@ -547,6 +767,222 @@ const WishlistUsers: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* User Details Modal - Only visible to admin users */}
+      {showUserModal && selectedUser && isAdmin && (
+        <motion.div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-gradient-to-br from-slate-900 to-purple-900/50 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+          >
+            {/* Modal Header */}
+            <div className="relative bg-gradient-to-r from-purple-600/80 via-blue-600/80 to-indigo-700/80 backdrop-blur-sm px-6 py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white/10 p-2 rounded-xl">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">User Details</h2>
+                    <p className="text-purple-100 text-sm">Beta Program Application</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setSelectedUser(null);
+                  }}
+                  className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6">
+              {/* Basic Info */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-blue-400" />
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.name}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.email || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Telegram ID</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.telegramId || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Registration Date</label>
+                    <div className="text-white text-sm mt-1">
+                      {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'Not available'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Academic Info */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <Building2 className="h-5 w-5 mr-2 text-green-400" />
+                  Academic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">College</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.collegeName || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Branch</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.branch || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Degree</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.degree || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Years of Study</label>
+                    <div className="text-white text-sm mt-1">{selectedUser.yearsOfStudy || 'Not provided'}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status & Actions */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <Settings className="h-5 w-5 mr-2 text-purple-400" />
+                  Status & Actions
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Status</label>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold border ${
+                          selectedUser.status === 'Selected' || selectedUser.status === 'selected' 
+                            ? 'bg-green-500/20 text-green-300 border-green-500/30' 
+                            : selectedUser.status === 'Rejected' || selectedUser.status === 'rejected'
+                            ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                            : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                        }`}>
+                          {selectedUser.status === 'Selected' || selectedUser.status === 'selected' ? (
+                            <CheckCircle className="h-3 w-3" />
+                          ) : selectedUser.status === 'Rejected' || selectedUser.status === 'rejected' ? (
+                            <XCircle className="h-3 w-3" />
+                          ) : (
+                            <Clock className="h-3 w-3" />
+                          )}
+                          <span>{selectedUser.status || 'Pending'}</span>
+                        </div>
+                        {selectedUser.isPremium && (
+                          <div className="inline-flex items-center space-x-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-2 py-0.5 rounded-full text-xs font-bold">
+                            <Crown className="h-3 w-3" />
+                            <span>Premium</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
+                    {selectedUser.status !== 'Selected' && selectedUser.status !== 'selected' && (
+                      <motion.button
+                        onClick={() => {
+                          updateUserStatus(selectedUser, 'Selected');
+                          setShowUserModal(false);
+                          setSelectedUser(null);
+                        }}
+                        className="flex items-center space-x-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-300 rounded-lg text-sm transition-colors duration-200"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={isUpdating}
+                      >
+                        <UserCheck className="h-4 w-4" />
+                        <span>Approve User</span>
+                      </motion.button>
+                    )}
+                    
+                    {selectedUser.status !== 'Rejected' && selectedUser.status !== 'rejected' && (
+                      <motion.button
+                        onClick={() => {
+                          updateUserStatus(selectedUser, 'Rejected');
+                          setShowUserModal(false);
+                          setSelectedUser(null);
+                        }}
+                        className="flex items-center space-x-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-300 rounded-lg text-sm transition-colors duration-200"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={isUpdating}
+                      >
+                        <UserX className="h-4 w-4" />
+                        <span>Reject User</span>
+                      </motion.button>
+                    )}
+                    
+                    {(selectedUser.status === 'Selected' || selectedUser.status === 'selected' || selectedUser.status === 'Rejected' || selectedUser.status === 'rejected') && (
+                      <motion.button
+                        onClick={() => {
+                          updateUserStatus(selectedUser, 'Pending');
+                          setShowUserModal(false);
+                          setSelectedUser(null);
+                        }}
+                        className="flex items-center space-x-2 px-4 py-2 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-500/30 text-yellow-300 rounded-lg text-sm transition-colors duration-200"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={isUpdating}
+                      >
+                        <Clock className="h-4 w-4" />
+                        <span>Reset to Pending</span>
+                      </motion.button>
+                    )}
+                  </div>
+                  
+                  {isUpdating && (
+                    <div className="flex items-center justify-center py-2">
+                      <div className="flex items-center space-x-2 text-sm text-blue-400">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></div>
+                        <span>Updating user status...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-white/5 border-t border-white/10 rounded-b-2xl">
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowUserModal(false);
+                    setSelectedUser(null);
+                  }}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors duration-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
 
       <Footer />
     </>

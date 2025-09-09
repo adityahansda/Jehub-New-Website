@@ -430,18 +430,15 @@ const WishlistRegistration: React.FC = () => {
     
 
     
-    // Check if user is authenticated
-    if (!user) {
-      setError("Please sign in to submit your registration.");
-      return;
-    }
+    // Authentication is not required for beta registration
+    // Users can register without signing in
 
     setMessage("");
     setError("");
     setIsSubmitting(true);
 
     try {
-      // Check if email matches user's authenticated email
+      // If user is signed in, check if email matches (optional validation)
       if (user && form.email !== user.email) {
         setError(
           `📧 Email Mismatch\n\nThe email address in the form (${form.email}) must match your authenticated account email (${user.email}). Please update the email field to match your account.`
@@ -457,7 +454,7 @@ const WishlistRegistration: React.FC = () => {
       };
 
       const response = await axios.post(
-        "/api/beta-wishlist-sheets",
+        "/api/beta-wishlist-appwrite",
         submitData
       );
 
@@ -547,11 +544,7 @@ const WishlistRegistration: React.FC = () => {
                   🚀 Join Our Telegram Community
                 </h3>
                 <p className="text-gray-300 text-sm mb-4 text-center sm:text-left leading-relaxed">
-                  {user ? (
-                    "✅ You're signed in and ready to join the beta program! We encourage you to join our Telegram group for updates and support."
-                  ) : (
-                    "📝 Fill out the form below and sign in to join the beta program! We encourage you to join our Telegram group for updates and support."
-                  )}
+                  "📝 Fill out the form below to join the beta program! We encourage you to join our Telegram group for updates and support."
                 </p>
                 <div className="space-y-3 text-sm">
                   {/* Join Community Row - Mobile Friendly */}
@@ -581,9 +574,8 @@ const WishlistRegistration: React.FC = () => {
               </div>
             </div>
 
-            {/* Form */}
-            {user ? (
-              <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+            {/* Form - Available to everyone */}
+            <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
                 
                 {message && (
                   <motion.div
@@ -758,16 +750,16 @@ const WishlistRegistration: React.FC = () => {
                         ? 'bg-gray-600 border border-gray-500 text-gray-300 cursor-not-allowed'
                         : 'bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     }`}
-                    placeholder={user ? "your.email@example.com" : "Enter your email (will be verified after login)"}
+                    placeholder={user ? "your.email@example.com" : "Enter your email address"}
                   />
                   <p className="text-xs text-gray-400 mt-1">
                     {user 
                       ? 'This email is automatically set from your authenticated account and cannot be changed.'
-                      : 'Enter your email address. It will be verified against your account after you sign in. Make sure it matches the email you use to sign in!'
+                      : 'Enter your email address. Make sure it is a valid email format.'
                     }
                     {!user && (
-                      <span className="block mt-1 text-yellow-400">
-                        ⚠️ The email must be in a valid format (e.g., user@example.com)
+                      <span className="block mt-1 text-blue-400">
+                        💡 Enter a valid email address (e.g., user@example.com)
                       </span>
                     )}
                   </p>
@@ -972,34 +964,12 @@ const WishlistRegistration: React.FC = () => {
                     </div>
                   ) : form.telegramId && verificationStatus !== "verified" ? (
                     "Please verify Telegram membership first"
-                  ) : !user ? (
-                    "📝 Fill Form & Sign In"
                   ) : (
                     "🚀 Join Beta Program"
                   )}
                 </button>
               </div>
             </form>
-            ) : (
-              /* Login Required Section for Unauthenticated Users */
-              <div className="px-8 py-6 text-center">
-                <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-6 mb-6">
-                  <span className="text-4xl mb-4 block">🔐</span>
-                  <h3 className="text-xl font-semibold text-yellow-200 mb-2">
-                    Sign In Required
-                  </h3>
-                  <p className="text-yellow-300 mb-6">
-                    You need to sign in to join the beta program
-                  </p>
-                  <button
-                    onClick={() => router.push('/login?redirect=/beta-wishlist')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 text-lg"
-                  >
-                    Sign In
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Benefits Section */}
             <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 px-8 py-6">
