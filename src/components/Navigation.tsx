@@ -10,7 +10,7 @@ import React, {
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield, Search, Zap, Coins, Settings, User, LogOut, Home, Activity, Award, Target, Bookmark, LayoutDashboard, FileText } from 'lucide-react';
+import { BookOpen, Download, Upload, GitPullRequest, BarChart2, MessageSquare, UserPlus, Menu, X, Star, FlaskConical, Users, Info, Briefcase, Trophy, GraduationCap, ChevronDown, Sparkles, Bell, Calendar, UserCheck, Gift, MessageCircle, Shield, Search, Zap, Coins, Settings, User, LogOut, Home, Activity, Award, Target, Bookmark, LayoutDashboard, FileText, Heart } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { getDashboardUrl } from '../utils/dashboardRouter';
@@ -172,6 +172,13 @@ const Navigation = () => {
                     className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
                   >
                     <span>About Us</span>
+                  </Link>
+                  
+                  <Link
+                    href="/beta-wishlist"
+                    className="group relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+                  >
+                    <span>Wishlist</span>
                   </Link>
                   
                   <Link
@@ -459,6 +466,16 @@ const Navigation = () => {
                   </button>
                 );
               })}
+
+              {/* Wishlist Users Navigation Item */}
+              <Link
+                href="/wishlist-users"
+                onClick={() => setIsMenuOpen(false)}
+                className="group w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
+              >
+                <Users className="h-5 w-5 text-gray-400 group-hover:text-gray-200 transition-all duration-200" />
+                <span className="font-medium">Wishlist Users</span>
+              </Link>
 
               {/* Divider */}
               <div className="my-6">
