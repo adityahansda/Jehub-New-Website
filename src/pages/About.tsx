@@ -141,7 +141,7 @@ const About = () => {
     },
     {
       icon: TrendingUp,
-      title: 'Active Since 1 Year',
+      title: 'Active Since 2022',
       description: 'A growing and reliable space led by students for students'
     }
   ];
@@ -171,7 +171,7 @@ const About = () => {
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-3 rounded-full">
                 <Award className="h-5 w-5 text-blue-600" />
-                <span className="text-blue-800 font-semibold">Active Since 1 Year</span>
+                <span className="text-blue-800 font-semibold">Active Since 2022</span>
               </div>
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-teal-50 px-6 py-3 rounded-full">
                 <Users className="h-5 w-5 text-green-600" />
@@ -285,9 +285,9 @@ const About = () => {
               <div className="bg-gradient-to-r from-blue-500 to-purple-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <GraduationCap className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Diploma Students</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3 text-center">Diploma & B.Tech Students</h3>
               <p className="text-gray-600 text-center leading-relaxed">
-                Students from across India seeking reliable academic resources, peer support, and community connections.
+                Engineering students from Diploma and B.Tech programs across India seeking reliable academic resources, peer support, and community connections as we expand nationwide.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
@@ -663,7 +663,7 @@ const About = () => {
                   <h3 className="text-xl font-semibold text-gray-900">The Beginning</h3>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
-                  JEHUB was founded by Aditya Hansda, a visionary diploma student who wanted to build a space where 
+                  JEHUB was founded by Aditya Hansda, a visionary B.tech student who wanted to build a space where 
                   fellow learners felt heard, guided, and connected. The initiative began with a small group of students 
                   from Jharkhand, which gave us a focused understanding of the academic challenges and student 
                   pain points in the Indian education system.

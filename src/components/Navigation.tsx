@@ -30,7 +30,6 @@ const Navigation = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isAllPagesOpen, setIsAllPagesOpen] = useState(false);
   const [userPoints, setUserPoints] = useState({ availablePoints: 0, points: 0, pointsSpent: 0 });
   const [pointsLoading, setPointsLoading] = useState(false);
   const router = useRouter();
@@ -38,7 +37,6 @@ const Navigation = () => {
 
   const navItems = useMemo(() => [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/notes-download', label: 'Notes', icon: Download },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/events', label: 'Events', icon: Calendar },
     { path: '/internships', label: 'Internships', icon: Briefcase },
@@ -46,74 +44,6 @@ const Navigation = () => {
     { path: '/blog', label: 'Blog', icon: BookOpen },
     { path: '/about', label: 'About', icon: Info },
     { path: '/team', label: 'Team', icon: Star }
-  ], []);
-
-  // All Pages Mega Menu - comprehensive list of all site pages
-  const allPagesMenu = useMemo(() => [
-    {
-      category: 'Main Pages',
-      pages: [
-        { path: '/', label: 'Home', icon: Home, description: 'Welcome to JEHUB' },
-        { path: '/about', label: 'About Us', icon: Info, description: 'Learn about JEHUB' },
-        { path: '/contact', label: 'Contact Us', icon: MessageCircle, description: 'Get in touch with us' }
-      ]
-    },
-    {
-      category: 'Academic Resources',
-      pages: [
-        { path: '/notes-download', label: 'Download Notes', icon: Download, description: 'Browse & download study materials' },
-        { path: '/notes/upload', label: 'Upload Notes', icon: Upload, description: 'Share your study materials' },
-        { path: '/notes/request', label: 'Request Notes', icon: GitPullRequest, description: 'Request specific materials' },
-        { path: '/exam-updates', label: 'Exam Updates', icon: Bell, description: 'Latest exam notifications' },
-        { path: '/counselling-updates', label: 'Counselling Updates', icon: UserCheck, description: 'Admission counselling info' }
-      ]
-    },
-    {
-      category: 'Community & Events',
-      pages: [
-        { path: '/events', label: 'Events', icon: Calendar, description: 'Upcoming academic events' },
-        { path: '/groups', label: 'Study Groups', icon: Users, description: 'Join study communities' },
-        { path: '/leaderboard', label: 'Leaderboard', icon: Trophy, description: 'Top contributors ranking' },
-        { path: '/blog', label: 'Blog', icon: BookOpen, description: 'Educational articles & tips' },
-        { path: '/telegram-members', label: 'Telegram Community', icon: MessageCircle, description: 'Join our Telegram group' }
-      ]
-    },
-    {
-      category: 'Career & Opportunities',
-      pages: [
-        { path: '/internships', label: 'Internships', icon: Briefcase, description: 'Latest internship opportunities' },
-        { path: '/job-updates', label: 'Job Updates', icon: Target, description: 'Career opportunities' },
-        { path: '/placement-prep', label: 'Placement Prep', icon: GraduationCap, description: 'Interview preparation' }
-      ]
-    },
-    {
-      category: 'Team & Organization',
-      pages: [
-        { path: '/team', label: 'Our Team', icon: Users, description: 'Meet the JEHUB team' },
-        { path: '/team/join-team', label: 'Join Our Team', icon: UserPlus, description: 'Become a team member' },
-        { path: '/team/old-team-members', label: 'Alumni Team', icon: Award, description: 'Former team members' }
-      ]
-    },
-    {
-      category: 'User Features',
-      pages: [
-        { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Your personal dashboard' },
-        { path: '/profile', label: 'Profile', icon: User, description: 'Manage your profile' },
-        { path: '/notifications', label: 'Notifications', icon: Bell, description: 'Your updates & alerts' },
-        { path: '/settings', label: 'Settings', icon: Settings, description: 'Account preferences' },
-        { path: '/referral', label: 'Referrals', icon: Gift, description: 'Invite friends & earn rewards' }
-      ]
-    },
-    {
-      category: 'Resources & Tools',
-      pages: [
-        { path: '/wishlist-users', label: 'Beta Access', icon: Star, description: 'Join beta testing program' },
-        { path: '/features', label: 'Features', icon: Sparkles, description: 'Explore all features' },
-        { path: '/misc/pageindex', label: 'Site Map', icon: Target, description: 'All pages directory' },
-        { path: '/privacy-policy', label: 'Privacy Policy', icon: Shield, description: 'Data protection policy' },
-        { path: '/terms-of-service', label: 'Terms of Service', icon: FileText, description: 'Usage terms & conditions' }
-      ]
-    }
   ], []);
 
 
@@ -285,82 +215,8 @@ const Navigation = () => {
             {/* Center Section - Spacer */}
             <div className="flex-1"></div>
 
-            {/* Right Section - Menu, Notifications, Profile */}
+            {/* Right Section - Notifications, Profile */}
             <div className="flex items-center space-x-3">
-              {/* All Pages Menu - Desktop - Only show on non-home pages */}
-              {!isHomePage && (
-                <div className="hidden lg:flex items-center">
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsAllPagesOpen(!isAllPagesOpen)}
-                      className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-300 hover:text-white hover:bg-gray-800"
-                    >
-                      <Menu className="h-4 w-4" />
-                      <span>All Pages</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isAllPagesOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                  
-                  {isAllPagesOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-screen max-w-6xl bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden z-50">
-                      <div className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                          {allPagesMenu.map((section, sectionIndex) => (
-                            <div key={sectionIndex} className="space-y-3">
-                              <div className="flex items-center space-x-2 mb-4">
-                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                                  {section.category}
-                                </h3>
-                              </div>
-                              <div className="space-y-2">
-                                {section.pages.map((page, pageIndex) => {
-                                  const IconComponent = page.icon;
-                                  return (
-                                    <Link
-                                      key={pageIndex}
-                                      href={page.path}
-                                      onClick={() => setIsAllPagesOpen(false)}
-                                      className="group block p-3 rounded-lg hover:bg-blue-50 transition-all duration-200 border border-transparent hover:border-blue-100"
-                                    >
-                                      <div className="flex items-start space-x-3">
-                                        <div className="w-8 h-8 bg-gray-100 group-hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors duration-200 flex-shrink-0">
-                                          <IconComponent className="h-4 w-4 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className="font-medium text-sm text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
-                                            {page.label}
-                                          </p>
-                                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                                            {page.description}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </Link>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Footer section with quick stats or call to action */}
-                        <div className="border-t border-gray-100 mt-6 pt-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs text-gray-500">Explore all features of JEHUB platform</p>
-                            <button 
-                              onClick={() => setIsAllPagesOpen(false)}
-                              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                            >
-                              Close Menu
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  </div>
-                </div>
-              )}
 
               {/* Points Display - Only show for authenticated users */}
               {user && isVerified && (
@@ -449,16 +305,6 @@ const Navigation = () => {
                         
                         {/* Main Actions */}
                         <div className="py-2">
-                          <button onClick={() => handleProfileClick(getDashboardUrl(userProfile))} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group">
-                            <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-200">
-                              <GraduationCap className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="flex-1 text-left">
-                              <span className="font-medium">Dashboard</span>
-                              <p className="text-xs text-gray-500">View your stats & activity</p>
-                            </div>
-                          </button>
-                          
                           <button onClick={() => handleProfileClick('/settings')} className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 group">
                             <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors duration-200">
                               <Settings className="h-4 w-4 text-gray-600" />
@@ -619,21 +465,6 @@ const Navigation = () => {
                 <div className="border-t border-gray-200"></div>
               </div>
 
-              {/* Additional Links - Only show dashboard for verified users */}
-              {user && isVerified && (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      router.push(getDashboardUrl(userProfile));
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <GraduationCap className="h-5 w-5 text-gray-500" />
-                    <span className="font-medium">Dashboard</span>
-                  </button>
-                </div>
-              )}
 
               {/* Auth Section */}
               <div className="mt-8 pt-6">
@@ -684,13 +515,6 @@ const Navigation = () => {
 
                       {/* Profile Actions */}
                       <div className="space-y-2">
-                        <button
-                          onClick={() => handleProfileClick(getDashboardUrl(userProfile))}
-                          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                        >
-                          <GraduationCap className="h-5 w-5" />
-                          <span>Dashboard</span>
-                        </button>
                         {/* Conditionally show Upload Notes button based on user role */}
                         {isEligibleForNotesUpload(userProfile?.role) && (
                           <button

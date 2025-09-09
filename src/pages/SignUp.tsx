@@ -6,8 +6,11 @@ import { userService } from '../services/userService';
 import { pointsService } from '../services/pointsService';
 import { deviceTrackingService } from '../services/deviceTrackingService';
 import { NextSeo } from 'next-seo';
-import { AlertCircle, Check, User, Mail, Phone, GraduationCap, MessageCircle } from 'lucide-react';
+import { AlertCircle, Check, User, Mail, Phone, GraduationCap, MessageCircle, XCircle } from 'lucide-react';
 import SuccessToast from '../components/SuccessToast';
+
+// Configuration flag to control new registrations
+const REGISTRATION_DISABLED = true; // Set to false to allow new registrations
 
 // Comprehensive list of colleges and institutes affiliated with the university
 const COLLEGES_LIST = {
@@ -104,6 +107,8 @@ const SignUp: React.FC = () => {
   const [step, setStep] = useState(1);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isRegistrationBlocked, setIsRegistrationBlocked] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -115,6 +120,35 @@ const SignUp: React.FC = () => {
       
       return () => clearTimeout(timer);
     }
+
+    // Check if registration is disabled and user is not already registered
+    const checkUserRegistration = async () => {
+      if (REGISTRATION_DISABLED && user && user.email) {
+        setCheckingRegistration(true);
+        try {
+          const isRegistered = await authService.isUserRegistered(user.email);
+          if (!isRegistered) {
+            setIsRegistrationBlocked(true);
+            // Show alert and redirect to login after delay
+            setTimeout(() => {
+              alert('New user registration is currently disabled. Only existing users can access the platform. If you believe this is an error, please contact support.');
+              router.push('/login');
+            }, 1000);
+          } else {
+            setIsRegistrationBlocked(false);
+          }
+        } catch (error) {
+          console.error('Error checking user registration:', error);
+          setIsRegistrationBlocked(true);
+        } finally {
+          setCheckingRegistration(false);
+        }
+      } else {
+        setCheckingRegistration(false);
+      }
+    };
+
+    checkUserRegistration();
 
     // If user is logged in and profile is not yet loaded, try to refresh it
     if (user && userProfile === null) {
@@ -149,6 +183,18 @@ const SignUp: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Block new registrations if disabled
+    if (REGISTRATION_DISABLED) {
+      const isRegistered = await authService.isUserRegistered(user.email);
+      if (!isRegistered) {
+        setError('New user registration is currently disabled. Only existing users can complete their profiles.');
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+        return;
+      }
+    }
 
     setLoading(true);
     setError('');
@@ -214,6 +260,10 @@ const SignUp: React.FC = () => {
       console.log('User registered status:', isRegistered);
       
       if (!isRegistered) {
+        // Block new user creation if registration is disabled
+        if (REGISTRATION_DISABLED) {
+          throw new Error('New user registration is currently disabled. Only existing users can access the platform.');
+        }
         // Create new user profile directly in database
         console.log('Creating new user profile in database...');
         await userService.createUserProfile(profileData);
@@ -293,14 +343,51 @@ const SignUp: React.FC = () => {
   const isStep1Valid = formData.name && formData.email && formData.phone;
   const isStep2Valid = ((formData.college && formData.college !== 'other') || (formData.college === 'other' && formData.otherCollege)) && formData.branch;
 
-  if (!user) {
+  if (!user || checkingRegistration) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{checkingRegistration ? 'Checking registration status...' : 'Loading...'}</p>
         </div>
       </div>
+    );
+  }
+
+  // Show registration blocked message
+  if (isRegistrationBlocked) {
+    return (
+      <>
+        <NextSeo
+          title="Registration Disabled - JEHUB"
+          description="New user registration is currently disabled"
+        />
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="mb-6">
+              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Registration Disabled</h1>
+              <p className="text-gray-600 leading-relaxed">
+                New user registration is currently disabled. Only existing users can access the platform.
+              </p>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center">
+                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                <p className="text-sm text-red-800">
+                  If you believe this is an error, please contact support.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push('/login')}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </>
     );
   }
 
