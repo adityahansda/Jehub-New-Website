@@ -30,8 +30,8 @@ Disallow: /counselling-updates/
 Disallow: /exam-updates/
 
 # Host
-Host: http://localhost:3000
+Host: http://jehub.vercel.app
 
 # Sitemaps
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: http://jehub.vercel.app/sitemap.xml
 Sitemap: https://jehub.vercel.app/sitemap.xml
